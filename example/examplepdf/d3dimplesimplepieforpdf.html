@@ -1,0 +1,81 @@
+<div>
+ 
+    <style type="text/css" scoped>
+    div#svg{
+
+      height: 75%;
+      width: 100%;
+    }
+
+    div#svg>svg{
+
+      padding-right: 40%;
+      padding-top: 1%;
+      padding-bottom: 1%;
+      overflow:visible;
+
+    }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script src="http://dimplejs.org/dist/dimple.v2.2.0.min.js"></script>
+  
+  <div>
+    <h1>Relative Likes</h1>
+    <p id='ice'></p>
+    <p id='cheese'></p> 
+    <p id='veggies'></p>
+    <div id="svg"></div> 
+    <script> 
+    //just set vars once and reuse;
+
+    var ice = parseInt( {!-likesicecream-!} );
+    var cheese  = parseInt( {!-likescheese-!} );
+    var veggies = parseInt( {!-likesveggies-!} );
+
+    var total = ice + cheese + veggies;
+
+    document.getElementById("ice").innerHTML = 'Likes IceCream: '+ (ice/total) * 100 + ' %';
+    document.getElementById("cheese").innerHTML = 'Likes Cheese: '+ (cheese/total) * 100 + ' %';
+    document.getElementById("veggies").innerHTML = 'Likes Veggies: '+ (veggies/total) * 100 + ' %';
+
+     var data = [
+      { "Word": "Likes Icecream", "Likes": ice }, 
+      { "Word": "Likes cheese", "Likes": cheese }, 
+      { "Word": "Likes Veggies", "Likes": veggies }, 
+      ];
+    var svg = dimple.newSvg("#svg",'100%','100%'); 
+    var chart = new dimple.chart(svg, data); 
+    chart.addMeasureAxis("p", "Likes"); 
+    var ring = chart.addSeries("Word", dimple.plot.pie); ring.innerRadius = "50%"; 
+    ring.afterDraw = function(shape, data) {
+      var g = svg.select("g"); 
+      var grect = g.node().getBBox(); var gmidx = grect.x + (grect.width - 7)/2; var gmidy = grect.y + (grect.height - 7)/2; var radius = (grect.height - 7) / 2; 
+      var srect = d3.select(shape).node().getBBox(); 
+      var smidx = srect.x + srect.width/2; 
+      var smidy = srect.y + srect.height/2; 
+      var dirx = smidx; var diry = smidy; 
+      var norm = Math.sqrt(dirx * dirx + diry * diry); dirx /= norm; diry /= norm;
+      var x = Math.round(gmidx + (radius + 25) * dirx);
+      var y = Math.round(gmidy + (radius + 15) * diry); 
+      var xOnPie = Math.round(gmidx + (radius+4) * dirx); 
+      var yOnPie = Math.round(gmidy + (radius+4) * diry); 
+      var node = 
+      svg.append("text") 
+        .attr("x", x + ((dirx > 0) ? 5 : -5))
+        .attr("y", y + 3) .style("font-size", "12px")
+        .style("font-family", "sans-serif")
+        .style("text-anchor", (dirx > 0) ? "start" : "end")
+        .style("fill", "black")
+        .text(data.aggField[0]); 
+      svg.append("line")
+        .attr("x1", x)
+        .attr("y1", y)
+        .attr("x2", xOnPie)
+        .attr("y2", yOnPie)
+        .style("stroke", "#e0e0e0");
+    };
+     
+    chart.draw();
+    </script> 
+  </div> 
+</div>

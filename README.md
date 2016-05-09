@@ -7,7 +7,7 @@ A flexible limesurvey pdfcreator
 This is a limesurvey plugin to create a downloadable pdf after a respondent completes a survey and show this content in the completed page. 
 
 Because as far as I know, there is no option for a plugin to add functionality to the backend (ie It's not possible to create buttons with surveyspecific options, except for coding into the core, which would be erased after each update), this plugin uses markerquestions to configure. This way you can make use of conditional logic provided by limesurvey's expression manager. These markerquestions are of type 'equation type'.
-You also have to provide templates (html/javascript/css) and upload them to a folder.  In these templates you have to wrap your variables in {[{yourvariablename}]} (handlebar-bracket-handlebar, no double handlebars because I don't want to conflict with Angular templates (Angular uses double handlebars as placeholders)).
+You also have to provide templates (html/javascript/css) and upload them to a folder.  In these templates you have to wrap your variables in {!-yourvariablename-!} (handlebar-exclamation mark-hyphen, no double handlebars because I don't want to conflict with Angular templates (Angular uses double handlebars as placeholders)).
 
 ### Important
 
@@ -111,43 +111,42 @@ The string contains key-value pairs separated by a vertical bar ('key=value | ot
 
 The variable names correspond to question codes.
 
-If you pass in a variable named 'myspecialvariable', the value of this variable will be parsed in your template where you put in '{[{myspecialvariable}]}'.
+If you pass in a variable named 'myspecialvariable', the value of this variable will be parsed in your template where you put in '{!-myspecialvariable-!}'.
 
 
 ### Templates
 
 Templates should be in the folder : plugins/PdfGenerator/templates
 
-As stated in the previous section, passed variables replace that same variable name between '{[{' and '}]}'.
+As stated in the previous section, passed variables replace that same variable name between '{!-' and '-!}'.
 
 For instance:
 
-var question1 = {[{question1}]};
-var question2 = {[{question2}]};
+var question1 = {!-question1-!};
+var question2 = {!-question2-!};
 
 Beware: There must be a value because otherwise it will result in an error (Uncaught SyntaxError: Unexpected token }). 
-Also beware that some values may be passed as string while you actually need an integer (so use var question1 = parseInt({[{question1}]}); in that case).
+Also beware that some values may be passed as string while you actually need an integer (so use var question1 = parseInt({!-question1-!}); in that case).
 
+You shouldn't create a full webpage because multiple html, body and head tags shouldn't exist on the same page. I tested phantomJS and it seems to work fine without these tags. You can do the following:
 
+```<div>
+    <style type="text/css" scoped>
+    /*some css*/
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script>
+    /*some inline script*/
+    </script>
+    <section>
+     <!--some html-->
+    </section>
+  <div>```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+I'm working on a way create a hidden equation question to just load external scripts once. Now these scripts can be called multiple times (they will get loaded from the cache but reloading is not elegant (it does seem to work fine however).
 
 # Quirks:
 
-It's not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem. 
+-It's not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem.
+-Appended html in the response page seems to be appended in a table. However, it seems you can use bootstrap nevertheless.
 
