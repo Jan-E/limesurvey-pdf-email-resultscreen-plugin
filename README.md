@@ -155,5 +155,6 @@ I'm working on a way create a hidden equation question to just load external scr
 # Quirks:
 
 -It's not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem.
+
 -Appended html in the response page seems to be appended in a table. However, it seems you can use bootstrap nevertheless.
 
