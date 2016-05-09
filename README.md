@@ -75,11 +75,15 @@ Download folder: If you followed the steps above you shouldn't have to change th
 
 Delete generated pdf after amount of minutes: This will cleanup files after x minutes.
 
+Debug: If this is set to true, you'll see the response of your query dumped in the resultscreen. This is convenient if you want to know what values your survey returns. For example: does a 'no answer'-option generate an empty string or a number? 
+
 ### Survey specific configuration: markerquestions
 
 #### By (simple) example
 
 Note: I apologize for the example, just a lack of inspiration ...
+
+##### Single Questions
 
 Suppose you have three questions:
 
@@ -117,6 +121,29 @@ The variable names correspond to question codes.
 
 If you pass in a variable named 'myspecialvariable', the value of this variable will be parsed in your template where you put in '{!-myspecialvariable-!}'.
 
+##### Array Questions
+
+Suppose you create a Array (5 point choice) question. Let's call it 'foodpreferences' (this is the code), With question-text: 'State how much you like the following: 0 = not very much, 5 = I love it!'.
+
+This question has 3 subquestion: 
+
+1: Code: (default: SQ001, but let's change it to 'Icecream' to make it more descriptive),  Subquestion: Icecream
+
+2: Code: (default: SQ002, but let's change it to 'Cheese' to make it more descriptive),  Subquestion: Cheese
+
+2: Code: (default: SQ003, but let's change it to 'Veggies' to make it more descriptive),  Subquestion: Veggies
+
+Again, create a hidden 'Equation' question type marker-question after the above array question.
+
+subquestions are addressed like: questioncode<underscore>subquestioncode. So: foodpreferences_Icecream etc. in this example.
+
+
+``` {if (likesicecream != '' and likescheese != '' and likesveggies != '', 'showinresult=true| showinpdf=true|resulttemplate=d3simplepiearrayquestion.html| pdftemplate=d3simplepiearrayquestionpdf.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies' , 'showinresult=false|showinpdf=false')}```
+
+
+Why is this code different from the previous? Because I am working in debug mode and I noticed this array 5 point question returns an empty string for the no answer option and not '6' as in the previous example. I now decide to not show a chart when either of the subquestions has no answer. I could also decide to use them anyway and transform an empty string in javascript. For example: var myvar = {!-myvar-!}; if(myvar === ''){ myvar = 0 }else{myvar = parseInt(myvar)}; (Or use a ternary).
+
+Anyway, I am passing the values of the subquestions in the string and I am passing the variable names. Also I pass template names. Now you can parse the variable values into you template. The values in the templates should be {!-foodpreferences_Icecream-!}, {!-foodpreferences_Cheese-!} and {!-foodpreferences_Veggies-!}.
 
 ### Templates
 
@@ -148,7 +175,7 @@ You shouldn't create a full webpage because multiple html, body and head tags sh
 </section>
 <div>
 ```
-
+!!! VERY IMPORTANT !!! If you are using multiple templates, beware of using the same id's and classes in those templates. This can mess it up. I suggest you append all your variables, id's and classes with a number.
 
 I'm working on a way create a hidden equation question to just load external scripts once. Now these scripts can be called multiple times (they will get loaded from the cache but reloading is not elegant (it does seem to work fine however).
 

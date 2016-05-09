@@ -27,6 +27,10 @@ class PdfGenerator extends \ls\pluginmanager\PluginBase {
         'label' => 'Delete generated pdf after amount of minutes',
         'default' => '60',
     ),
+    'Debug'  =>  array(
+        'type'=>'checkbox',
+        'label'=>'Check to enable debug mode',
+    ),
             
   );
 
@@ -149,6 +153,12 @@ class PdfGenerator extends \ls\pluginmanager\PluginBase {
     $responseId = $event->get('responseId');
     $response   = $this->pluginManager->getAPI()->getResponse($surveyId, $responseId);
 
+    if($settings['Debug'] !== null){
+
+      CVarDumper::dump($response);
+
+    }
+
     $workload = [];
 
     foreach ($response as $k => $v){
@@ -223,7 +233,12 @@ class PdfGenerator extends \ls\pluginmanager\PluginBase {
 
     }catch (Exception $e){
 
-      CVarDumper::dump(['error' => $e]);
+      if($settings['Debug'] !== null){
+
+        CVarDumper::dump(['error' => $e]);
+
+      }
+      
       $res = $event->getContent($this)
       ->addContent("An error occurred creating a pdf.");
 
