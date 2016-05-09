@@ -19,11 +19,10 @@
     </div>
   </div>
   <script> 
-  //just set vars once and reuse;
-  var screenwidth = screen.width;
+  
 
   var w = '100%';
-
+  //just set vars once and reuse;
   var ice = parseInt( {!-likesicecream-!} );
   var cheese  = parseInt( {!-likescheese-!} );
   var veggies = parseInt( {!-likesveggies-!} );
@@ -73,6 +72,7 @@
    
   chart.draw();
 
+  //does not work as expected
   window.onresize = function () {
     screenwidth = screen.width;
     node.remove('text');
