@@ -82,7 +82,7 @@ class PdfGenerator extends \ls\pluginmanager\PluginBase {
 
       if($v['showinresult'] === 'false' && $v['showinpdf'] === 'false'){
 
-        break;
+        continue;
 
       }else{
 
