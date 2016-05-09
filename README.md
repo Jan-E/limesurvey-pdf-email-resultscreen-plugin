@@ -30,7 +30,7 @@ Google how to and make sure you know the path to phantomjs.sh. For ubuntu see th
 
 #### Option 2: Get binary and drop in app
 
-http://phantomjs.org/download.html provides [download binaries](http://phantomjs.org/download.html). Find a way to determine which one you need. Now create a folder in your rootfolder (sibling to the application-folder), and put in the folders bin, include, lib, and share which you unzipped from the downloaded binary.
+http://phantomjs.org/download.html provides [download binaries](http://phantomjs.org/download.html). Find a way to determine which one you need. Now create a folder named 'phantomjs' in your rootfolder (sibling to the application-folder), and put in the folders bin, include, lib, and share which you unzipped from the downloaded binary.
 
 
 ### Create a download folder
