@@ -146,7 +146,8 @@ You shouldn't create a full webpage because multiple html, body and head tags sh
 <section>
  <!--some html-->
 </section>
-<div>```
+<div>
+```
 
 
 I'm working on a way create a hidden equation question to just load external scripts once. Now these scripts can be called multiple times (they will get loaded from the cache but reloading is not elegant (it does seem to work fine however).
