@@ -84,7 +84,9 @@ Note: I apologize for the example, just a lack of inspiration ...
 Suppose you have three questions:
 
 1: Question code: likesicecream,    Question: How much do you like icecream? 0 = not at all, 5 = yes very much, Question type: 5 point choice,  Mandatory: Off
+
 2: Question code: likescheese,    Question: How much do you like cheese? 0 = not at all, 5 = yes very much, Question type: 5 point choice,   Mandatory: Off
+
 3: Question code: likesveggies,    Question: How much do you like veggies? 0 = not at all, 5 = yes very much, Question type: 5 point choice,   Mandatory: Off
 
 If you want to create output based on the answers to these questions (output can be a chart or just an overview with questions and answers), you'll have to create a hidden 'Equation' question type question after the above questions (you could group all this marker questions at the end of your survey or each marker question after the questions it is based on, the choice is yours, it just has to be after these questions).
@@ -144,6 +146,8 @@ You shouldn't create a full webpage because multiple html, body and head tags sh
      <!--some html-->
     </section>
   <div>```
+
+
 
 I'm working on a way create a hidden equation question to just load external scripts once. Now these scripts can be called multiple times (they will get loaded from the cache but reloading is not elegant (it does seem to work fine however).
 
