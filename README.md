@@ -77,7 +77,10 @@ Delete generated pdf after amount of minutes: This will cleanup files after x mi
 
 ### Templates
 
-Each template has a Templatesurveyname an templatename. This must be comma-seperated: surveyname, templatename. 
+Each template has a Templatesurveyname an templatename. This must be comma-seperated: surveyname, templatename.
+
+Templates should be in : plugins/PdfGenerator/templates
+
 The following option gives you the variables you want to use in your template. These variable names are the same as your question code.
 
 In your template now you have to refer to those variables as: ##variablename##. 
