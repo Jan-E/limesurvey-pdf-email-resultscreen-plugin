@@ -1,4 +1,4 @@
-# limesurvey-plugin-pdfcreator
+# limesurvey-plugin-pdfcreator (beta)
 
 A flexible limesurvey pdfcreator
 
@@ -13,7 +13,7 @@ You also have to provide templates (html/javascript/css) and upload them to a fo
 
 This is **NOT** a simple plug & play plugin. To make it function, you need to do some work. The main reason for this is that this plugin uses [kriansa's h2p library](https://github.com/kriansa/h2p "H2p"), which in turn makes use of [PhantomJS](http://phantomjs.org/ "PhantomJS"). You can install PhantomJS on your server (see for instance for ubuntu [this](https://gist.github.com/julionc/7476620)). However, on shared hosting you most probably can't do that so you'll need to run a precompiled binary.
 
-On the other hand, wkhtmltopdf makes use of [Qt WebKit](https://wiki.qt.io/Qt_WebKit "Qt WebKit"), which makes it possible to really render pages using javascript, html and css, including fonts etc. This is something (as far as I know) pure php-pdf-creators don't do.
+On the other hand, PhantomJS makes use of [Qt WebKit](https://wiki.qt.io/Qt_WebKit "Qt WebKit"), which makes it possible to really render pages using javascript, html and css, including fonts etc. This is something (as far as I know) pure php-pdf-creators don't do.
 
 # Getting started
 
@@ -51,7 +51,7 @@ Drop the PdfGenerator folder in your plugins folder.
 
 ### Activate pdfGenerator
 
-Go to your pluginmanager page in limesurvey and activate pdfGenerator. If you decided to use another path for your download or wkhtmltopdf folder you can hit configure and chance settings. If you installed PhantomJS on your machine you can change the path also in the configure screen (In this case don't forget to uncheck the 'You dropped in the PhantomJS precompiled library'-checkbox.  Also you can set after what time a pdf will be deleted. Default is 60 minutes.
+Go to your pluginmanager page in limesurvey and activate pdfGenerator. If you decided to use another path for your download or PhantomJS folder you can hit configure and chance settings. If you installed PhantomJS on your machine you can change the path also in the configure screen (In this case don't forget to uncheck the 'You dropped in the PhantomJS precompiled library'-checkbox.  Also you can set after what time a pdf will be deleted. Default is 60 minutes.
 Now you should be good to go!
 
 
@@ -119,5 +119,5 @@ Also beware that some values may be passed as string while you actually need an 
 
 # Quirks:
 
-Pages with relative links break the rendering. See [this](https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2713). So not every webpage can be expected to render. For instance: Google does not work, but https://www.limesurvey.org/ and https://github.com/ do work. This is not a real problem because this plugin is intended to create you own content (without relative links offcourse);
+It's not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem. 
 
