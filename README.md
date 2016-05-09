@@ -79,6 +79,8 @@ Delete generated pdf after amount of minutes: This will cleanup files after x mi
 
 #### By (simple) example
 
+Note: I apologize for the example, just lacking inspiration ...
+
 Suppose you have three questions:
 
 1: Question code: likesicecream,    Question: How much do you like icecream? 0 = not at all, 5 = yes very much, Question type: 5 point choice,  Mandatory: Off
