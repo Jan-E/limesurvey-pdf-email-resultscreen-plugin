@@ -79,7 +79,7 @@ Delete generated pdf after amount of minutes: This will cleanup files after x mi
 
 #### By (simple) example
 
-Note: I apologize for the example, just lacking inspiration ...
+Note: I apologize for the example, just a lack of inspiration ...
 
 Suppose you have three questions:
 
