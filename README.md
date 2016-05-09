@@ -134,19 +134,19 @@ Also beware that some values may be passed as string while you actually need an 
 
 You shouldn't create a full webpage because multiple html, body and head tags shouldn't exist on the same page. I tested phantomJS and it seems to work fine without these tags. You can do the following:
 
-```<div>
-    <style type="text/css" scoped>
-    /*some css*/
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-    <script>
-    /*some inline script*/
-    </script>
-    <section>
-     <!--some html-->
-    </section>
-  <div>```
-
+```
+<div>
+<style type="text/css" scoped>
+/*some css*/
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+<script>
+/*some inline script*/
+</script>
+<section>
+ <!--some html-->
+</section>
+<div>```
 
 
 I'm working on a way create a hidden equation question to just load external scripts once. Now these scripts can be called multiple times (they will get loaded from the cache but reloading is not elegant (it does seem to work fine however).
