@@ -28,66 +28,7 @@ use H2P\TempFile;
               'label' => 'Delete generated pdf after amount of minutes',
               'default' => '60',
           ),
-          'template1surveyname' => array(
-              'type' => 'text',
-              'label' => "Survey Name and template name comma seperated: surveyname, templatename",
-              'default' => '60',
-          ),
-          'template1variables' => array(
-              'type' => 'text',
-              'label' => "variablenames (the question code you entered for the question), seperate by comma",
-              'default' => '60',
-          ),
-          'template2surveyname' => array(
-              'type' => 'text',
-              'label' => "Survey Name and template name comma seperated: surveyname, templatename",
-              'default' => '60',
-          ),
-          'template2variables' => array(
-              'type' => 'text',
-              'label' => "variablenames (the question code you entered for the question), seperate by comma",
-              'default' => '60',
-          ),
-          'template3surveyname' => array(
-              'type' => 'text',
-              'label' => "Survey Name and template name comma seperated: surveyname, templatename",
-              'default' => '60',
-          ),
-          'template3variables' => array(
-              'type' => 'text',
-              'label' => "variablenames (the question code you entered for the question), seperate by comma",
-              'default' => '60',
-          ),
-          'template4surveyname' => array(
-              'type' => 'text',
-              'label' => "Survey Name and template name comma seperated: surveyname, templatename",
-              'default' => '60',
-          ),
-          'template4variables' => array(
-              'type' => 'text',
-              'label' => "variablenames (the question code you entered for the question), seperate by comma",
-              'default' => '60',
-          ),
-          'template5surveyname' => array(
-              'type' => 'text',
-              'label' => "Survey Name and template name comma seperated: surveyname, templatename",
-              'default' => '60',
-          ),
-          'template5variables' => array(
-              'type' => 'text',
-              'label' => "variablenames (the question code you entered for the question), seperate by comma",
-              'default' => '60',
-          ),
-          'template6surveyname' => array(
-              'type' => 'text',
-              'label' => "Survey Name and template name comma seperated: surveyname, templatename",
-              'default' => '60',
-          ),
-          'template6variables' => array(
-              'type' => 'text',
-              'label' => "variablenames (the question code you entered for the question), seperate by comma",
-              'default' => '60',
-          ),
+         
 
 
            

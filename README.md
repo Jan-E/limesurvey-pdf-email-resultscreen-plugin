@@ -6,8 +6,8 @@ A flexible limesurvey pdfcreator
 
 This is a limesurvey plugin to create a downloadable pdf after a respondent completes a survey and show this content in the completed page. 
 
-Because as far as I know, there is no option for a plugin to add functionality to the backend (ie It's not possible to create buttons with surveyspecific options, except for coding into the core, which would be erased after each update), this plugin uses its configure page to configure. In the configuration page you have to enter your survey name, and below the variables you need in your charts. 
-You also have to provide templates (html/javascript/css) and upload them to a folder.  In these templates wrap your variables in ##yourvariablename##.
+Because as far as I know, there is no option for a plugin to add functionality to the backend (ie It's not possible to create buttons with surveyspecific options, except for coding into the core, which would be erased after each update), this plugin uses markerquestions to configure. This way you can make use of conditional logic provided by limesurvey's expression manager. These markerquestions are of type 'equation type'.
+You also have to provide templates (html/javascript/css) and upload them to a folder.  In these templates you have to wrap your variables in {[{yourvariablename}]} (handlebar-bracket-handlebar, no double handlebars because I don't want to conflict with Angular templates (Angular uses double handlebars as placeholders)).
 
 ### Important
 
@@ -25,12 +25,12 @@ Install PhantomJS on your server or developmentbox (option 1) or get the binary 
 
 #### Option 1: Install on your server or local machine
 
-Google how to and make sure you know the path to phantomjs.sh. For ubuntu see the previously mentioned [thread](https://gist.github.com/julionc/7476620). This path is what you have to input later on to make it work.
+Google how to and make sure you know the path to phantomjs(.sh). For ubuntu see the previously mentioned [thread](https://gist.github.com/julionc/7476620). This path is what you have to input later on to make it work.
 
 
 #### Option 2: Get binary and drop in app
 
-http://phantomjs.org/download.html provides [download binaries](http://phantomjs.org/download.html). Find a way to determine which one you need. Now create a folder named 'phantomjs' in your rootfolder (sibling to the application-folder), and put in the folders bin, include, lib, and share which you unzipped from the downloaded binary.
+http://phantomjs.org/download.html provides [download binaries](http://phantomjs.org/download.html). Find a way to determine which one you need. Now create a folder named 'phantomjs' in your rootfolder (sibling to the application-folder), and put in the folders bin, include, lib, and share which you unpacked from the downloaded binary.
 
 
 ### Create a download folder
@@ -40,7 +40,7 @@ Create a download folder in the root folder (sibling to the application-folder).
 
 ### Install H2P
 
-Do a composer require kriansa/h2p. (For OpenShift may need to to downgrade some dependencies because it runs on php 5.4. Which ones you can see in the console while deploying).
+Do a composer require kriansa/h2p or put "kriansa/h2p": "dev-master" in the require path of your composer.json and run composer update or install. (For OpenShift you may need to to downgrade some dependencies because it runs on php 5.4. Which ones you can see in the console while deploying).
 Now you should have a 'vendor' folder in your limesurvey rootfolder.
 
 
@@ -51,7 +51,7 @@ Drop the PdfGenerator folder in your plugins folder.
 
 ### Activate pdfGenerator
 
-Go to your pluginmanager page in limesurvey and activate pdfGenerator. If you decided to use another path for your download or PhantomJS folder you can hit configure and chance settings. If you installed PhantomJS on your machine you can change the path also in the configure screen (In this case don't forget to uncheck the 'You dropped in the PhantomJS precompiled library'-checkbox.  Also you can set after what time a pdf will be deleted. Default is 60 minutes.
+Go to your pluginmanager page in limesurvey and activate pdfGenerator. If you decided to use another path for your download or PhantomJS folder you can hit configure and change settings. If you installed PhantomJS on your machine you can change the path also in the configure screen. Also you can set after what time a pdf will be deleted. Default is 60 minutes.
 Now you should be good to go!
 
 
@@ -65,7 +65,7 @@ If you allready have a cron running you don't have to create another one. The pl
 
 # Configuration
 
-Because limesurvey does not allow to configure a plugin on the survey level, this will be done in the configuration page.
+Because limesurvey does not allow to configure a plugin on the survey level, this will be done using marker questions. The global configuration is managed in the plugins' configuration page.
 
 ### Global config
 
@@ -75,31 +75,58 @@ Download folder: If you followed the steps above you shouldn't have to change th
 
 Delete generated pdf after amount of minutes: This will cleanup files after x minutes.
 
+### Survey specific configuration: markerquestions
+
+#### By (simple) example
+
+Suppose you have three questions:
+
+1: Question code: likesicecream,    Question: How much do you like icecream? 0 = not at all, 5 = yes very much, Question type: 5 point choice,  Mandatory: Off
+2: Question code: likescheese,    Question: How much do you like cheese? 0 = not at all, 5 = yes very much, Question type: 5 point choice,   Mandatory: Off
+3: Question code: likesveggies,    Question: How much do you like veggies? 0 = not at all, 5 = yes very much, Question type: 5 point choice,   Mandatory: Off
+
+If you want to create output based on the answers to these questions (output can be a chart or just an overview with questions and answers), you'll have to create a hidden 'Equation' question type question after the above questions (you could group all this marker questions at the end of your survey or each marker question after the questions it is based on, the choice is yours, it just has to be after these questions).
+IMPORANT: You have to prepend the name (code field) of this markerfile with 'pdfmarker'. I recommend to just name them 'pdfmarker1', 'pdfmarker2' etc.
+
+Because in the questions I have set 'Mandatory' to 'Off', a 'No answer'-option is shown in the 5 point choice question. The 'No answer'-option corresponds to a value of 6. Suppose I don't want to show a chart if in one or all of the question the 'No answer'-option is selected. The I can create a markerquestion, I call it 'pdfmarker1' after those questions (In production: Always hide this question: yes), and put this code in the question field (not in html mode!):
+
+``` {if ((!is_empty(likesicecream) and likesicecream != 6) and (!is_empty(likescheese) and likescheese != 6) and (!is_empty(likesveggies) and likesveggies != 6), 'showinresult=true| showinpdf=true|resulttemplate=d3simplepie.html| pdftemplate=d3simplepie.html|variables=likesicecream,likescheese,likesveggies' , 'showinresult=false|showinpdf=false')}```
+
+This code checks if none of the answers is 6. If one of the answers is 6 (or is not set) the expression evaluates to a string: 
+
+'showinresult=false|showinpdf=false' 
+
+If none of the answers is 6 the expression evaluates to another string: 
+
+'showinresult=true| showinpdf=true|resulttemplate=d3simplepie.html| pdftemplate=d3simplepie.html|variables=likesicecream,likescheese,likesveggies'
+
+The showinresult and showinpdf keys are mandatory. If the key showinresult is set to true, the keys resulttemplate and variables are mandatory, and if the key showinpdf is set to true, the keys pdftemplate and variables are mandatory.
+
+The reason why you can set different templates for the resultpage and the pdf (they can be set to the same just point to the same template) is that the same template might render differently in the pdf compared to the resultpage rendering. This way you can tweak templates to look the same.
+
+The structure of the string you have to create is as follows:
+
+The string has to be in quotes.
+The string contains key-value pairs separated by a vertical bar ('key=value | otherkey=othervalue'). The variables property has a comma separated value ('variables=var1, var2, var3, var4').
+
+The variable names correspond to question codes.
+
+If you pass in a variable named 'myspecialvariable', the value of this variable will be parsed in your template where you put in '{[{myspecialvariable}]}'.
+
+
 ### Templates
 
-Each template has a Templatesurveyname an templatename. This must be comma-seperated: surveyname, templatename.
+Templates should be in the folder : plugins/PdfGenerator/templates
 
-Templates should be in : plugins/PdfGenerator/templates
-
-The following option gives you the variables you want to use in your template. These variable names are the same as your question code.
-
-In your template now you have to refer to those variables as: ##variablename##. 
+As stated in the previous section, passed variables replace that same variable name between '{[{' and '}]}'.
 
 For instance:
 
-You have a survey named 'mysurvey', a template named 'mytemplate.html' and two questions with code 'question1' and code 'question2';
+var question1 = {[{question1}]};
+var question2 = {[{question2}]};
 
-Now you enter:  mysurvey,mytemplate.html     in the 'Survey Name and template name'-box.
-
-In the next 'variablenames'-box you enter:   question1,question2
-
-Now, in your template you can reference them like this:
-
-var question1 = ##question1##;
-var question2 = ##question2##;
-
-Beware: There must be a value because otherwise it will result in an error (Uncaught SyntaxError: Unexpected token ILLEGAL). 
-Also beware that some values may be passed as string while you actually need an integer (so use var question1 = parseInt(##question1##); in that case).
+Beware: There must be a value because otherwise it will result in an error (Uncaught SyntaxError: Unexpected token }). 
+Also beware that some values may be passed as string while you actually need an integer (so use var question1 = parseInt({[{question1}]}); in that case).
 
 
 
