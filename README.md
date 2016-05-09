@@ -1,4 +1,4 @@
-# limesurvey-plugin-pdfcreator (beta)
+# limesurvey-plugin-pdfcreator ((very) beta)
 
 A flexible limesurvey pdfcreator
 
@@ -84,7 +84,7 @@ In your template now you have to refer to those variables as: ##variablename##.
 
 For instance:
 
-You have a survey named 'mysurvey', a template named 'mytemplate.html' and two question with code 'question1' and code 'question2';
+You have a survey named 'mysurvey', a template named 'mytemplate.html' and two questions with code 'question1' and code 'question2';
 
 Now you enter:  mysurvey,mytemplate.html     in the 'Survey Name and template name'-box.
 
@@ -96,7 +96,7 @@ var question1 = ##question1##;
 var question2 = ##question2##;
 
 Beware: There must be a value because otherwise it will result in an error (Uncaught SyntaxError: Unexpected token ILLEGAL). 
-Also beware that some values may be passed as string while you actually need an integer (so use var question1 = parseInt(##question1##(); in that case).
+Also beware that some values may be passed as string while you actually need an integer (so use var question1 = parseInt(##question1##); in that case).
 
 
 
