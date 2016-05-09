@@ -1,4 +1,4 @@
-# limesurvey-plugin-pdfcreator ((very) beta)
+# limesurvey-plugin-pdfcreator ((very) alpha)
 
 A flexible limesurvey pdfcreator
 
