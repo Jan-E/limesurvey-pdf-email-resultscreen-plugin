@@ -140,7 +140,7 @@ subquestions are addressed like: questioncode<underscore>subquestioncode. So: fo
 
 ``` {if (likesicecream != '' and likescheese != '' and likesveggies != '', 'showinresult=true| showinpdf=true|resulttemplate=d3simplepiearrayquestion.html| pdftemplate=d3simplepiearrayquestionpdf.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies' , 'showinresult=false|showinpdf=false')}```
 
-
+!!!OOps this does not work neglect this paragraph
 Why is this code different from the previous? Because I am working in debug mode and I noticed this array 5 point question returns an empty string for the no answer option and not '6' as in the previous example. I now decide to not show a chart when either of the subquestions has no answer. I could also decide to use them anyway and transform an empty string in javascript. For example: var myvar = {!-myvar-!}; if(myvar === ''){ myvar = 0 }else{myvar = parseInt(myvar)}; (Or use a ternary).
 
 Anyway, I am passing the values of the subquestions in the string and I am passing the variable names. Also I pass template names. Now you can parse the variable values into you template. The values in the templates should be {!-foodpreferences_Icecream-!}, {!-foodpreferences_Cheese-!} and {!-foodpreferences_Veggies-!}.
