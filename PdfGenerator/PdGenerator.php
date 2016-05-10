@@ -378,7 +378,11 @@ use H2P\TempFile;
 
                             foreach($vars as $varv){
 
-                                $varray[$varv] = $response[$varv];
+                                if (strlen($varv) > 0){
+
+                                    $varray[$varv] = $response[$varv];
+
+                                }        
                             
                             }       
 

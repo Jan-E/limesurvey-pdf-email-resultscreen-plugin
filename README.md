@@ -30,7 +30,7 @@ Google how to and make sure you know the path to phantomjs(.sh). For ubuntu see 
 
 #### Option 2: Get binary and drop in app
 
-http://phantomjs.org/download.html provides [download binaries](http://phantomjs.org/download.html). Find a way to determine which one you need. Now create a folder named 'phantomjs' in your rootfolder (sibling to the application-folder), and put in the folders bin, include, lib, and share which you unpacked from the downloaded binary.
+http://phantomjs.org/download.html provides [download binaries](http://phantomjs.org/download.html). Find a way to determine which one you need. Now create a folder named 'phantomjs' in your rootfolder (sibling to the application-folder), and put in the folder named bin which you unpacked from the downloaded binary (you can put in all the other stuff but the bin-folder is the required one).
 
 
 ### Create a download folder
@@ -195,7 +195,85 @@ You shouldn't create a full webpage because multiple html, body and head tags sh
 ```
 !!! VERY IMPORTANT !!! If you are using multiple templates, beware of using the same id's and classes in those templates. This can mess it up. I suggest you append all your variables, id's and classes with a number.
 
-I'm working on a way create a hidden equation question to just load external scripts once. Now these scripts can be called multiple times (they will get loaded from the cache but reloading is not elegant (it does seem to work fine however).
+##### Reusing templates
+
+You can also create reusable scripts. This can be done by creating a function and calling it later by passing in configuration and data parameters. Suppose I create a template like this (let's call it d3pieReusable.html:
+
+```
+<div>
+  <style type="text/css" scoped>
+  .arc text {
+    font: 10px sans-serif;
+    text-anchor: middle;
+  }
+  .arc path {
+    stroke: #fff;
+  }
+  </style>
+  <script>
+
+  var createPie = function(dataset, config, domelementid){
+    //dataset should look like this
+    /*var dataset = [
+        { label: 'text', value: 15 }, 
+        { label: 'text2', value: 32 },
+        { label: 'text3', value: 38 },
+        { label: 'text4', value: 51 }
+      ];*/
+
+      //config should look like this
+
+      //var config = {width: int, height: int};
+      var radius = Math.min(config.width, config.height) / 2;
+
+      var color = d3.scale.category20b();
+
+      var svg = d3.select('#domelementid')
+        .append('svg')
+        .attr('width', config.width)
+        .attr('height', config.height)
+        .append('g')
+        .attr('transform', 'translate(' + (config.width / 2) + 
+          ',' + (config.height / 2) + ')');
+
+      var arc = d3.svg.arc()
+        .outerRadius(config.radius);
+
+      var pie = d3.layout.pie()
+        .value(function(d) { return d.value; })
+        .sort(null);
+
+      var path = svg.selectAll('path')
+        .data(pie(dataset))
+        .enter()
+        .append('path')
+        .attr('d', arc)
+        .attr('fill', function(d, i) { 
+          return color(d.data.label);
+        });
+
+  }
+
+  </script>
+</div>
+
+
+```
+
+No you can create a hidden markerquestion at the beginning of your survey, passing keys and empty parameters except the template parameter:
+
+
+
+``` {'showinresult=true| showinpdf=true|resulttemplate=d3pieReusable.html| pdftemplate=d3pieReusable.html|variables= | externaljs=https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js' , 'showinresult=false|showinpdf=false'}```
+
+markerquestion4
+
+``` {if (foodpreferences_Icecream != '' or foodpreferences_Cheese != '' or foodpreferences_Veggies != '', 'showinresult=true| showinpdf=true|resulttemplate=callreusable.html| pdftemplate=callreusable.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies' , 'showinresult=false|showinpdf=false')} ```
+
+callreusable.html
+
+``` {if (foodpreferences_Icecream != '' or foodpreferences_Cheese != '' or foodpreferences_Veggies != '', 'showinresult=true| showinpdf=true|resulttemplate=callreusable.html| pdftemplate=callreusable.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies' , 'showinresult=false|showinpdf=false')} ```
+
 
 # Quirks:
 
