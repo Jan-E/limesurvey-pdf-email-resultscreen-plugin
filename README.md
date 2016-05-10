@@ -138,12 +138,30 @@ Again, create a hidden 'Equation' question type marker-question after the above 
 subquestions are addressed like: questioncode<underscore>subquestioncode. So: foodpreferences_Icecream etc. in this example.
 
 
-``` {if (likesicecream != '' and likescheese != '' and likesveggies != '', 'showinresult=true| showinpdf=true|resulttemplate=d3simplepiearrayquestion.html| pdftemplate=d3simplepiearrayquestionpdf.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies' , 'showinresult=false|showinpdf=false')}```
+``` {if (foodpreferences_Icecream != '' and foodpreferences_Cheese != '' and foodpreferences_Veggies != '', 'showinresult=true| showinpdf=true|resulttemplate=d3simplepiearrayquestion.html| pdftemplate=d3simplepiearrayquestionpdf.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies' , 'showinresult=false|showinpdf=false')}```
 
-!!!OOps this does not work neglect this paragraph
+
 Why is this code different from the previous? Because I am working in debug mode and I noticed this array 5 point question returns an empty string for the no answer option and not '6' as in the previous example. I now decide to not show a chart when either of the subquestions has no answer. I could also decide to use them anyway and transform an empty string in javascript. For example: var myvar = {!-myvar-!}; if(myvar === ''){ myvar = 0 }else{myvar = parseInt(myvar)}; (Or use a ternary).
 
 Anyway, I am passing the values of the subquestions in the string and I am passing the variable names. Also I pass template names. Now you can parse the variable values into you template. The values in the templates should be {!-foodpreferences_Icecream-!}, {!-foodpreferences_Cheese-!} and {!-foodpreferences_Veggies-!}.
+
+Just to test I'll try to parse empty strings in a template. I'll just use this example and replace and by or, which means at least one value should not be an empty string:
+
+
+``` {if (foodpreferences_Icecream != '' or foodpreferences_Cheese != '' or foodpreferences_Veggies != '', 'showinresult=true| showinpdf=true|resulttemplate=d3simplepiearrayquestion.html| pdftemplate=d3simplepiearrayquestionpdf.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies' , 'showinresult=false|showinpdf=false')}```
+
+
+The plugin makes sure empty strings are parsed as '' in your template. This seemst to work fine. There is one catch though: If you put it directly in your html it is parsed as ''. So if you expect empty values, you should use javascript to populate html with your variables.
+
+##### Conditional javascript and css loading
+
+If you want your external stylesheets and external javascript libraries not to be loaded multiple times you can omit your external references from your templates and add the properties externaljs and externalcss to your markerquestions. To borrow from the previous example:
+
+``` {if (foodpreferences_Icecream != '' or foodpreferences_Cheese != '' or foodpreferences_Veggies != '', 'showinresult=true| showinpdf=true|resulttemplate=d3simplepiearrayquestion.html| pdftemplate=d3simplepiearrayquestionpdf.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies | externaljs=https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js, http://dimplejs.org/dist/dimple.v2.2.0.min.js | externalcss=css/style.css' , 'showinresult=false|showinpdf=false')}```
+
+This works the same as variables, the paths are comma separated. This css and javascript gets loaded before all your templates. Only unique urls are loaded so you can attach a url over and over again in different markerquestions, it only gets loaded once. Obviously it must be exactly the same, it doesn't filter out d3.js and d3.min.js as doubles for example.
+
+Note: If your external css or javascript does not have 'http' in the url, it automatically get pointed at the sites base url. So css/style.css points to: http://yoursite.com/css/style.css. For devs: It's just "http://$_SERVER[HTTP_HOST]/" in php. 
 
 ### Templates
 
