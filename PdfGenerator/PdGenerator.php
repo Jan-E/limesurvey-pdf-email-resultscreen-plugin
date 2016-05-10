@@ -33,14 +33,23 @@ use H2P\TempFile;
                   
         );
 
+        public function __construct(PluginManager $manager, $id) {
 
-        public function init() {
+            parent::__construct($manager, $id);
+            $this->subscribe('afterSurveyComplete');
+            $this->subscribe('cron');
+            $this->settings = $this->getPluginSettings(true);
+            
+        }
+
+
+        /*public function init() {
 
             $this->subscribe('afterSurveyComplete');
             $this->subscribe('cron');
             $this->settings = $this->getPluginSettings(true);
      
-        }
+        }*/
 
         //implement methods
 
