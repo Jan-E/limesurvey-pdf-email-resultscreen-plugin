@@ -33,8 +33,9 @@ use H2P\TempFile;
                   
         );
 
-        public function __construct(PluginManager $manager, $id) {
+        public function __construct(PluginManager $manager=null, $id=null) {
 
+            
             parent::__construct($manager, $id);
             $this->subscribe('afterSurveyComplete');
             $this->subscribe('cron');
@@ -83,8 +84,10 @@ use H2P\TempFile;
         }
 
 
-        private function createCharts($workload)
+        private function parseTemplates($workload, $response)
         {
+
+
 
             $res = [];
 
@@ -154,9 +157,18 @@ use H2P\TempFile;
                         $searcharr = [];
                         $replarr = [];
 
+                        if(isset($v['parseasobject']) && trim($v['parseasobject']) === 'true'){
+    
+                            $variables = $this->parseAsObjects($v['variables'], $response);
+
+                        }else{
 
 
-                        foreach($v['variables'] as  $vark => $varv){
+                            $variables = $v['variables'];
+
+                        }
+
+                        foreach($variables as  $vark => $varv){
 
                             $vark = trim($vark);
 
@@ -168,8 +180,22 @@ use H2P\TempFile;
 
                             }else{
 
-                                $rvar = trim($varv);
+                                $varv = trim($varv);
 
+                                if($varv[0] === '{' && $varv[strlen($varv)-1] === '}'){
+
+                                    $rvar = $varv;
+
+                                }else if(strpos($varv, 'http') !== false){
+                                    //links no quotes
+                                    $rvar = $varv;
+
+                                }else{
+
+                                    $rvar = "'".$varv."'";
+
+                                }
+                                
                             }
 
                             $replarr[] = $rvar;
@@ -266,6 +292,114 @@ use H2P\TempFile;
 
         }
 
+        private function parseAsObjects($variables, $response)
+        {
+
+            $temp = [];
+
+            foreach ($response as $k => $v){
+
+                if(strpos($k, '_')!== false){
+
+                    $kv = explode('_', $k);
+
+                    if(array_key_exists($kv[0], $variables)){
+
+                        if(!isset($temp[$kv[0]])){
+
+
+                            $temp[$kv[0]] = [];
+
+                            if (count($kv) > 2) {
+                                //must be 3
+                                if(!isset($temp[$kv[0]][$kv[1]])){
+
+                                    $temp[$kv[0]][$kv[1]] = [];
+
+                                    $temp[$kv[0]][$kv[1]][$kv[2]] = $v;
+
+                                }else{
+
+                                    $temp[$kv[0]][$kv[1]][$kv[2]] = $v;
+
+
+                                }
+
+
+                            }else{
+
+                               $temp[$kv[0]][$kv[1]] = $v; 
+
+                            }
+                            
+
+                        }else{
+
+                            if (count($kv) > 2) {
+                                //must be 3
+                                if(!isset($temp[$kv[0]][$kv[1]])){
+
+                                    $temp[$kv[0]][$kv[1]] = [];
+
+                                    $temp[$kv[0]][$kv[1]][$kv[2]] = $v;
+
+                                }else{
+
+                                    $temp[$kv[0]][$kv[1]][$kv[2]] = $v;
+
+
+                                }
+
+
+                            }else{
+
+                               $temp[$kv[0]][$kv[1]] = $v; 
+                               
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            foreach($temp as $k=>$v){
+
+                $string = '';
+
+                foreach($v as $key => $val){
+
+                  
+                    if(is_array($val)){
+
+                        foreach($val as $ke => $va){
+
+                            $parsedval = "{ $ke : '$va' }";
+
+                        }
+
+                    }else{
+
+                        $parsedval = "'$val'";
+                    }
+
+                    $string .= " $key : $parsedval ,";
+
+                }
+
+                $string = rtrim($string, ",");
+
+
+                $variables[$k] = "{ $string }";
+
+            }
+
+            return $variables;
+
+        }
+
         private function parseErrorHelper($html, $template)
         {
 
@@ -305,7 +439,7 @@ use H2P\TempFile;
         private function createTraceHelper($html, $pos)
         {
 
-            $length = 200;
+            $length = 10;
 
             if($pos > $length){
 
@@ -331,39 +465,16 @@ use H2P\TempFile;
 
         }
 
-        public function afterSurveyComplete()
+        private function validateMarker($response)
         {
 
-            //set settings
-            $settings = [];
+            $errors = [];
 
-            foreach($this->settings as $k => $setting){
-
-                $settings[$k] = $setting['current'];
-
-            }
-
-            //scandir and cleanup files
-
-            $this->cron();
-
-            $event      = $this->getEvent();
-            $surveyId   = $event->get('surveyId');
-            $responseId = $event->get('responseId');
-            $response   = $this->pluginManager->getAPI()->getResponse($surveyId, $responseId);
-
-            if($settings['Debug'] !== null){
-
-                CVarDumper::dump($response);
-
-            }
-
-            $workload = [];
-
-            $css = [];
-            $js = [];
+            $mandatory = ['showinresult', 'showinpdf', 'resulttemplate', 'pdftemplate', 'variables'];
 
             foreach ($response as $k => $v){
+
+                $keys = [];
 
                 if(strrpos(trim($k), 'pdfmarker') !== false){
 
@@ -373,11 +484,145 @@ use H2P\TempFile;
 
                     foreach($temp as $val){
 
-                        $p = $temp = array_map('trim', explode('=', $val));
+                        $p = array_map('trim', explode('=', $val));
 
-                        if($p[0] !== 'variables' && $p[0] !== 'externalcss' && $p[0] !== 'externaljs'){
+                        $keys[$p[0]] = $p[1];
 
-                            $t[$p[0]] = $p[1];
+
+                    }
+
+              
+
+                    //mandatory keys
+                    if(isset($keys['showinresult']) && isset($keys['showinpdf'])){
+
+                        if($keys['showinresult'] === 'false' && $keys['showinpdf'] === 'false'){
+
+                        //no problem
+
+                        }else{
+
+                            //check keys 
+                            $check = $this->checkKeysHelper($keys, ['resulttemplate', 'pdftemplate', 'variables'], $k);
+
+                            if($check !== false){
+
+                                $errors[] = $check;
+
+                            }
+
+                        }
+
+                    }else{
+
+                        $count = 0;
+
+                        if(isset($keys['showinresult'])){
+
+                            $showres = '';
+
+                        }else{
+
+                            $count++;
+
+                            $showres = "missing variable 'showinresult'";
+
+                        }
+
+                        if(isset($keys['showinpdf'])){
+
+                            $and = '';
+                            $showpdf = '';
+
+                        }else{
+
+                            $and = '';
+
+                            if($count === 1){
+
+                                $and = ' and ';
+                            }
+
+                            $showpdf = "missing variable 'showinpdf'";
+
+                        }
+
+                        $errors[] = ['error' => 'validation error', 'msg' => "markerquestion $k :  $showres$and$showpdf" ];
+
+                    }
+
+                }     
+
+            }
+
+            return $errors;
+
+        }
+
+        private function checkKeysHelper($input, $keys, $questionname)
+        {
+
+            $errortext = '';
+
+            foreach($keys as $key){
+
+                if(!isset($input[$key])){
+
+                    $and = '';
+
+                    if(strlen($errortext) > 0){
+
+                        $and = ' and ';
+
+                    }
+
+                    $msg = "markerquestion $questionname : missing variable '$key'";
+                    $errortext .= "$and$msg";
+
+                }
+
+            }
+
+            if(strlen($errortext) > 0){
+
+                return ['error' => 'validation error', 'msg' => $errortext ];
+
+            }else{
+
+                return false;
+
+            }
+
+        }
+
+        private function createWorkload($response)
+        {
+
+            $workload = [];
+
+            $css = [];
+            $js = [];
+
+            $baseurl = [];
+
+            foreach ($response as $k => $v){
+
+                if(strrpos(trim($k), 'pdfmarker') !== false){
+
+                    $t = [];
+
+                    $v = preg_replace('/\s+/', '', $v);
+                    $v = preg_replace('~\x{00a0}~','',$v);
+
+                    $temp = array_map('trim', explode('|', $v));
+
+                    foreach($temp as $val){
+
+                        $p = array_map('trim', explode('=', $val));
+
+                        if($p[0] !== 'variables' && $p[0] !== 'externalcss' && $p[0] !== 'externaljs'  && $p[0] !== 'baseurl'){
+
+                            $t[trim($p[0])] = trim($p[1]);
 
                         }else if($p[0] === 'variables'){
 
@@ -389,13 +634,27 @@ use H2P\TempFile;
 
                                 if (strlen($varv) > 0){
 
-                                    $varray[$varv] = $response[$varv];
+                                    if(isset($response[$varv])){
+
+                                        $val = $response[$varv];
+
+                                    }else{
+
+                                        $val = '';
+
+                                    }
+
+                                    $varray[$varv] = $val;
 
                                 }        
                             
                             }       
 
                             $t[$p[0]] = $varray;
+
+                        }else if($p[0] === 'baseurl'){
+
+                            $baseurl = ['name' => $p[1], 'url' => "http://$_SERVER[HTTP_HOST]"];
 
                         }else{
                         //externaljs and external css
@@ -429,67 +688,142 @@ use H2P\TempFile;
          
             }
 
-         
-            $microtime = (string)(number_format((microtime(true) * 1000),0, '.', ''));
-            $pdfname = $microtime . '.pdf';
-            $downloadpath = $settings['PdfGenerator_Download_Folder'];
+            if(count($baseurl) > 0){
 
-            $c = $this->createCharts($workload);
+                foreach($workload as $key=>$val){
 
-            $pdfall = '';
+                    if (isset($val['variables'])){
 
-            foreach($c['pdf'] as $pv){
+                        $workload[$key]['variables'][$baseurl['name']] = $baseurl['url'];
 
-                $pdfall .= $pv;
-
-            }
-
-            $resp = $event->getContent($this);
-
-            try{
- 
-                $converter = new PhantomJS(['search_paths' => $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_phantomjs_Path']]);
-           
-                $input = new TempFile($pdfall, 'html');
-
-                $converter->convert($input, $_SERVER['DOCUMENT_ROOT'].'/download/'.$pdfname);
-
-                $link = "http://$_SERVER[HTTP_HOST]/$downloadpath/$pdfname";
-
-                $resp->addContent("<p>You can download your results <a href='$link'>here</a> </p>");
-
-
-            }catch (Exception $e){
-
-                if($settings['Debug'] !== null){
-
-                    CVarDumper::dump(['error' => $e, 'message' => $e->getMessage()]);
+                    }
 
                 }
 
-                //$res = $event->getContent($this)
-                $resp->addContent("An error occurred creating a pdf.");
 
             }
+
+            return $workload;
+
+        }
+
+        public function afterSurveyComplete()
+        {
+
+            //set settings
+            $settings = [];
+
+            foreach($this->settings as $k => $setting){
+
+                $settings[$k] = $setting['current'];
+
+            }
+
+            //scandir and cleanup files
+
+            $this->cron();
+
+            $event      = $this->getEvent();
+            $surveyId   = $event->get('surveyId');
+            $responseId = $event->get('responseId');
+            $response   = $this->pluginManager->getAPI()->getResponse($surveyId, $responseId);
 
             if($settings['Debug'] !== null){
 
-                foreach($c['parseerrors'] as $err){
-                        
-                    $er = $err['error'];
-                    $tra = $err['trace'];
-                    $templ = $err['template'];
-
-                    $resp->addContent("<h4>Parse-error</h4><p>Error: $er</p><p>Trace: $tra</p><p>Template: $templ</p>");
-
-                }
+                CVarDumper::dump($response);
 
             }
 
+            //validate inut
 
-            foreach($c['res'] as $attach){
+            $validationerrors = $this->validateMarker($response);
 
-                $resp->addContent($attach);
+            if(count($validationerrors) === 0){
+
+                $workload = $this->createWorkload($response);
+
+             
+                $microtime = (string)(number_format((microtime(true) * 1000),0, '.', ''));
+                $pdfname = $microtime . '.pdf';
+                $downloadpath = $settings['PdfGenerator_Download_Folder'];
+
+                $c = $this->parseTemplates($workload, $response);
+
+                $pdfall = '';
+
+                foreach($c['pdf'] as $pv){
+
+                    $pdfall .= $pv;
+
+                }
+
+                $resp = $event->getContent($this);
+
+                if(strlen($pdfall) > 0){
+
+                    try{
+         
+                        $converter = new PhantomJS(['search_paths' => $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_phantomjs_Path']]);
+                   
+                        $input = new TempFile($pdfall, 'html');
+
+                        $converter->convert($input, $_SERVER['DOCUMENT_ROOT'].'/download/'.$pdfname);
+
+                        $link = "http://$_SERVER[HTTP_HOST]/$downloadpath/$pdfname";
+
+                        $resp->addContent("<p>You can download your results <a href='$link'>here</a> </p>");
+
+
+                    }catch (Exception $e){
+
+                        if($settings['Debug'] !== null){
+
+                            CVarDumper::dump(['error' => $e, 'message' => $e->getMessage()]);
+
+                        }
+
+                        //$res = $event->getContent($this)
+                        $resp->addContent("An error occurred creating a pdf.");
+
+                    }
+
+                }
+
+                if($settings['Debug'] !== null){
+
+                    foreach($c['parseerrors'] as $err){
+                            
+                        $er = $err['error'];
+                        $tra = $err['trace'];
+                        $templ = $err['template'];
+
+                        $resp->addContent("<h4>Parse-error</h4><p>Error: $er</p><p>Trace: $tra</p><p>Template: $templ</p>");
+
+                    }
+
+                }
+
+
+                foreach($c['res'] as $attach){
+
+                    $resp->addContent($attach);
+
+                }
+
+
+            }else{
+
+                $resp = $event->getContent($this);
+
+                foreach($validationerrors as $error){
+
+                    $errortitle = $error['error'];
+                    $errortext = $error['msg'];
+                    $tmpl = $error['template'];
+
+                    $resp->addContent("<h4>$errortitle</h4><p>$errortext</p><p>template: $tmpl</p>");
+
+                }
 
             }
            

@@ -79,89 +79,36 @@ Debug: If this is set to true, you'll see the response of your query dumped in t
 
 ### Survey specific configuration: markerquestions
 
-#### By (simple) example
+The recommended usage is to create one markerquestion at the end of the survey. The markerquestion should look like this:
 
-Note: I apologize for the example, just a lack of inspiration ...
-
-##### Single Questions
-
-Suppose you have three questions:
-
-1: Question code: likesicecream,    Question: How much do you like icecream? 0 = not at all, 5 = yes very much, Question type: 5 point choice,  Mandatory: Off
-
-2: Question code: likescheese,    Question: How much do you like cheese? 0 = not at all, 5 = yes very much, Question type: 5 point choice,   Mandatory: Off
-
-3: Question code: likesveggies,    Question: How much do you like veggies? 0 = not at all, 5 = yes very much, Question type: 5 point choice,   Mandatory: Off
-
-If you want to create output based on the answers to these questions (output can be a chart or just an overview with questions and answers), you'll have to create a hidden 'Equation' question type question after the above questions (you could group all this marker questions at the end of your survey or each marker question after the questions it is based on, the choice is yours, it just has to be after these questions).
-IMPORANT: You have to prepend the name (code field) of this markerfile with 'pdfmarker'. I recommend to just name them 'pdfmarker1', 'pdfmarker2' etc.
-
-Because in the questions I have set 'Mandatory' to 'Off', a 'No answer'-option is shown in the 5 point choice question. The 'No answer'-option corresponds to a value of 6. Suppose I don't want to show a chart if in one or all of the question the 'No answer'-option is selected. The I can create a markerquestion, I call it 'pdfmarker1' after those questions (In production: Always hide this question: yes), and put this code in the question field (not in html mode!):
-
-``` {if ((!is_empty(likesicecream) and likesicecream != 6) and (!is_empty(likescheese) and likescheese != 6) and (!is_empty(likesveggies) and likesveggies != 6), 'showinresult=true| showinpdf=true|resulttemplate=d3simplepie.html| pdftemplate=d3simplepie.html|variables=likesicecream,likescheese,likesveggies' , 'showinresult=false|showinpdf=false')}```
-
-This code checks if none of the answers is 6. If one of the answers is 6 (or is not set) the expression evaluates to a string: 
-
-'showinresult=false|showinpdf=false' 
-
-If none of the answers is 6 the expression evaluates to another string: 
-
-'showinresult=true| showinpdf=true|resulttemplate=d3simplepie.html| pdftemplate=d3simplepie.html|variables=likesicecream,likescheese,likesveggies'
-
-The showinresult and showinpdf keys are mandatory. If the key showinresult is set to true, the keys resulttemplate and variables are mandatory, and if the key showinpdf is set to true, the keys pdftemplate and variables are mandatory.
-
-The reason why you can set different templates for the resultpage and the pdf (they can be set to the same just point to the same template) is that the same template might render differently in the pdf compared to the resultpage rendering. This way you can tweak templates to look the same.
-
-The structure of the string you have to create is as follows:
-
-The string has to be in quotes.
-The string contains key-value pairs separated by a vertical bar ('key=value | otherkey=othervalue'). The variables property has a comma separated value ('variables=var1, var2, var3, var4').
-
-The variable names correspond to question codes.
-
-If you pass in a variable named 'myspecialvariable', the value of this variable will be parsed in your template where you put in '{!-myspecialvariable-!}'.
-
-##### Array Questions
-
-Suppose you create a Array (5 point choice) question. Let's call it 'foodpreferences' (this is the code), With question-text: 'State how much you like the following: 0 = not very much, 5 = I love it!'.
-
-This question has 3 subquestion: 
-
-1: Code: (default: SQ001, but let's change it to 'Icecream' to make it more descriptive),  Subquestion: Icecream
-
-2: Code: (default: SQ002, but let's change it to 'Cheese' to make it more descriptive),  Subquestion: Cheese
-
-2: Code: (default: SQ003, but let's change it to 'Veggies' to make it more descriptive),  Subquestion: Veggies
-
-Again, create a hidden 'Equation' question type marker-question after the above array question.
-
-subquestions are addressed like: questioncode<underscore>subquestioncode. So: foodpreferences_Icecream etc. in this example.
+```{'showinresult=true| showinpdf=true|resulttemplate=resultpagehandler.html| pdftemplate=pdfhandler.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11 | parseasobject=true | baseurl=sitebaseurl'}´´´
 
 
-``` {if (foodpreferences_Icecream != '' and foodpreferences_Cheese != '' and foodpreferences_Veggies != '', 'showinresult=true| showinpdf=true|resulttemplate=d3simplepiearrayquestion.html| pdftemplate=d3simplepiearrayquestionpdf.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies' , 'showinresult=false|showinpdf=false')}```
+Parameters explained:
+
+- showinresult: Mandatory. This will be added to the resultpage when set to true.
+- showinpdf: Mandatory. This will create a pdf and will print a downloadlink on the resultpage.
+- pdftemplate: Mandatory. Set empty (pdftemplate=) when not needed. Must be placed in 
+- resulttemplate: Mandatory. Set empty (resulttemplate=) when not needed
+- variables. Mandatory. Comma separated variable names (question codes).
+
+- parseasobject.: Optional. When set to true, you don't have pass all subquestion variables. For example: You can pass q1 as variable and q1_SQ01 gets parsed as a javascript object: { SQ01 : 'value'}. Also subsub question are parsed: q1_SQ01_SQ01 gets parsed as: { SQ01: {SQ01: 'value'} }.
+- baseurl. Optional. baseurl=sitebaseurl can be used in a template as: {!-sitebaseurl-!} (you specify the name of the variable as the value). This can be used to create a link to css or js. Start with '/'.
+
+NOTE: every string with 'http' in it will be parsed without quotes.
 
 
-Why is this code different from the previous? Because I am working in debug mode and I noticed this array 5 point question returns an empty string for the no answer option and not '6' as in the previous example. I now decide to not show a chart when either of the subquestions has no answer. I could also decide to use them anyway and transform an empty string in javascript. For example: var myvar = {!-myvar-!}; if(myvar === ''){ myvar = 0 }else{myvar = parseInt(myvar)}; (Or use a ternary).
+If you create one markerquestion at the end you can set javascript variables and use that variable to do things.
 
-Anyway, I am passing the values of the subquestions in the string and I am passing the variable names. Also I pass template names. Now you can parse the variable values into you template. The values in the templates should be {!-foodpreferences_Icecream-!}, {!-foodpreferences_Cheese-!} and {!-foodpreferences_Veggies-!}.
+IMPORTANT: limesurvey tries to parse strings enclosed in curly brackets when there are no spaces directly after the opening and before the closing curly bracket in the result page. This wil affect your javascript. The workaround is to always have a space after the opening and before the closing bracket. So: var myObject = { key: value } (note the spaces);
 
-Just to test I'll try to parse empty strings in a template. I'll just use this example and replace and by or, which means at least one value should not be an empty string:
-
-
-``` {if (foodpreferences_Icecream != '' or foodpreferences_Cheese != '' or foodpreferences_Veggies != '', 'showinresult=true| showinpdf=true|resulttemplate=d3simplepiearrayquestion.html| pdftemplate=d3simplepiearrayquestionpdf.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies' , 'showinresult=false|showinpdf=false')}```
+You can set different templates for the resultpage and for the pdfpage. This is because you may need to tweak your html and css to make your pdf look nice. Another reason is that limesurvey (2.5) has JQuery and Bootstrap allready loaded. Now you can only load these libraries in your pdf template only.
 
 
-The plugin makes sure empty strings are parsed as '' in your template. This seemst to work fine. There is one catch though: If you put it directly in your html it is parsed as ''. So if you expect empty values, you should use javascript to populate html with your variables.
 
-##### Conditional javascript and css loading
+#### Example
 
-If you want your external stylesheets and external javascript libraries not to be loaded multiple times you can omit your external references from your templates and add the properties externaljs and externalcss to your markerquestions. To borrow from the previous example:
 
-``` {if (foodpreferences_Icecream != '' or foodpreferences_Cheese != '' or foodpreferences_Veggies != '', 'showinresult=true| showinpdf=true|resulttemplate=d3simplepiearrayquestion.html| pdftemplate=d3simplepiearrayquestionpdf.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies | externaljs=https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js, http://dimplejs.org/dist/dimple.v2.2.0.min.js | externalcss=css/style.css' , 'showinresult=false|showinpdf=false')}```
-
-This works the same as variables, the paths are comma separated. This css and javascript gets loaded before all your templates. Only unique urls are loaded so you can attach a url over and over again in different markerquestions, it only gets loaded once. Obviously it must be exactly the same, it doesn't filter out d3.js and d3.min.js as doubles for example.
-
-Note: If your external css or javascript does not have 'http' in the url, it automatically get pointed at the sites base url. So css/style.css points to: http://yoursite.com/css/style.css. For devs: It's just "http://$_SERVER[HTTP_HOST]/" in php. 
 
 ### Templates
 
@@ -174,45 +121,15 @@ For instance:
 var question1 = {!-question1-!};
 var question2 = {!-question2-!};
 
-Beware: There must be a value because otherwise it will result in an error (Uncaught SyntaxError: Unexpected token }). 
-Also beware that some values may be passed as string while you actually need an integer (so use var question1 = parseInt({!-question1-!}); in that case).
 
-You shouldn't create a full webpage because multiple html, body and head tags shouldn't exist on the same page. I tested phantomJS and it seems to work fine without these tags. You can do the following:
-
-```
-<div>
-<style type="text/css" scoped>
-/*some css*/
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-<script>
-/*some inline script*/
-</script>
-<section>
- <!--some html-->
-</section>
-<div>
-```
-!!! VERY IMPORTANT !!! If you are using multiple templates, beware of using the same id's and classes in those templates. This can mess it up. I suggest you append all your variables, id's and classes with a number.
 
 ##### Reusing templates
 
-You can also create reusable scripts. This can be done by creating a function and calling it later by passing in configuration and data parameters. Suppose I create a template like this (let's call it d3pieReusable.html:
+You can also create reusable scripts. This can be done by creating a function and calling it later by passing in configuration and data parameters. Suppose I create a template like this (let's call it chartfactory.js and put it in your yoursite/scripts/custom):
 
 ```
-<div>
-  <style type="text/css" scoped>
-  .arc text {
-    font: 10px sans-serif;
-    text-anchor: middle;
-  }
-  .arc path {
-    stroke: #fff;
-  }
-  </style>
-  <script>
-
-  var createPie = function(dataset, config, domelementid){
+var chartfactory = {};
+  chartfactory.createPie = function(dataset, domelementid){
     //dataset should look like this
     /*var dataset = [
         { label: 'text', value: 15 }, 
@@ -228,7 +145,7 @@ You can also create reusable scripts. This can be done by creating a function an
 
       var color = d3.scale.category20b();
 
-      var svg = d3.select('#domelementid')
+      var svg = d3.select('#'+domelementid)
         .append('svg')
         .attr('width', config.width)
         .attr('height', config.height)
@@ -254,25 +171,137 @@ You can also create reusable scripts. This can be done by creating a function an
 
   }
 
-  </script>
-</div>
+ 
 
 
 ```
 
-No you can create a hidden markerquestion at the beginning of your survey, passing keys and empty parameters except the template parameter:
+
+After that you can create a markerfile which loads and uses this javascript file:
+
+Markerfile
+
+``` {'showinresult=true| showinpdf=true |resulttemplate=demo/resultscreen.html | pdftemplate=demo/pdf.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,pdf |parseasobject=true|baseurl=baseurl'}```
 
 
+Templates:
 
-``` {'showinresult=true| showinpdf=true|resulttemplate=d3pieReusable.html| pdftemplate=d3pieReusable.html|variables= | externaljs=https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js' , 'showinresult=false|showinpdf=false'}```
+demo/resultscreen.html:
 
-markerquestion4
+``` 
+<div>
+    <link rel='stylesheet' href='{!-baseurl-!}/styles-public/custom/demo.css'>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script src="{!-baseurl-!}/scripts/custom/chartfactory.js"></script>
+    <h1>Created as reusable</h1>
+    
+    <div class='row'>
+        <div class='col-md-4'>
+            <div id='reusable1' class='piechart'>
+                
+            </div>
+        </div>
+        <div class='col-md-4'>
+            
+        </div>
+        <div class='col-md-4'>
+            
+        </div>
+    </div>
+    <script>
 
-``` {if (foodpreferences_Icecream != '' or foodpreferences_Cheese != '' or foodpreferences_Veggies != '', 'showinresult=true| showinpdf=true|resulttemplate=callreusable.html| pdftemplate=callreusable.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies' , 'showinresult=false|showinpdf=false')} ```
+    var q1 = {!-q1-!};
+    var q2 = {!-q2-!};
+    var q3 = {!-q3-!};
+    var q4 = {!-q4-!};
+    var q5 = {!-q5-!};
+    var q6 = {!-q6-!};
+    var q7 = {!-q7-!};
+    var q8 = {!-q8-!};
+    var q9 = {!-q9-!};
+    var q10 = {!-q10-!};
+    var q11 = {!-q11-!};
 
-callreusable.html
+    var piedata = [];
+    
 
-``` {if (foodpreferences_Icecream != '' or foodpreferences_Cheese != '' or foodpreferences_Veggies != '', 'showinresult=true| showinpdf=true|resulttemplate=callreusable.html| pdftemplate=callreusable.html|variables=foodpreferences_Icecream,foodpreferences_Cheese,foodpreferences_Veggies' , 'showinresult=false|showinpdf=false')} ```
+    for (var key in q7) {
+
+        if(q7[key] === ''){
+
+            q7[key] = 0;
+        }
+
+        piedata.push({ label: key, value: parseInt(q7[key]) });
+
+    }
+
+    chartfactory.createPie(piedata, 'reusable1');
+
+    </script>
+</div>```
+
+
+demo/pdf.html (the same but loading bootstrap because it's not in the resultpage):
+
+```
+<div>
+    <link rel='stylesheet' href='{!-baseurl-!}/styles-public/custom/demo.css'>
+    <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script src="{!-baseurl-!}/scripts/custom/chartfactory.js"></script>
+    <h1>Created as reusable</h1>
+    
+    <div class='row'>
+        <div class='col-md-4'>
+            <div id='reusable1' class='piechart'>
+                
+            </div>
+        </div>
+        <div class='col-md-4'>
+            
+        </div>
+        <div class='col-md-4'>
+            
+        </div>
+    </div>
+    <script>
+
+    var q1 = {!-q1-!};
+    var q2 = {!-q2-!};
+    var q3 = {!-q3-!};
+    var q4 = {!-q4-!};
+    var q5 = {!-q5-!};
+    var q6 = {!-q6-!};
+    var q7 = {!-q7-!};
+    var q8 = {!-q8-!};
+    var q9 = {!-q9-!};
+    var q10 = {!-q10-!};
+    var q11 = {!-q11-!};
+
+    var piedata = [];
+    
+
+    for (var key in q7) {
+
+        if(q7[key] === ''){
+
+            q7[key] = 0;
+        }
+
+        piedata.push({ label: key, value: parseInt(q7[key]) });
+
+    }
+
+    chartfactory.createPie(piedata, 'reusable1');
+
+    </script>
+</div>```
+
+```
+
 
 
 # Quirks:
@@ -281,3 +310,7 @@ callreusable.html
 
 -Appended html in the response page seems to be appended in a table. However, it seems you can use bootstrap nevertheless.
 
+
+
+
+{
