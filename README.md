@@ -171,9 +171,6 @@ var chartfactory = {};
 
   }
 
- 
-
-
 ```
 
 
@@ -239,10 +236,13 @@ demo/resultscreen.html:
     chartfactory.createPie(piedata, 'reusable1');
 
     </script>
-</div>```
+</div>
+
+```
 
 
 demo/pdf.html (the same but loading bootstrap because it's not in the resultpage):
+
 
 ```
 <div>
