@@ -2,6 +2,11 @@
 
 A flexible limesurvey pdfcreator
 
+todo: find solution for comment question
+uppdate readme
+finish example
+get questions in resultset
+
 # Overview
 
 This is a limesurvey plugin to create a downloadable pdf after a respondent completes a survey and show this content in the completed page. 
@@ -313,4 +318,3 @@ demo/pdf.html (the same but loading bootstrap because it's not in the resultpage
 
 
 
-{
