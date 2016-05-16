@@ -86,18 +86,18 @@ Debug: If this is set to true, you'll see the response of your query dumped in t
 
 The recommended usage is to create one markerquestion at the end of the survey. The markerquestion should look like this:
 
-```{'showinresult=true| showinpdf=true|resulttemplate=resultpagehandler.html| pdftemplate=pdfhandler.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11 | parseasobject=true | baseurl=sitebaseurl'}´´´
+```{'showinresult=true| createpdf=true|resulttemplate=resultpagehandler.html| pdftemplate=pdfhandler.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11 | parsenested=true | baseurl=sitebaseurl'}´´´
 
 
 Parameters explained:
 
 - showinresult: Mandatory. This will be added to the resultpage when set to true.
-- showinpdf: Mandatory. This will create a pdf and will print a downloadlink on the resultpage.
+- createpdf: Mandatory. This will create a pdf and will print a downloadlink on the resultpage.
 - pdftemplate: Mandatory. Set empty (pdftemplate=) when not needed. Must be placed in 
 - resulttemplate: Mandatory. Set empty (resulttemplate=) when not needed
 - variables. Mandatory. Comma separated variable names (question codes).
 
-- parseasobject.: Optional. When set to true, you don't have pass all subquestion variables. For example: You can pass q1 as variable and q1_SQ01 gets parsed as a javascript object: { SQ01 : 'value'}. Also subsub question are parsed: q1_SQ01_SQ01 gets parsed as: { SQ01: {SQ01: 'value'} }.
+- parsenested.: Optional (recommended). When set to true, you don't have pass all subquestion variables. For example: You can pass q1 as variable and q1_SQ01 gets parsed as a json object.
 - baseurl. Optional. baseurl=sitebaseurl can be used in a template as: {!-sitebaseurl-!} (you specify the name of the variable as the value). This can be used to create a link to css or js. Start with '/'.
 
 NOTE: every string with 'http' in it will be parsed without quotes.
@@ -109,6 +109,15 @@ IMPORTANT: limesurvey tries to parse strings enclosed in curly brackets when the
 
 You can set different templates for the resultpage and for the pdfpage. This is because you may need to tweak your html and css to make your pdf look nice. Another reason is that limesurvey (2.5) has JQuery and Bootstrap allready loaded. Now you can only load these libraries in your pdf template only.
 
+
+
+You can also configure the pdf. This is also done by a markerquestion. This question has to contain the string 'pdfconfig'.
+
+Example:
+
+```{'footerheight=2cm|footercontent={ { pageNum } } / { { totalPages } }|orientation=landscape|border=2cm|footercontenttag=h1|footercontentid=footerid'}´´´
+
+Explanation: It's just as explained in https://github.com/kriansa/h2p, but the only difference is you have to pass footercontent and footerheight and headercontent and headerheight because it is a nested array. You can also pass footercontenttag and footercontentid to style. The text will be wrapped in a tag you provide with the id you provide. Mind the spaces between the brackets. 
 
 
 #### Example

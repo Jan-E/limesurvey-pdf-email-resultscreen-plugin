@@ -3,6 +3,7 @@ require $_SERVER['DOCUMENT_ROOT']. '/vendor/autoload.php';
 
 use H2P\Converter\PhantomJS;
 use H2P\TempFile;
+//use SurveyDynamic;
 
     class PdfGenerator extends \ls\pluginmanager\PluginBase {
 
@@ -34,8 +35,7 @@ use H2P\TempFile;
         );
 
         public function __construct(PluginManager $manager=null, $id=null) {
-
-            
+     
             parent::__construct($manager, $id);
             $this->subscribe('afterSurveyComplete');
             $this->subscribe('cron');
@@ -83,517 +83,407 @@ use H2P\TempFile;
 
         }
 
+      
 
-        private function parseTemplates($workload, $response)
+        public function afterSurveyComplete()
         {
 
+            //set settings
+            $settings = [];
+
+            foreach($this->settings as $k => $setting){
+
+                $settings[$k] = $setting['current'];
+
+            }
+
+            //scandir and cleanup files
+
+            $this->cron();
+
+            $event      = $this->getEvent();
+            $surveyId   = $event->get('surveyId');
+            $responseId = $event->get('responseId');
+
+            $pmanager   = $this->pluginManager->getAPI();
+            $response   = $pmanager->getResponse($surveyId, $responseId);
 
 
-            $res = [];
+            $validationerrors = $this->validateMarker($response);
 
-            $pdf = [];
 
-            $resultpage = [];
+            if(count($validationerrors) === 0){
 
-            $toprepend = '';
 
-            $parseerrors = [];
+                $workload = $this->createWorkload($response);
 
+                require __DIR__. '/getAnswersAndQuestions.php';
+
+                $aaq = new getAnswersAndQuestions();
+
+                $data = $aaq->getResponse($surveyId);
+             
+                $microtime = (string)(number_format((microtime(true) * 1000),0, '.', ''));
+                $pdfname = $microtime . '.pdf';
+                $downloadpath = $settings['PdfGenerator_Download_Folder'];
+
+                $c = $this->parseTemplates($workload, $data);
+
+                $pdfall = '';
+
+                foreach($c['pdf'] as $pv){
+
+                    $pdfall .= $pv;
+
+                }
+
+                $resp = $event->getContent($this);
+
+                if(strlen($pdfall) > 0){
+
+                    //first get config
+                    
+                    $configpdf = $this->getPdfConfig($response);
+
+                    try{
+
+       
+                        $params = array_merge(['search_paths' => $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_phantomjs_Path'] ], $configpdf);
+         
+                        $converter = new PhantomJS($params);
+                   
+                        $input = new TempFile($pdfall, 'html');
+
+                        $converter->convert($input, $_SERVER['DOCUMENT_ROOT'].'/download/'.$pdfname);
+
+                        $link = "http://$_SERVER[HTTP_HOST]/$downloadpath/$pdfname";
+
+                        $resp->addContent("<p>You can download your results <a href='$link'>here</a> </p>");
+
+
+                    }catch (Exception $e){
+
+                        if($settings['Debug'] !== null){
+
+                            CVarDumper::dump(['error' => $e, 'message' => $e->getMessage()]);
+
+                        }
+
+                        $resp->addContent("An error occurred creating a pdf.");
+
+                    }
+
+                }
+
+                if($settings['Debug'] !== null){
+
+                    foreach($c['parseerrors'] as $err){
+                            
+                        $er = $err['error'];
+                        $tra = $err['trace'];
+                        $templ = $err['template'];
+
+                        $resp->addContent("<h4>Parse-error</h4><p>Error: $er</p><p>Trace: $tra</p><p>Template: $templ</p>");
+
+                    }
+
+                }
+
+
+                foreach($c['res'] as $attach){
+
+                    $resp->addContent($attach);
+
+                }
+
+            }else{
+
+                $resp = $event->getContent($this);
+
+                foreach($validationerrors as $error){
+
+                    $errortitle = $error['error'];
+                    $errortext = $error['msg'];
+                    $tmpl = $error['template'];
+
+                    $resp->addContent("<h4>$errortitle</h4><p>$errortext</p><p>template: $tmpl</p>");
+
+                }
+
+            }
+           
+        }
+
+
+        private function parseTemplates($workload, $data)
+        {
+
+            $baseurl = "http://$_SERVER[HTTP_HOST]/";
 
             foreach ($workload as $k => $v){
 
-            
-                if(isset($v['externals'])){
-
-                    $burl = $link = "http://$_SERVER[HTTP_HOST]/";
-
-                    //create externals html
-                    $css = '';
-                    $js = '';
-
-                    foreach($v['externals']['css'] as $href){
-
-                        $base = '';
-
-                        if(strpos($href, 'http') === false){
-
-                            $base = $burl;
-
-                        }
-
-                        $css .= "<link rel='stylesheet' type='text/css' href='$base$href'>";
-
-                    }
-
-                    foreach($v['externals']['js'] as $href){
-
-                        $base = '';
-
-                        if(strpos($href, 'http') === false){
-
-                            $base = $burl;
-                  
-                        }
-
-                        $js .= "<script src='$base$href'></script>";
-
-                    }
-
-                    $toprepend = "<div>$css$js<div>";
-
-
-                }else if($v['showinresult'] === 'false' && $v['showinpdf'] === 'false'){
+                if(isset($v) && isset($v['showinresult']) && isset($v['createpdf']) && $v['showinresult'] === 'false' && $v['createpdf']=== 'false'){
 
                     continue;
 
                 }else{
 
-                    if ($v['showinresult'] === 'true'){
+                    if(isset($v['parsenested']) && trim($v['parsenested']) === 'true'){
+
+                        $variables = $data['nested'];
+
+                    }else{
+
+                        $variables = $data['bykey'];
+
+                    }
+
+                    $variables['baseurl'] = $baseurl;
+
+                    if (isset($v['showinresult']) && $v['showinresult'] === 'true'){
 
                         $reshtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].'/plugins/PdfGenerator/templates/'.$v['resulttemplate']);
 
                         $reshtml = html_entity_decode($reshtml);
 
-                        $searcharr = [];
-                        $replarr = [];
-
-                        if(isset($v['parseasobject']) && trim($v['parseasobject']) === 'true'){
-    
-                            $variables = $this->parseAsObjects($v['variables'], $response);
-
-                        }else{
-
-
-                            $variables = $v['variables'];
-
-                        }
-
-                        foreach($variables as  $vark => $varv){
-
-                            $vark = trim($vark);
-
-                            $searcharr[] = "{!-$vark-!}";
-
-                            if(trim($varv) === ''){
-
-                                $rvar = "''";
-
-                            }else{
-
-                                $varv = trim($varv);
-
-                                if($varv[0] === '{' && $varv[strlen($varv)-1] === '}'){
-
-                                    $rvar = $varv;
-
-                                }else if(strpos($varv, 'http') !== false){
-                                    //links no quotes
-                                    $rvar = $varv;
-
-                                }else{
-
-                                    $rvar = "'".$varv."'";
-
-                                }
-                                
-                            }
-
-                            $replarr[] = $rvar;
-
-                        }
-
-
-                        $reshtml = str_replace($searcharr, $replarr, $reshtml);
-
-                        $perr = $this->parseErrorHelper($reshtml, $v['pdftemplate']);
-
-                        if(count($perr) > 0){
-
-                            $parseerrors[] = $perr;
-
-                        }
+                        $reshtml = $this->replaceHelper($variables, $reshtml);
 
                         $res[] = $reshtml;
 
+
                     }
 
-
-                    if ($v['showinpdf'] === 'true'){
+                    if (isset($v) && isset($v['createpdf']) && $v['createpdf'] === 'true'){
 
                         $pdfhtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].'/plugins/PdfGenerator/templates/'.$v['pdftemplate']);
 
                         $pdfhtml = html_entity_decode($pdfhtml);
 
-                        $searcharr = [];
-                        $replarr = [];
+                        $pdfhtml = $this->replaceHelper($variables, $pdfhtml);
 
-                        foreach($v['variables'] as  $vark => $varv){
-
-                            $vark = trim($vark);
-
-                            $searcharr[] = "{!-$vark-!}";
-
-                            if(trim($varv) === ''){
-
-                                $rvar = "''";
-
-                            }else{
-
-                                $rvar = trim($varv);
-
-                            }
-
-                            $replarr[] = $rvar;
-
-                        }
-
-                        $pdfhtml = str_replace($searcharr, $replarr, $pdfhtml);
-
-                        $perr = $this->parseErrorHelper($pdfhtml, $v['pdftemplate']);
-
-                        if(count($perr) > 0){
-
-                            $parseerrors[] =  $perr;
-
-                        }
-                        
                         $pdf[] = $pdfhtml;
 
                     }
 
                 }
-    
-            }
-
-         
-
-            if(count($pdf) > 0){
-
-                if(strlen($toprepend) > 0){
-
-                    array_unshift($pdf, $toprepend);
-
-                }
 
             }
 
-
-            if(count($res) > 0){
-
-                if(strlen($toprepend) > 0){
-
-                    array_unshift($res, $toprepend);
-              
-                }
-
-            }
+            $parseerrors = [];
 
             return ['pdf'=> $pdf, 'res'=> $res, 'parseerrors' => $parseerrors];
 
         }
 
-        private function parseAsObjects($variables, $response)
+        private function foolExpressionManager($string)
         {
 
-            $temp = [];
 
-            foreach ($response as $k => $v){
-
-                if(strpos($k, '_')!== false){
-
-                    $kv = explode('_', $k);
-
-                    if(array_key_exists($kv[0], $variables)){
-
-                        if(!isset($temp[$kv[0]])){
-
-
-                            $temp[$kv[0]] = [];
-
-                            if (count($kv) > 2) {
-                                //must be 3
-                                if(!isset($temp[$kv[0]][$kv[1]])){
-
-                                    $temp[$kv[0]][$kv[1]] = [];
-
-                                    $temp[$kv[0]][$kv[1]][$kv[2]] = $v;
-
-                                }else{
-
-                                    $temp[$kv[0]][$kv[1]][$kv[2]] = $v;
-
-
-                                }
-
-
-                            }else{
-
-                               $temp[$kv[0]][$kv[1]] = $v; 
-
-                            }
-                            
-
-                        }else{
-
-                            if (count($kv) > 2) {
-                                //must be 3
-                                if(!isset($temp[$kv[0]][$kv[1]])){
-
-                                    $temp[$kv[0]][$kv[1]] = [];
-
-                                    $temp[$kv[0]][$kv[1]][$kv[2]] = $v;
-
-                                }else{
-
-                                    $temp[$kv[0]][$kv[1]][$kv[2]] = $v;
-
-
-                                }
-
-
-                            }else{
-
-                               $temp[$kv[0]][$kv[1]] = $v; 
-                               
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-            foreach($temp as $k=>$v){
-
-                $string = '';
-
-                foreach($v as $key => $val){
-
-                  
-                    if(is_array($val)){
-
-                        foreach($val as $ke => $va){
-
-                            $parsedval = "{ $ke : '$va' }";
-
-                        }
-
-                    }else{
-
-                        $parsedval = "'$val'";
-                    }
-
-                    $string .= " $key : $parsedval ,";
-
-                }
-
-                $string = rtrim($string, ",");
-
-
-                $variables[$k] = "{ $string }";
-
-            }
-
-            return $variables;
+            return str_replace(['{', '}'], ['{ ', ' }'], $string);
 
         }
 
-        private function parseErrorHelper($html, $template)
+        private function replaceHelper($variables, $html)
         {
 
-            $err = [];
+            $searcharr = [];
 
-            $start = strpos($html, '{!-');
-            $end = strpos($html, '-!}');
+            $replarr = [];
 
-            $trace = '';
+            foreach($variables as  $vark => $varv){
 
-            if($start !== false){
+                
+           
+                $varv = $varv;
 
-                $trace = $this->createTraceHelper($html, $start);
+                $vark = trim($vark);
 
-                if($end === false){         
+                $searcharr[] = "{!-$vark-!}";
 
-                    $err = ['error' => 'found opening tag for placeholder without closing tag', 'trace' => $trace, 'template' => $template];
+                if(!is_array($varv) && trim($varv) === ''){
+
+                    $rvar = "''";
 
                 }else{
 
-                    $err = ['error' => 'found tags for a variable which was not passed', 'trace' => $trace, 'template' => $template];
-                }
+                    
 
+                    if(!is_array($varv) && strpos($varv, 'http') !== false){
+                        //links no quotes
+                        $rvar = trim($varv, '"');
+                        $rvar = trim($varv, "'");
 
-            }else if($end !== false){
+                    }else if(is_array($varv)){
 
-                $trace = $this->createTraceHelper($html, $end);
-
-                $err = ['error' => 'found closing tag for placeholder without start tag', 'trace' => $trace, 'template' => $template];  
-                            
-            }
-
-            return $err;
-
-        }
-
-        private function createTraceHelper($html, $pos)
-        {
-
-            $length = 10;
-
-            if($pos > $length){
-
-                $tracestart = $pos - $length;
-            
-            }else{
-
-                $tracestart = 0;
-
-            }
-
-            if(strlen($html) > $pos + $length){
-
-                $traceend = $pos + $length;
-
-            }else{
-
-                $traceend = strlen($html);
-
-            }
-
-            return '....'.substr($html, $tracestart, $traceend - $tracestart).'....';
-
-        }
-
-        private function validateMarker($response)
-        {
-
-            $errors = [];
-
-            $mandatory = ['showinresult', 'showinpdf', 'resulttemplate', 'pdftemplate', 'variables'];
-
-            foreach ($response as $k => $v){
-
-                $keys = [];
-
-                if(strrpos(trim($k), 'pdfmarker') !== false){
-
-                    $t = [];
-
-                    $temp = array_map('trim', explode('|', $v));
-
-                    foreach($temp as $val){
-
-                        $p = array_map('trim', explode('=', $val));
-
-                        $keys[$p[0]] = $p[1];
-
-
-                    }
-
-              
-
-                    //mandatory keys
-                    if(isset($keys['showinresult']) && isset($keys['showinpdf'])){
-
-                        if($keys['showinresult'] === 'false' && $keys['showinpdf'] === 'false'){
-
-                        //no problem
-
-                        }else{
-
-                            //check keys 
-                            $check = $this->checkKeysHelper($keys, ['resulttemplate', 'pdftemplate', 'variables'], $k);
-
-                            if($check !== false){
-
-                                $errors[] = $check;
-
-                            }
-
-                        }
+                        $rvar = json_encode($varv);
 
                     }else{
 
-                        $count = 0;
-
-                        if(isset($keys['showinresult'])){
-
-                            $showres = '';
-
-                        }else{
-
-                            $count++;
-
-                            $showres = "missing variable 'showinresult'";
-
-                        }
-
-                        if(isset($keys['showinpdf'])){
-
-                            $and = '';
-                            $showpdf = '';
-
-                        }else{
-
-                            $and = '';
-
-                            if($count === 1){
-
-                                $and = ' and ';
-                            }
-
-                            $showpdf = "missing variable 'showinpdf'";
-
-                        }
-
-                        $errors[] = ['error' => 'validation error', 'msg' => "markerquestion $k :  $showres$and$showpdf" ];
+                        $rvar = "'".$varv."'";
 
                     }
-
-                }     
-
-            }
-
-            return $errors;
-
-        }
-
-        private function checkKeysHelper($input, $keys, $questionname)
-        {
-
-            $errortext = '';
-
-            foreach($keys as $key){
-
-                if(!isset($input[$key])){
-
-                    $and = '';
-
-                    if(strlen($errortext) > 0){
-
-                        $and = ' and ';
-
-                    }
-
-                    $msg = "markerquestion $questionname : missing variable '$key'";
-                    $errortext .= "$and$msg";
-
+                    
                 }
 
-            }
-
-            if(strlen($errortext) > 0){
-
-                return ['error' => 'validation error', 'msg' => $errortext ];
-
-            }else{
-
-                return false;
+                $replarr[] = $rvar;
 
             }
+
+            $replarr = array_unique($replarr);
+
+            $replaced = str_replace($searcharr, $replarr, $html);
+
+            $replaced = $this->foolExpressionManager($replaced);
+            
+            return $replaced;
 
         }
+
+        private function getPdfConfig($response){
+
+            $config = [];
+
+            foreach ($response as $k => $v){
+
+                if(strrpos(trim($k), 'pdfconfig') !== false){
+
+                    $v= preg_replace('/\s+/', '', $v);
+                    $v = preg_replace('~\x{00a0}~','',$v);
+
+                    $varstemp = array_map('trim', explode('|', $v));
+
+                    $vars = [];
+
+                    foreach($varstemp as $v){
+
+                        $t = explode('=', $v);
+                        $vars[$t[0]] = $t[1];
+
+                    }
+
+                    if(isset($vars['headerheight'])){
+
+                        if(!isset($config['header'])){
+
+                            $config['header'] = [];
+                            $config['header']['height'] = $vars['headerheight'];
+
+                        }else{
+
+                            $config['header']['height'] = $vars['headerheight'];
+
+                        }
+
+                    }
+
+                    if(isset($vars['headercontent'])){
+
+                        if(!isset($config['header'])){
+
+                            $config['header'] = [];
+                            $config['header']['content'] = $vars['headercontent'];
+
+                        }else{
+
+                            $config['header']['content'] = $vars['headercontent'];
+
+                        }
+
+                    }
+
+                    if(isset($vars['footerheight'])){
+
+                        if(!isset($config['footer'])){
+
+                            $config['footer'] = [];
+                            $config['footer']['height'] = $vars['footerheight'];
+
+                        }else{
+
+                            $config['footer']['height'] = $vars['footerheight'];
+
+                        }
+
+                    }
+
+                    if(isset($vars['footercontent'])){
+
+                        if(!isset($config['footer'])){
+
+                            $config['footer'] = [];
+                            $config['footer']['content'] = $vars['footercontent'];
+
+                        }else{
+
+                            $config['footer']['content'] = $vars['footercontent'];
+
+                        }
+
+                    }
+
+                    foreach($vars as $k=>$v){
+
+
+                        if($k !== 'headerheight' && $k !== 'headercontent' && $k !== 'footerheight' && $k !== 'footercontent' &&
+                             $k !== 'headercontenttag' && $k !== 'headercontentid' && $k !== 'footercontenttag' && $k !== 'footercontentid'){
+
+                            $config[$k] = $v;
+
+                        }
+
+                    }
+
+                    if(isset($config['headercontent']) && isset($config['headercontenttag'])){
+
+                        $tag = $config['headercontenttag'];
+
+                        if(isset($config['headercontentid'])){
+
+                            $id = $config['headercontentid'];
+                            
+
+                            $config['headercontent'] = "<$tag id='$id'>". $config['headercontent']."</$tag>";
+
+                        }else{
+
+                            $config['headercontent'] = "<$tag>". $config['headercontent']."</$tag>";
+
+                        }
+
+
+                    }
+
+                    if(isset($config['footercontent']) && isset($config['footercontenttag'])){
+
+                        $tag = $config['footercontenttag'];
+
+                        if(isset($config['footercontentid'])){
+
+                            $id = $config['footercontentid'];
+                            
+
+                            $config['footercontent'] = "<$tag id='$id'>". $config['footercontent']."</$tag>";
+
+                        }else{
+
+                            $config['footercontent'] = "<$tag>". $config['footercontent']."</$tag>";
+
+                        }
+
+
+                    }
+
+                    break;
+
+                }
+       
+
+            }
+
+            return $config;
+
+        }
+
 
         private function createWorkload($response)
         {
@@ -611,8 +501,10 @@ use H2P\TempFile;
 
                     $t = [];
 
-                    $v = preg_replace('/\s+/', '', $v);
+                    $v= preg_replace('/\s+/', '', $v);
                     $v = preg_replace('~\x{00a0}~','',$v);
+
+                    $v = stripslashes($v);
 
                     $temp = array_map('trim', explode('|', $v));
 
@@ -650,24 +542,15 @@ use H2P\TempFile;
                             
                             }       
 
-                            $t[$p[0]] = $varray;
+                            $t[$p[0]] = $varray; 
 
                         }else if($p[0] === 'baseurl'){
 
                             $baseurl = ['name' => $p[1], 'url' => "http://$_SERVER[HTTP_HOST]"];
 
                         }else{
-                        //externaljs and external css
-
-                            if($p[0] === 'externalcss'){
-
-                                $css = array_merge($css, array_map('trim', explode(',', $p[1])) );
-
-                            }else{
-               
-                                $js =  array_merge($js, array_map('trim', explode(',', $p[1])) );
-
-                            }
+                       
+                            continue;
 
                         } 
 
@@ -679,14 +562,7 @@ use H2P\TempFile;
 
             }
 
-            $js = array_unique($js);
-            $css = array_unique($css);
-
-            if(count($js) !== 0 || count($css) !== 0){
-
-                array_unshift($workload, ['externals' => ['js' => $js, 'css' => $css]]  );
-         
-            }
+           
 
             if(count($baseurl) > 0){
 
@@ -707,126 +583,112 @@ use H2P\TempFile;
 
         }
 
-        public function afterSurveyComplete()
+
+
+
+
+
+        private function validateMarker($response)
         {
 
-            //set settings
-            $settings = [];
+            $errors = [];
 
-            foreach($this->settings as $k => $setting){
+            $mandatory = ['showinresult', 'createpdf', 'resulttemplate', 'pdftemplate', 'variables'];
 
-                $settings[$k] = $setting['current'];
+            foreach ($response as $k => $val){
 
-            }
+                if(isset($val['response'])){
 
-            //scandir and cleanup files
+                    $v = $val['response'];
 
-            $this->cron();
+                    $keys = [];
 
-            $event      = $this->getEvent();
-            $surveyId   = $event->get('surveyId');
-            $responseId = $event->get('responseId');
-            $response   = $this->pluginManager->getAPI()->getResponse($surveyId, $responseId);
+                    if(strrpos(trim($k), 'pdfmarker') !== false){
 
-            if($settings['Debug'] !== null){
+                        $t = [];
 
-                CVarDumper::dump($response);
+                        $temp = array_map('trim', explode('|', $v));
 
-            }
+                        foreach($temp as $val){
 
-            //validate inut
+                            $p = array_map('trim', explode('=', $val));
 
-            $validationerrors = $this->validateMarker($response);
-
-            if(count($validationerrors) === 0){
-
-                $workload = $this->createWorkload($response);
-
-             
-                $microtime = (string)(number_format((microtime(true) * 1000),0, '.', ''));
-                $pdfname = $microtime . '.pdf';
-                $downloadpath = $settings['PdfGenerator_Download_Folder'];
-
-                $c = $this->parseTemplates($workload, $response);
-
-                $pdfall = '';
-
-                foreach($c['pdf'] as $pv){
-
-                    $pdfall .= $pv;
-
-                }
-
-                $resp = $event->getContent($this);
-
-                if(strlen($pdfall) > 0){
-
-                    try{
-         
-                        $converter = new PhantomJS(['search_paths' => $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_phantomjs_Path']]);
-                   
-                        $input = new TempFile($pdfall, 'html');
-
-                        $converter->convert($input, $_SERVER['DOCUMENT_ROOT'].'/download/'.$pdfname);
-
-                        $link = "http://$_SERVER[HTTP_HOST]/$downloadpath/$pdfname";
-
-                        $resp->addContent("<p>You can download your results <a href='$link'>here</a> </p>");
-
-
-                    }catch (Exception $e){
-
-                        if($settings['Debug'] !== null){
-
-                            CVarDumper::dump(['error' => $e, 'message' => $e->getMessage()]);
+                            $keys[$p[0]] = $p[1];
 
                         }
 
-                        //$res = $event->getContent($this)
-                        $resp->addContent("An error occurred creating a pdf.");
+                  
+
+                        //mandatory keys
+                        if(isset($keys['showinresult']) && isset($keys['showinpdf'])){
+
+                            if($keys['showinresult'] === 'false' && $keys['showinpdf'] === 'false'){
+
+                            //no problem
+
+                            }else{
+
+                                //check keys 
+                                $check = $this->checkKeysHelper($keys, ['resulttemplate', 'pdftemplate', 'variables'], $k);
+
+                                if($check !== false){
+
+                                    $errors[] = $check;
+
+                                }
+
+                            }
+
+                        }else{
+
+                            $count = 0;
+
+                            if(isset($keys['showinresult'])){
+
+                                $showres = '';
+
+                            }else{
+
+                                $count++;
+
+                                $showres = "missing variable 'showinresult'";
+
+                            }
+
+                            if(isset($keys['showinpdf'])){
+
+                                $and = '';
+                                $showpdf = '';
+
+                            }else{
+
+                                $and = '';
+
+                                if($count === 1){
+
+                                    $and = ' and ';
+                                }
+
+                                $showpdf = "missing variable 'showinpdf'";
+
+                            }
+
+                            $errors[] = ['error' => 'validation error', 'msg' => "markerquestion $k :  $showres$and$showpdf" ];
+
+                        }
 
                     }
 
-                }
+                }else{
 
-                if($settings['Debug'] !== null){
+                    continue;
 
-                    foreach($c['parseerrors'] as $err){
-                            
-                        $er = $err['error'];
-                        $tra = $err['trace'];
-                        $templ = $err['template'];
-
-                        $resp->addContent("<h4>Parse-error</h4><p>Error: $er</p><p>Trace: $tra</p><p>Template: $templ</p>");
-
-                    }
-
-                }
-
-
-                foreach($c['res'] as $attach){
-
-                    $resp->addContent($attach);
-
-                }
-
-
-            }else{
-
-                $resp = $event->getContent($this);
-
-                foreach($validationerrors as $error){
-
-                    $errortitle = $error['error'];
-                    $errortext = $error['msg'];
-                    $tmpl = $error['template'];
-
-                    $resp->addContent("<h4>$errortitle</h4><p>$errortext</p><p>template: $tmpl</p>");
-
-                }
+                }     
 
             }
-           
+
+            return $errors;
+
         }
        
     }
