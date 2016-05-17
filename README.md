@@ -436,15 +436,13 @@ demo/resultscreen.html (does not need bootstrap and jquery because this is allre
 
     if(hasNotNull(bardata)){
 
-        chartfactory.createBarChart(piedata, 'reusable1', q7title);
+        chartfactory.createBarChart(bardata, 'reusable1', q7title);
 
     }else{
 
         appendNoData([{id: 'reusable1', title: q7title}]);
 
     }
-
-    chartfactory.createBarChart(bardata, 'reusable1', q7title);
 
     function appendNoData(input){
 
@@ -576,15 +574,13 @@ demo/pdf.html (the same but you can use body, html and head because it's a stand
 
         if(hasNotNull(bardata)){
 
-            chartfactory.createBarChart(piedata, 'reusable1', q7title);
+            chartfactory.createBarChart(bardata, 'reusable1', q7title);
 
         }else{
 
             appendNoData([{id: 'reusable1', title: q7title}]);
 
         }
-
-        chartfactory.createBarChart(bardata, 'reusable1', q7title);
 
         function appendNoData(input){
 
