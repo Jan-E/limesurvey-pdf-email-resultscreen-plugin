@@ -81,7 +81,9 @@ Debug: If this is set to true, you'll see the response of your query dumped in t
 
 The recommended usage is to create one markerquestion at the end of the survey. The markerquestion should look like this:
 
-```{'showinresult=true| createpdf=true|resulttemplate=resultpagehandler.html| pdftemplate=pdfhandler.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11 | parsenested=true'}´´´
+```
+{'showinresult=true| createpdf=true|resulttemplate=resultpagehandler.html| pdftemplate=pdfhandler.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11 | parsenested=true'}
+´´´
 
 
 Parameters explained:
@@ -113,7 +115,9 @@ You can also configure the pdf. This is also done by a markerquestion. This ques
 
 Example:
 
-```{'footerheight=2cm|footercontent={ { pageNum } } / { { totalPages } }|orientation=landscape|border=2cm|footercontenttag=h1|footercontentid=footerid'}´´´
+```
+{'footerheight=2cm|footercontent={ { pageNum } } / { { totalPages } }|orientation=landscape|border=2cm|footercontenttag=h1|footercontentid=footerid'}
+´´´
 
 Explanation: It's just as explained in https://github.com/kriansa/h2p, but the only difference is you have to pass footercontent and footerheight and headercontent and headerheight because it is a nested array. You can also pass headercontenttag,headercontentclass,footercontenttag and footercontentclass to style. The text will be wrapped in a tag you provide with the class you provide. Mind the spaces between the brackets.
 
@@ -132,11 +136,19 @@ var question1 = {!-question1-!};
 var question2 = {!-question2-!};
 ```
 
-Now you have your survey parameters available in your template. From here you can do your frontend magic. 
+Now you have your survey parameters available in your template. From here you can do your frontend magic. See Example below.
+
+# Debugging
+
+Always test your pdf template on the resultsreen first. If some external css or javascript is not found, phantomjs will propably fail without any meaningfull errors. In the resultscreen you can monitor those errors in your console. Set createpdf to false.
+
+# Quirks:
+
+-It's not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem.
 
 
 
-#### Example
+# Example
 
 There are many ways to make use of these variables. I will give an example. There may be better solutions (like using javacript classes etc).
 
@@ -599,13 +611,7 @@ demo/pdf.html (the same but you can use body, html and head because it's a stand
 
 ```
 
-# Debugging
 
-Always test your pdf template on the resultsreen first. If some external css or javascript is not found, phantomjs will propably fail without any meaningfull errors. In the resultscreen you can monitor those errors in your console. Set createpdf to false.
-
-# Quirks:
-
--It's not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem.
 
 
 
