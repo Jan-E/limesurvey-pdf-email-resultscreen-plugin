@@ -343,9 +343,7 @@ Markerfile
 
 Just to prove the pdf config works create a markerquestion 'pdfconfig':
 
-``` {'footerheight=2cm|footercontent={ { pageNum } } / { { totalPages } }|orientation=landscape|border=2cm|footercontenttag=h1|footercontentstyle=color:red;background-color:blue;'}
-
-```
+``` {'footerheight=2cm|footercontent={ { pageNum } } / { { totalPages } }|orientation=landscape|border=2cm|footercontenttag=h1|footercontentstyle=color:red;background-color:blue;'}```
 
 Templates:
 
