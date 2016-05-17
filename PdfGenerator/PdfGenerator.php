@@ -1,5 +1,5 @@
 <?php
-require $_SERVER['DOCUMENT_ROOT']. '/vendor/autoload.php';
+require __DIR__. '/../../vendor/autoload.php';
 
 use H2P\Converter\PhantomJS;
 use H2P\TempFile;
@@ -12,9 +12,14 @@ use H2P\TempFile;
         static protected $name = 'pdfGenerator';
 
         protected $settings = array(
+            'PdfGenerator_app_subfolder' => array(
+                'type' => 'text',
+                'label' => 'If your app is in a subfolder: for example: Your app is on http://www.example.com/limesurveyapp/, you can put it in here. Start with a slash, no trailing slash. Note: Do not name your subfolder phantomjs',
+                'default' => '/',
+            ),
             'PdfGenerator_phantomjs_Path' => array(
                 'type' => 'text',
-                'label' => 'Path to phantomjs only change when you installed phantomjs on your box, probably to /usr/local/bin/phantomjs',
+                'label' => 'Path to phantomjs. Only change when you installed phantomjs on your box, probably to /usr/local/bin/phantomjs. Do not prepend the previously mentioned app subfolder',
                 'default' => '/phantomjs/bin/phantomjs',
             ),
             'PdfGenerator_Download_Folder' => array(
@@ -65,7 +70,13 @@ use H2P\TempFile;
 
             }
 
-            $files = scandir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_Download_Folder']);
+            if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].$settings['PdfGenerator_Download_Folder'])) {
+
+                mkdir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].$settings['PdfGenerator_Download_Folder'], 0777, true);
+
+            }
+
+            $files = scandir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].$settings['PdfGenerator_Download_Folder']);
 
             $nowtime = microtime(true) * 1000;
 
@@ -75,7 +86,7 @@ use H2P\TempFile;
 
                     //todo deletes too soon may be a problem with creating micro timestamp
 
-                    unlink($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_Download_Folder'].'/'.$file);
+                    unlink($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].$settings['PdfGenerator_Download_Folder'].'/'.$file);
 
                 }
 
@@ -125,9 +136,9 @@ use H2P\TempFile;
              
                 $microtime = (string)(number_format((microtime(true) * 1000),0, '.', ''));
                 $pdfname = $microtime . '.pdf';
-                $downloadpath = $settings['PdfGenerator_Download_Folder'];
+                $downloadpath = $settings['PdfGenerator_app_subfolder'].$settings['PdfGenerator_Download_Folder'];
 
-                $c = $this->parseTemplates($workload, $data);
+                $c = $this->parseTemplates($workload, $data, $settings);
 
                 $pdfall = '';
 
@@ -136,6 +147,8 @@ use H2P\TempFile;
                     $pdfall .= $pv;
 
                 }
+
+                //$pdfall = '';
 
                 $resp = $event->getContent($this);
 
@@ -147,14 +160,24 @@ use H2P\TempFile;
 
                     try{
 
+                        //check if is relative path
+                        if (strpos($settings['PdfGenerator_phantomjs_Path'], '/phantomjs') === 0){
+
+                            $path = $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].$settings['PdfGenerator_phantomjs_Path'];
+
+                        }else{
+
+                            $path = $settings['PdfGenerator_phantomjs_Path'];
+
+                        }
        
-                        $params = array_merge(['search_paths' => $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_phantomjs_Path'] ], $configpdf);
+                        $params = array_merge(['search_paths' => $path ], $configpdf);
          
                         $converter = new PhantomJS($params);
                    
                         $input = new TempFile($pdfall, 'html');
 
-                        $converter->convert($input, $_SERVER['DOCUMENT_ROOT'].'/download/'.$pdfname);
+                        $converter->convert($input, $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/download/'.$pdfname);
 
                         $link = "http://$_SERVER[HTTP_HOST]/$downloadpath/$pdfname";
 
@@ -175,20 +198,27 @@ use H2P\TempFile;
 
                 }
 
-                if($settings['Debug'] !== null){
+                if (count($c['parseerrors']) > 0){
 
-                    foreach($c['parseerrors'] as $err){
-                            
-                        $er = $err['error'];
-                        $tra = $err['trace'];
-                        $templ = $err['template'];
+                    if($settings['Debug'] !== null){
 
-                        $resp->addContent("<h4>Parse-error</h4><p>Error: $er</p><p>Trace: $tra</p><p>Template: $templ</p>");
+                        foreach($c['parseerrors'] as $err){
+                                
+                            $er = $err['error'];
+                            $tra = $err['trace'];
+                            $templ = $err['template'];
+
+                            $resp->addContent("<h4>Parse-error</h4><p>Error: $er</p><p>Trace: $tra</p><p>Template: $templ</p>");
+
+                        }
 
                     }
 
-                }
+                }else{
 
+                    $resp->addContent("An error occurred your pdf may not be correct.");
+
+                }
 
                 foreach($c['res'] as $attach){
 
@@ -215,10 +245,10 @@ use H2P\TempFile;
         }
 
 
-        private function parseTemplates($workload, $data)
+        private function parseTemplates($workload, $data, $settings)
         {
 
-            $baseurl = "http://$_SERVER[HTTP_HOST]/";
+            $baseurl = "http://$_SERVER[HTTP_HOST]".$settings['PdfGenerator_app_subfolder'].'/';
 
             foreach ($workload as $k => $v){
 
@@ -242,7 +272,7 @@ use H2P\TempFile;
 
                     if (isset($v['showinresult']) && $v['showinresult'] === 'true'){
 
-                        $reshtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].'/plugins/PdfGenerator/templates/'.$v['resulttemplate']);
+                        $reshtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/templates/'.$v['resulttemplate']);
 
                         $reshtml = html_entity_decode($reshtml);
 
@@ -255,7 +285,7 @@ use H2P\TempFile;
 
                     if (isset($v) && isset($v['createpdf']) && $v['createpdf'] === 'true'){
 
-                        $pdfhtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].'/plugins/PdfGenerator/templates/'.$v['pdftemplate']);
+                        $pdfhtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/templates/'.$v['pdftemplate']);
 
                         $pdfhtml = html_entity_decode($pdfhtml);
 
@@ -425,7 +455,7 @@ use H2P\TempFile;
 
 
                         if($k !== 'headerheight' && $k !== 'headercontent' && $k !== 'footerheight' && $k !== 'footercontent' &&
-                             $k !== 'headercontenttag' && $k !== 'headercontentid' && $k !== 'footercontenttag' && $k !== 'footercontentid'){
+                             $k !== 'headercontenttag' && $k !== 'headercontentclass' && $k !== 'footercontenttag' && $k !== 'footercontentclass'){
 
                             $config[$k] = $v;
 
@@ -437,12 +467,12 @@ use H2P\TempFile;
 
                         $tag = $config['headercontenttag'];
 
-                        if(isset($config['headercontentid'])){
+                        if(isset($config['headercontentclass'])){
 
-                            $id = $config['headercontentid'];
+                            $class = $config['headercontentclass'];
                             
 
-                            $config['headercontent'] = "<$tag id='$id'>". $config['headercontent']."</$tag>";
+                            $config['headercontent'] = "<$tag class='$class'>". $config['headercontent']."</$tag>";
 
                         }else{
 
@@ -457,12 +487,12 @@ use H2P\TempFile;
 
                         $tag = $config['footercontenttag'];
 
-                        if(isset($config['footercontentid'])){
+                        if(isset($config['footercontentclass'])){
 
-                            $id = $config['footercontentid'];
+                            $class = $config['footercontentclass'];
                             
 
-                            $config['footercontent'] = "<$tag id='$id'>". $config['footercontent']."</$tag>";
+                            $config['footercontent'] = "<$tag class='$class'>". $config['footercontent']."</$tag>";
 
                         }else{
 
@@ -485,7 +515,7 @@ use H2P\TempFile;
         }
 
 
-        private function createWorkload($response)
+        private function createWorkload($response, $settings)
         {
 
             $workload = [];

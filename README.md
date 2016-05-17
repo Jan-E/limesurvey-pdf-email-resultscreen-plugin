@@ -2,11 +2,6 @@
 
 A flexible limesurvey pdfcreator
 
-todo: find solution for comment question
-uppdate readme
-finish example
-get questions in resultset
-
 # Overview
 
 This is a limesurvey plugin to create a downloadable pdf after a respondent completes a survey and show this content in the completed page. 
@@ -22,7 +17,7 @@ On the other hand, PhantomJS makes use of [Qt WebKit](https://wiki.qt.io/Qt_WebK
 
 # Getting started
 
-First make sure you have limesurvey 2.05+ installed or 2.06+ for cronjob support.
+First make sure you have limesurvey 2.05 or higher installed or 2.06 or higher for cronjob support.
 
 ### Install PhantomJS
 
@@ -45,7 +40,7 @@ Create a download folder in the root folder (sibling to the application-folder).
 
 ### Install H2P
 
-Do a composer require kriansa/h2p or put "kriansa/h2p": "dev-master" in the require path of your composer.json and run composer update or install. (For OpenShift you may need to to downgrade some dependencies because it runs on php 5.4. Which ones you can see in the console while deploying).
+Do a composer require kriansa/h2p:dev-master or put "kriansa/h2p": "dev-master" in the require path of your composer.json and run composer update or install. The dev-master version is very important!. (Note to self: For OpenShift you may need to to downgrade some dependencies because it runs on php 5.4. Which ones you can see in the console while deploying).
 Now you should have a 'vendor' folder in your limesurvey rootfolder.
 
 
@@ -86,7 +81,7 @@ Debug: If this is set to true, you'll see the response of your query dumped in t
 
 The recommended usage is to create one markerquestion at the end of the survey. The markerquestion should look like this:
 
-```{'showinresult=true| createpdf=true|resulttemplate=resultpagehandler.html| pdftemplate=pdfhandler.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11 | parsenested=true | baseurl=sitebaseurl'}´´´
+```{'showinresult=true| createpdf=true|resulttemplate=resultpagehandler.html| pdftemplate=pdfhandler.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11 | parsenested=true'}´´´
 
 
 Parameters explained:
@@ -98,9 +93,12 @@ Parameters explained:
 - variables. Mandatory. Comma separated variable names (question codes).
 
 - parsenested.: Optional (recommended). When set to true, you don't have pass all subquestion variables. For example: You can pass q1 as variable and q1_SQ01 gets parsed as a json object.
-- baseurl. Optional. baseurl=sitebaseurl can be used in a template as: {!-sitebaseurl-!} (you specify the name of the variable as the value). This can be used to create a link to css or js. Start with '/'.
+
 
 NOTE: every string with 'http' in it will be parsed without quotes.
+
+One variable will always be available: baseurl. This is for your convenience because you can load css and javascript using this variable:
+for example: src="{!-baseurl-!}js/somejavascript.js". 
 
 
 If you create one markerquestion at the end you can set javascript variables and use that variable to do things.
@@ -117,73 +115,205 @@ Example:
 
 ```{'footerheight=2cm|footercontent={ { pageNum } } / { { totalPages } }|orientation=landscape|border=2cm|footercontenttag=h1|footercontentid=footerid'}´´´
 
-Explanation: It's just as explained in https://github.com/kriansa/h2p, but the only difference is you have to pass footercontent and footerheight and headercontent and headerheight because it is a nested array. You can also pass footercontenttag and footercontentid to style. The text will be wrapped in a tag you provide with the id you provide. Mind the spaces between the brackets. 
-
-
-#### Example
-
-
+Explanation: It's just as explained in https://github.com/kriansa/h2p, but the only difference is you have to pass footercontent and footerheight and headercontent and headerheight because it is a nested array. You can also pass headercontenttag,headercontentclass,footercontenttag and footercontentclass to style. The text will be wrapped in a tag you provide with the class you provide. Mind the spaces between the brackets.
 
 ### Templates
 
 Templates should be in the folder : plugins/PdfGenerator/templates
 
+These templates can also be placed in a subfolder, just pass it to your resulttemplate and pdftemplate parameters (pdftemplate=mysubfolder/mypdftemplate.html).
+
 As stated in the previous section, passed variables replace that same variable name between '{!-' and '-!}'.
 
 For instance:
 
+```
 var question1 = {!-question1-!};
 var question2 = {!-question2-!};
+```
+
+Now you have your survey parameters available in your template. From here you can do your frontend magic. 
 
 
 
-##### Reusing templates
+#### Example
 
-You can also create reusable scripts. This can be done by creating a function and calling it later by passing in configuration and data parameters. Suppose I create a template like this (let's call it chartfactory.js and put it in your yoursite/scripts/custom):
+There are many ways to make use of these variables. I will give an example. There may be better solutions (like using javacript classes etc).
+
+
+##### Example: reusing scripts
+
+I'd like to reuse some scripts. This can be done by creating a factory and calling it later by passing in configuration and data parameters. Suppose I create a template like this (let's call it chartfactory.js and put it in your yoursite/scripts/custom):
 
 ```
 var chartfactory = {};
-  chartfactory.createPie = function(dataset, domelementid){
-    //dataset should look like this
-    /*var dataset = [
-        { label: 'text', value: 15 }, 
-        { label: 'text2', value: 32 },
-        { label: 'text3', value: 38 },
-        { label: 'text4', value: 51 }
-      ];*/
 
-      //config should look like this
+chartfactory.createBarChart = function(dataset, domelementid, title){
 
-      //var config = {width: int, height: int};
-      var radius = Math.min(config.width, config.height) / 2;
+  /*
+  NEEDS JQUERY
+  */
 
-      var color = d3.scale.category20b();
+  /*
+  dataset should look like this:
+    var dataset = [
+      { label: 'label1', value: 10 }, 
+      { label: 'label2', value: 20 }, 
+      { label: 'label3', value: 30 }
+    ];
 
-      var svg = d3.select('#'+domelementid)
-        .append('svg')
-        .attr('width', config.width)
-        .attr('height', config.height)
-        .append('g')
-        .attr('transform', 'translate(' + (config.width / 2) + 
-          ',' + (config.height / 2) + ')');
+    */
 
-      var arc = d3.svg.arc()
-        .outerRadius(config.radius);
+   var element = ('#'+domelementid);
+  $(element)
+  .append('<h6>'+title+'</h6>');
 
-      var pie = d3.layout.pie()
-        .value(function(d) { return d.value; })
-        .sort(null);
+  $(element)
+  .append('<div id="hoverbox'+domelementid+'"><p id="hoverboxkey'+domelementid+'"><strong>Important Label Heading</strong></p><p><span id="hoverboxvalue'+domelementid+'">100</span>%</p></div>')
+  .find('svg')
+  .first()
+  .css({
 
-      var path = svg.selectAll('path')
-        .data(pie(dataset))
-        .enter()
-        .append('path')
-        .attr('d', arc)
-        .attr('fill', function(d, i) { 
-          return color(d.data.label);
-        });
+    'display': 'block',
+    'margin-left': 'auto',
+    'margin-right': 'auto'    
 
+  });
+
+  $(element).find('#hoverbox'+domelementid)
+  .css({
+
+    'position': 'absolute',
+    'width': '200px',
+    'height': 'auto',
+    'padding': '10px',
+    'background-color': 'white',
+    '-webkit-border-radius': '10px',
+    '-moz-border-radius': '10px',
+    'border-radius': '10px',
+    '-webkit-box-shadow': '4px 4px 10px rgba(0, 0, 0, 0.4)',
+    '-mox-box-shadow': '4px 4px 4px 10px rgba(0, 0, 0, 0.4)',
+    'box-shadow': '4px 4px 10px rbga(0, 0, 0, 0.4) pointer-events: none',
+    'display': 'none'
+
+  }).find('p')
+  .css({
+
+    'margin': '0',
+    'font-family': 'sans-serif',
+    'font-size': '16px',
+    'line-height': '20px'
+
+  })
+
+  
+  var total = 0;
+
+    for(var i = 0; i<dataset.length; i++ ){
+
+      total += dataset[i].value;
+
+    }
+
+  var data = dataset;
+
+  var margin = {top: 20, right: 20, bottom: 30, left: 40},
+      width = parseInt(d3.select('#'+domelementid).style('width')),
+      height = width - margin.top - margin.bottom;
+
+  var x = d3.scale.ordinal()
+      .rangeRoundBands([0, width], .1);
+
+  var y = d3.scale.linear()
+      .range([height, 0]);
+
+  var xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom");
+
+  var yAxis = d3.svg.axis()
+      .scale(y)
+      .orient("left")
+      .ticks(5);
+
+  var svg = d3.select("#"+domelementid).append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  
+
+    x.domain(data.map(function(d) { return d.label; }));
+    y.domain([0, d3.max(data, function(d) { return d.value; })]);
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+      .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Value");
+
+    svg.selectAll(".bar")
+        .data(data)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d) { return x(d.label); })
+        .attr("width", x.rangeBand())
+        .attr("y", function(d) { return y(d.value); })
+        .attr("height", function(d) { return height - y(d.value); })
+
+         .on("mouseenter", function (d) {
+
+        var offset = $('#'+domelementid).offset();
+       
+        console.log('mouseenter trggeredd');
+        d3.select("#hoverbox"+domelementid)
+          
+          .style("left",  (d3.event.pageX - offset.left + 20)+'px' ) 
+          .style("top", (d3.event.pageY - offset.top)+"px")   
+          .style("display", "block")
+          .style("z-index", "9999")
+          .attr("pointer-events", "none")
+          .select('#hoverboxkey'+domelementid)
+          .text(function(){
+            
+              d3.select('#hoverboxvalue'+domelementid)
+              .text(function(){
+              
+                return (d.value/total)*100;
+              });
+
+
+            return d.label;
+          });
+          
+      })
+      .on("mouseout", function () { 
+
+        console.log('mouseout trggeredd');
+        d3.select("#hoverbox"+domelementid)
+          .style("display", "none")
+          .attr("pointer-events", "none");
+    });
+ 
+
+  function type(d) {
+    d.value = +d.value;
+    return d;
   }
+
+
+
+}
 
 ```
 
@@ -192,31 +322,57 @@ After that you can create a markerfile which loads and uses this javascript file
 
 Markerfile
 
-``` {'showinresult=true| showinpdf=true |resulttemplate=demo/resultscreen.html | pdftemplate=demo/pdf.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,pdf |parseasobject=true|baseurl=baseurl'}```
+``` {'showinresult=true| createpdf=true |resulttemplate=demo/resultscreen.html | pdftemplate=demo/pdf.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,pdf |parsenested=true'}```
 
 
 Templates:
 
-demo/resultscreen.html:
+demo/resultscreen.html (does not need bootstrap and jquery because this is allready loaded):
 
 ``` 
 <div>
-    <link rel='stylesheet' href='{!-baseurl-!}/styles-public/custom/demo.css'>
+    <style type="text/css" scoped>
+
+        #reusable1{
+            width: 100%;
+            height:auto;
+        }
+      
+        .bar {
+          fill: steelblue;
+        }
+
+        .bar:hover {
+          fill: brown;
+        }
+
+        .axis {
+          font: 10px sans-serif;
+        }
+
+        .axis path,
+        .axis line {
+          fill: none;
+          stroke: #000;
+          shape-rendering: crispEdges;
+        }
+
+        .x.axis path {
+          display: none;
+        }
+    </style>
+    <link rel='stylesheet' href='{!-baseurl-!}styles-public/custom/demo.css'>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-    <script src="{!-baseurl-!}/scripts/custom/chartfactory.js"></script>
-    <h1>Created as reusable</h1>
-    
+    <script src="{!-baseurl-!}scripts/custom/chartfactory.js"></script>
+    <h1>Created as reusable</h1>  
     <div class='row'>
         <div class='col-md-4'>
-            <div id='reusable1' class='piechart'>
-                
+            <div id='reusable1' class='piechart'>            
             </div>
         </div>
-        <div class='col-md-4'>
-            
+        <div class='col-md-4'>    
         </div>
-        <div class='col-md-4'>
-            
+        <div class='col-md-4'>       
         </div>
     </div>
     <script>
@@ -233,21 +389,65 @@ demo/resultscreen.html:
     var q10 = {!-q10-!};
     var q11 = {!-q11-!};
 
-    var piedata = [];
-    
+    var bardata = [];
+    var q7title = '';
 
     for (var key in q7) {
 
-        if(q7[key] === ''){
+        if(q7[key][2] === ''){
 
-            q7[key] = 0;
+           q7[key][2] = 0;
         }
 
-        piedata.push({ label: key, value: parseInt(q7[key]) });
+        if(q7title.length === 0){
+
+            q7title = q7[key][0];
+
+        }
+
+        bardata.push({ label: q7[key][1].substring(1, q7[key][1].length -1) , value: parseInt(q7[key][2]) });
 
     }
 
-    chartfactory.createPie(piedata, 'reusable1');
+    if(hasNotNull(bardata)){
+
+        chartfactory.createBarChart(piedata, 'reusable1', q7title);
+
+    }else{
+
+        appendNoData([{id: 'reusable1', title: q7title}]);
+
+    }
+
+    chartfactory.createBarChart(bardata, 'reusable1', q7title);
+
+    function appendNoData(input){
+
+        input.forEach(function(element){
+
+            $('#'+element.id).append('<h6>'+element.title+'</h6><p>No data</p>');
+
+        })
+
+    }
+
+    function hasNotNull(input){
+
+        var isnotnull = false;
+
+        input.forEach(function(element){
+
+            if (element.value > 0){
+
+                isnotnull = true;
+
+            }
+
+        })
+
+        return isnotnull;
+
+    }
 
     </script>
 </div>
@@ -255,74 +455,158 @@ demo/resultscreen.html:
 ```
 
 
-demo/pdf.html (the same but loading bootstrap because it's not in the resultpage):
+demo/pdf.html (the same but you can use body, html and head because it's a standalone webpage. Loading bootstrap and jquery because it's not in the resultpage):
 
 
 ```
-<div>
-    <link rel='stylesheet' href='{!-baseurl-!}/styles-public/custom/demo.css'>
-    <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css'>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-    <script src="{!-baseurl-!}/scripts/custom/chartfactory.js"></script>
-    <h1>Created as reusable</h1>
-    
-    <div class='row'>
-        <div class='col-md-4'>
-            <div id='reusable1' class='piechart'>
-                
+
+<html>
+    <head>
+        <style type="text/css" scoped>
+
+            body{
+
+            margin-left: 50px;
+            margin-right: 50px;
+
+            }
+
+            #reusable1{
+                width: 100%;
+                height:auto;
+            } 
+
+          
+                    .bar {
+              fill: steelblue;
+            }
+
+            .bar:hover {
+              fill: brown;
+            }
+
+            .axis {
+              font: 10px sans-serif;
+            }
+
+            .axis path,
+            .axis line {
+              fill: none;
+              stroke: #000;
+              shape-rendering: crispEdges;
+            }
+
+            .x.axis path {
+              display: none;
+            }
+        </style>
+        <link rel='stylesheet' href='{!-baseurl-!}styles-public/custom/demo.css'>
+        <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css'>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+        <script src="{!-baseurl-!}scripts/custom/chartfactory.js"></script>
+    </head>
+    <body>
+        <h1>Results</h1>    
+        <div class='row'>
+            <div class='col-md-4'>
+                <div id='reusable1' class='piechart'>         
+                </div>
+            </div>
+            <div class='col-md-4'>      
+            </div>
+            <div class='col-md-4'>       
             </div>
         </div>
-        <div class='col-md-4'>
-            
-        </div>
-        <div class='col-md-4'>
-            
-        </div>
-    </div>
-    <script>
+        <script>
 
-    var q1 = {!-q1-!};
-    var q2 = {!-q2-!};
-    var q3 = {!-q3-!};
-    var q4 = {!-q4-!};
-    var q5 = {!-q5-!};
-    var q6 = {!-q6-!};
-    var q7 = {!-q7-!};
-    var q8 = {!-q8-!};
-    var q9 = {!-q9-!};
-    var q10 = {!-q10-!};
-    var q11 = {!-q11-!};
+        var q1 = {!-q1-!};
+        var q2 = {!-q2-!};
+        var q3 = {!-q3-!};
+        var q4 = {!-q4-!};
+        var q5 = {!-q5-!};
+        var q6 = {!-q6-!};
+        var q7 = {!-q7-!};
+        var q8 = {!-q8-!};
+        var q9 = {!-q9-!};
+        var q10 = {!-q10-!};
+        var q11 = {!-q11-!};
 
-    var piedata = [];
-    
+        var bardata = [];
+        var q7title = '';
 
-    for (var key in q7) {
+        for (var key in q7) {
 
-        if(q7[key] === ''){
+            if(q7[key][2] === ''){
 
-            q7[key] = 0;
+               q7[key][2] = 0;
+            }
+
+            if(q7title.length === 0){
+
+                q7title = q7[key][0];
+
+            }
+
+            bardata.push({ label: q7[key][1].substring(1, q7[key][1].length -1) , value: parseInt(q7[key][2]) });
+
         }
 
-        piedata.push({ label: key, value: parseInt(q7[key]) });
+        if(hasNotNull(bardata)){
 
-    }
+            chartfactory.createBarChart(piedata, 'reusable1', q7title);
 
-    chartfactory.createPie(piedata, 'reusable1');
+        }else{
 
-    </script>
-</div>```
+            appendNoData([{id: 'reusable1', title: q7title}]);
+
+        }
+
+        chartfactory.createBarChart(bardata, 'reusable1', q7title);
+
+        function appendNoData(input){
+
+            input.forEach(function(element){
+
+                $('#'+element.id).append('<h6>'+element.title+'</h6><p>No data</p>');
+
+            })
+
+        }
+
+        function hasNotNull(input){
+
+            var isnotnull = false;
+
+            input.forEach(function(element){
+
+                if (element.value > 0){
+
+                    isnotnull = true;
+
+                }
+
+            })
+
+            return isnotnull;
+
+        }
+
+        </script>
+    </body>
+</html>```
 
 ```
 
+# Debugging
 
+Always test your pdf template on the resultsreen first. If some external css or javascript is not found, phantomjs will propably fail without any meaningfull errors. In the resultscreen you can monitor those errors in your console. Set createpdf to false.
 
 # Quirks:
 
 -It's not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem.
 
--Appended html in the response page seems to be appended in a table. However, it seems you can use bootstrap nevertheless.
 
 
 
