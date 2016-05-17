@@ -36,6 +36,11 @@ use H2P\TempFile;
                 'type'=>'checkbox',
                 'label'=>'Check to enable debug mode',
             ),
+            'Load_Demo'  =>  array(
+                'type'=>'checkbox',
+                'label'=>'Check to load demo. deactivate and reactivate this plugin to load.',
+            ),
+
                   
         );
 
@@ -44,6 +49,7 @@ use H2P\TempFile;
             parent::__construct($manager, $id);
             $this->subscribe('afterSurveyComplete');
             $this->subscribe('cron');
+            $this->subscribe('beforeActivate');
             $this->settings = $this->getPluginSettings(true);
             
         }
@@ -58,6 +64,66 @@ use H2P\TempFile;
         }*/
 
         //implement methods
+
+        public function beforeActivate()
+        {
+
+            //creates demo app
+
+            $settings = [];
+
+            foreach($this->settings as $k => $setting){
+
+                $settings[$k] = $setting['current'];
+
+            }
+
+             Yii::app()->loadHelper('admin/import');
+
+            $sFullFilePath = $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/demo/pdfgenerator_demo.lss';
+
+            $aImportResults = importSurveyFile($sFullFilePath, true);
+
+
+
+            if (isset($aImportResults['error'])){
+
+                //return array('status' => 'Error: '.$aImportResults['error']);
+                //CVarDumper::dump(['status' => 'Error: '.$aImportResults['error'] ]);
+
+            }else{
+                
+                //return (int)$aImportResults['newsid'];
+                //CVarDumper::dump(['newsid' => 'newsid: '.$aImportResults['newsid'] ]);
+                
+            }
+
+            if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom')) {
+
+                mkdir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom', 0777, true);
+            }
+
+
+            if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom/demo.css')) {
+
+                copy($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/demo/css/demo.css', $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom/demo.css');
+
+            }
+
+            if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom')) {
+
+                mkdir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom', 0777, true);
+            }
+
+
+            if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom/chartfactory.js')) {
+
+                copy($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/demo/chartfactory/chartfactory.js', $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom/chartfactory.js');
+                
+            }  
+
+        }
+
 
         public function cron()
         {
@@ -451,11 +517,11 @@ use H2P\TempFile;
 
                     }
 
-                    foreach($vars as $k=>$v){
+                     foreach($vars as $k=>$v){
 
 
                         if($k !== 'headerheight' && $k !== 'headercontent' && $k !== 'footerheight' && $k !== 'footercontent' &&
-                             $k !== 'headercontenttag' && $k !== 'headercontentclass' && $k !== 'footercontenttag' && $k !== 'footercontentclass'){
+                             $k !== 'headercontenttag' && $k !== 'headercontentstyle' && $k !== 'footercontenttag' && $k !== 'footercontentstyle'){
 
                             $config[$k] = $v;
 
@@ -463,40 +529,40 @@ use H2P\TempFile;
 
                     }
 
-                    if(isset($config['headercontent']) && isset($config['headercontenttag'])){
+                    if(isset($vars['headercontent']) && isset($vars['headercontenttag'])){
 
-                        $tag = $config['headercontenttag'];
+                        $tag = $vars['headercontenttag'];
 
-                        if(isset($config['headercontentclass'])){
+                        if(isset($vars['headercontentstyle'])){
 
-                            $class = $config['headercontentclass'];
+                            $style = $vars['headercontentstyle'];
                             
 
-                            $config['headercontent'] = "<$tag class='$class'>". $config['headercontent']."</$tag>";
+                            $config['header']['content'] = "<$tag style='$style'>". $vars['headercontent']."</$tag>";
 
                         }else{
 
-                            $config['headercontent'] = "<$tag>". $config['headercontent']."</$tag>";
+                            $config['header']['content']= "<$tag>". $vars['headercontent']."</$tag>";
 
                         }
 
 
                     }
 
-                    if(isset($config['footercontent']) && isset($config['footercontenttag'])){
+                    if(isset($vars['footercontent']) && isset($vars['footercontenttag'])){
 
-                        $tag = $config['footercontenttag'];
+                        $tag = $vars['footercontenttag'];
 
-                        if(isset($config['footercontentclass'])){
+                        if(isset($vars['footercontentstyle'])){
 
-                            $class = $config['footercontentclass'];
+                            $style = $vars['footercontentstyle'];
                             
 
-                            $config['footercontent'] = "<$tag class='$class'>". $config['footercontent']."</$tag>";
+                            $config['footer']['content'] = "<$tag style='$style'>". $vars['footercontent']."</$tag>";
 
                         }else{
 
-                            $config['footercontent'] = "<$tag>". $config['footercontent']."</$tag>";
+                            $config['footer']['content'] = "<$tag>". $vars['footercontent']."</$tag>";
 
                         }
 

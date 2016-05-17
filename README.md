@@ -40,7 +40,11 @@ Create a download folder in the root folder (sibling to the application-folder).
 
 ### Install H2P
 
-Do a composer require kriansa/h2p:dev-master or put "kriansa/h2p": "dev-master" in the require path of your composer.json and run composer update or install. The dev-master version is very important!. (Note to self: For OpenShift you may need to to downgrade some dependencies because it runs on php 5.4. Which ones you can see in the console while deploying).
+Do (from your apps rootfolder) a 
+
+(sudo) composer require kriansa/h2p:dev-master 
+
+or put "kriansa/h2p": "dev-master" in the require path of your composer.json and run composer update or install. The dev-master version is very important!. (Note to self: For OpenShift you may need to to downgrade some dependencies because it runs on php 5.4. Which ones you can see in the console while deploying).
 Now you should have a 'vendor' folder in your limesurvey rootfolder.
 
 
@@ -77,7 +81,9 @@ Download folder: If you followed the steps above you shouldn't have to change th
 
 Delete generated pdf after amount of minutes: This will cleanup files after x minutes.
 
-Debug: If this is set to true, you'll see the response of your query dumped in the resultscreen. This is convenient if you want to know what values your survey returns. For example: does a 'no answer'-option generate an empty string or a number? 
+Debug: If this is set to true, you'll see the response of your query dumped in the resultscreen. This is convenient if you want to know what values your survey returns. For example: does a 'no answer'-option generate an empty string or a number?
+
+Load demo: This loads the demo survey if it doesn't exist. To make it work you'll have to deactivate and reactivate the plugin.
 
 ### Survey specific configuration: markerquestions
 
@@ -153,6 +159,18 @@ Always test your pdf template on the resultsreen first. If some external css or 
 
 
 # Example
+
+### Load example
+
+If you don't want to copy everything to the required folders etc you have to activate this plugin, check the 'load demo' checkbox in the plugin configuration screen and then de-activate and re-activate the plugin (sorry about that workaround :)).
+
+Now the demo survey (pdfgeneratordemo) should be in your list of surveys, you only have to activate it.
+
+NOTE: It may not work because of webserver permissions. Go to your limesurvey config file and set debug to 1. It will show you permissions errors (after disable and re-enable this plugin with the 'load demo' checkbox checked.
+
+After activating, fill out question 7 about watergymnastics and you after submit you should see a resultscreen with a barchart and a link to download a pdf. 
+
+### Example explained
 
 There are many ways to make use of these variables. I will give an example. There may be better solutions (like using javacript classes etc).
 
