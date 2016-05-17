@@ -126,7 +126,7 @@ use H2P\TempFile;
             if(count($validationerrors) === 0){
 
 
-                $workload = $this->createWorkload($response);
+                $workload = $this->createWorkload($response, $settings);
 
                 require __DIR__. '/getAnswersAndQuestions.php';
 

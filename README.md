@@ -117,11 +117,11 @@ You can also configure the pdf. This is also done by a markerquestion. This ques
 Example:
 
 ```
-{'footerheight=2cm|footercontent={ { pageNum } } / { { totalPages } }|orientation=landscape|border=2cm|footercontenttag=h1|footercontentid=footerid'}
+{'footerheight=2cm|footercontent={ { pageNum } } / { { totalPages } }|orientation=landscape|border=2cm|footercontenttag=h1|footercontentstyle=color:red;background-color:blue;'}
 
 ```
 
-Explanation: It's just as explained in https://github.com/kriansa/h2p, but the only difference is you have to pass footercontent and footerheight and headercontent and headerheight because it is a nested array. You can also pass headercontenttag,headercontentclass,footercontenttag and footercontentclass to style. The text will be wrapped in a tag you provide with the class you provide. Mind the spaces between the brackets.
+Explanation: It's just as explained in https://github.com/kriansa/h2p, but the only difference is you have to pass footercontent and footerheight and headercontent and headerheight because it is a nested array. You can also pass inline styles to headercontenttag and footercontenttag as attributes headercontentstyle and footercontentstyle to style. The text will be wrapped in a tag you provide with the inline style you provide. Mind the spaces between the brackets to prevent parsing by expression manager.
 
 ### Templates
 
@@ -339,6 +339,11 @@ Markerfile
 
 ``` {'showinresult=true| createpdf=true |resulttemplate=demo/resultscreen.html | pdftemplate=demo/pdf.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,pdf |parsenested=true'}```
 
+Just to prove the pdf config works create a markerquestion 'pdfconfig':
+
+``` {'footerheight=2cm|footercontent={ { pageNum } } / { { totalPages } }|orientation=landscape|border=2cm|footercontenttag=h1|footercontentstyle=color:red;background-color:blue;'}
+
+```
 
 Templates:
 
@@ -347,6 +352,8 @@ demo/resultscreen.html (does not need bootstrap and jquery because this is allre
 ``` 
 <div>
     <style type="text/css" scoped>
+
+        /*could be in external css, just to show it can also be here*/
 
         #reusable1{
             width: 100%;
@@ -379,15 +386,17 @@ demo/resultscreen.html (does not need bootstrap and jquery because this is allre
     <link rel='stylesheet' href='{!-baseurl-!}styles-public/custom/demo.css'>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
     <script src="{!-baseurl-!}scripts/custom/chartfactory.js"></script>
-    <h1>Created as reusable</h1>  
+    <h1>Results</h1>  
     <div class='row'>
         <div class='col-md-4'>
-            <div id='reusable1' class='piechart'>            
+            <div id='reusable1'>            
             </div>
         </div>
-        <div class='col-md-4'>    
+        <div class='col-md-4'>
+         could be another chart     
         </div>
-        <div class='col-md-4'>       
+        <div class='col-md-4'>
+         could be another chart        
         </div>
     </div>
     <script>
@@ -479,41 +488,35 @@ demo/pdf.html (the same but you can use body, html and head because it's a stand
     <head>
         <style type="text/css" scoped>
 
-            body{
+        /*could be in external css, just to show it can also be here*/
 
-            margin-left: 50px;
-            margin-right: 50px;
+        #reusable1{
+            width: 100%;
+            height:auto;
+        }
+      
+        .bar {
+          fill: steelblue;
+        }
 
-            }
+        .bar:hover {
+          fill: brown;
+        }
 
-            #reusable1{
-                width: 100%;
-                height:auto;
-            } 
+        .axis {
+          font: 10px sans-serif;
+        }
 
-          
-                    .bar {
-              fill: steelblue;
-            }
+        .axis path,
+        .axis line {
+          fill: none;
+          stroke: #000;
+          shape-rendering: crispEdges;
+        }
 
-            .bar:hover {
-              fill: brown;
-            }
-
-            .axis {
-              font: 10px sans-serif;
-            }
-
-            .axis path,
-            .axis line {
-              fill: none;
-              stroke: #000;
-              shape-rendering: crispEdges;
-            }
-
-            .x.axis path {
-              display: none;
-            }
+        .x.axis path {
+          display: none;
+        }
         </style>
         <link rel='stylesheet' href='{!-baseurl-!}styles-public/custom/demo.css'>
         <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css'>
@@ -526,12 +529,14 @@ demo/pdf.html (the same but you can use body, html and head because it's a stand
         <h1>Results</h1>    
         <div class='row'>
             <div class='col-md-4'>
-                <div id='reusable1' class='piechart'>         
+                <div id='reusable1'>         
                 </div>
             </div>
-            <div class='col-md-4'>      
+            <div class='col-md-4'>
+            could be another chart    
             </div>
-            <div class='col-md-4'>       
+            <div class='col-md-4'>
+            could be another chart     
             </div>
         </div>
         <script>
@@ -610,7 +615,7 @@ demo/pdf.html (the same but you can use body, html and head because it's a stand
 
         </script>
     </body>
-</html>```
+</html>
 
 ```
 

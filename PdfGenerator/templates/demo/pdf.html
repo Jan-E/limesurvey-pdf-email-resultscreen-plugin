@@ -1,22 +1,13 @@
 <html>
-
-<head>
-    <style type="text/css" scoped>
-
-    body{
-
-        margin-left: 50px;
-        margin-right: 50px;
-
-    }
+    <head>
+        <style type="text/css" scoped>
 
         #reusable1{
             width: 100%;
             height:auto;
         }
-
       
-                .bar {
+        .bar {
           fill: steelblue;
         }
 
@@ -38,121 +29,102 @@
         .x.axis path {
           display: none;
         }
-
-
-    </style>
-  
-    <link rel='stylesheet' href='{!-baseurl-!}styles-public/custom/demo.css'>
-    <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css'>
-    <link rel='stylesheet' href='{!-baseurl-!}styles-public/libs/radar-chart.min.css'>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-    <script src="{!-baseurl-!}scripts/libs/radar-chart.min.js"></script>
-    <script src="{!-baseurl-!}scripts/custom/chartfactory.js"></script>
-</head>
-<body>
-    <h1>Results</h1>
-    <div class='row'>
-        <div class='col-xs-4'>
-            <div id='reusable1' class='piechart'>
-                
+        </style>
+        <link rel='stylesheet' href='{!-baseurl-!}styles-public/custom/demo.css'>
+        <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css'>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+        <script src="{!-baseurl-!}scripts/custom/chartfactory.js"></script>
+    </head>
+    <body>
+        <h1>Results</h1>    
+        <div class='row'>
+            <div class='col-md-4'>
+                <div id='reusable1'>         
+                </div>
+            </div>
+            <div class='col-md-4'>
+            could be another chart    
+            </div>
+            <div class='col-md-4'>
+            could be another chart     
             </div>
         </div>
-        <div class='col-xs-4'>
-            <div id='reusable2' class='barchart'></div>
-        </div>
-        <div class='col-xs-4'>
-            <div id='reusable3' class='piechart'></div>
-        </div>
-    </div>
-   <script>
+        <script>
 
+        var q1 = {!-q1-!};
+        var q2 = {!-q2-!};
+        var q3 = {!-q3-!};
+        var q4 = {!-q4-!};
+        var q5 = {!-q5-!};
+        var q6 = {!-q6-!};
+        var q7 = {!-q7-!};
+        var q8 = {!-q8-!};
+        var q9 = {!-q9-!};
+        var q10 = {!-q10-!};
+        var q11 = {!-q11-!};
 
-    $(document).ready(function(){
+        var bardata = [];
+        var q7title = '';
 
-    var q1 = {!-q1-!};
-    var q2 = {!-q2-!};
-    var q3 = {!-q3-!};
-    var q4 = {!-q4-!};
-    var q5 =  {!-q5-!};
-    var q6 = {!-q6-!};
-    var q7 = {!-q7-!};
-    var q8 = {!-q8-!};
-    var q9 = {!-q9-!};
-    var q10 = {!-q10-!};
-    var q11 = {!-q11-!};
+        for (var key in q7) {
 
-    var piedata = [];
-    
+            if(q7[key][2] === ''){
 
-    var q7title = '';
+               q7[key][2] = 0;
+            }
 
-    for (var key in q7) {
+            if(q7title.length === 0){
 
-        if(q7[key][2] === ''){
-
-           q7[key][2] = 0;
-        }
-
-        if(q7title.length === 0){
-
-            q7title = q7[key][0];
-
-        }
-
-        piedata.push({ label: q7[key][1].substring(1, q7[key][1].length -1) , value: parseInt(q7[key][2]) });
-
-    }
-
-   
-    if(hasNotNull(piedata)){
-
-        chartfactory.createPieChart(piedata, 'reusable1', q7title);
-
-        chartfactory.createBarChart(piedata, 'reusable2', q7title);
-
-        chartfactory.createSpiderChart(piedata, 'reusable3', q7title);
-
-    }else{
-
-        appendNoData([{id: 'reusable1', title: q7title},{id: 'reusable2', title: q7title}, {id: 'reusable3', title: q7title}]);
-
-
-    }
-   
-    });
-
-    function appendNoData(input){
-
-        input.forEach(function(element){
-
-            $('#'+element.id).append('<h6>'+element.title+'</h6><p>No data</p>');
-
-        })
-
-    }
-
-    function hasNotNull(input){
-
-        var isnotnull = false;
-
-        input.forEach(function(element){
-
-            if (element.value > 0){
-
-                isnotnull = true;
+                q7title = q7[key][0];
 
             }
 
-        })
+            bardata.push({ label: q7[key][1].substring(1, q7[key][1].length -1) , value: parseInt(q7[key][2]) });
 
-        return isnotnull;
+        }
 
-    }
+        if(hasNotNull(bardata)){
 
+            chartfactory.createBarChart(piedata, 'reusable1', q7title);
 
-    </script>
-</body>
+        }else{
 
+            appendNoData([{id: 'reusable1', title: q7title}]);
+
+        }
+
+        chartfactory.createBarChart(bardata, 'reusable1', q7title);
+
+        function appendNoData(input){
+
+            input.forEach(function(element){
+
+                $('#'+element.id).append('<h6>'+element.title+'</h6><p>No data</p>');
+
+            })
+
+        }
+
+        function hasNotNull(input){
+
+            var isnotnull = false;
+
+            input.forEach(function(element){
+
+                if (element.value > 0){
+
+                    isnotnull = true;
+
+                }
+
+            })
+
+            return isnotnull;
+
+        }
+
+        </script>
+    </body>
 </html>

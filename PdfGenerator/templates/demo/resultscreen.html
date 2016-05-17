@@ -1,10 +1,13 @@
 <div>
     <style type="text/css" scoped>
+
+        /*could be in external css, just to show it can also be here*/
+       
+
         #reusable1{
             width: 100%;
             height:auto;
         }
-
       
         .bar {
           fill: steelblue;
@@ -28,40 +31,30 @@
         .x.axis path {
           display: none;
         }
-
-
     </style>
-    <link rel='stylesheet' href='{!-baseurl-!}/styles-public/custom/demo.css'>
-    <link rel='stylesheet' href='{!-baseurl-!}/styles-public/libs/radar-chart.min.css'>
+    <link rel='stylesheet' href='{!-baseurl-!}styles-public/custom/demo.css'>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-    <script src="{!-baseurl-!}/scripts/libs/radar-chart.min.js"></script>
-    <script src="{!-baseurl-!}/scripts/custom/chartfactory.js"></script>
-
-    
-    
+    <script src="{!-baseurl-!}scripts/custom/chartfactory.js"></script>
+    <h1>Results</h1>  
     <div class='row'>
         <div class='col-md-4'>
-            <div id='reusable1' class='piechart'>
-                
+            <div id='reusable1'>            
             </div>
         </div>
         <div class='col-md-4'>
-            <div id='reusable2' class='barchart'></div>
+         could be another chart     
         </div>
         <div class='col-md-4'>
-            <div id='reusable3' class='piechart'></div>
+         could be another chart        
         </div>
     </div>
     <script>
-
-
-    $(document).ready(function(){
 
     var q1 = {!-q1-!};
     var q2 = {!-q2-!};
     var q3 = {!-q3-!};
     var q4 = {!-q4-!};
-    var q5 =  {!-q5-!};
+    var q5 = {!-q5-!};
     var q6 = {!-q6-!};
     var q7 = {!-q7-!};
     var q8 = {!-q8-!};
@@ -69,9 +62,7 @@
     var q10 = {!-q10-!};
     var q11 = {!-q11-!};
 
-    var piedata = [];
-    
-
+    var bardata = [];
     var q7title = '';
 
     for (var key in q7) {
@@ -87,33 +78,27 @@
 
         }
 
-        piedata.push({ label: q7[key][1].substring(1, q7[key][1].length -1) , value: parseInt(q7[key][2]) });
+        bardata.push({ label: q7[key][1].substring(1, q7[key][1].length -1) , value: parseInt(q7[key][2]) });
 
     }
 
-   
-    if(hasNotNull(piedata)){
+    if(hasNotNull(bardata)){
 
-        chartfactory.createPieChart(piedata, 'reusable1', q7title);
-
-        chartfactory.createBarChart(piedata, 'reusable2', q7title);
-
-        chartfactory.createSpiderChart(piedata, 'reusable3', q7title);
+        chartfactory.createBarChart(piedata, 'reusable1', q7title);
 
     }else{
 
-        appendNoData([{id: 'reusable1', title: q7title},{id: 'reusable2', title: q7title}, {id: 'reusable3', title: q7title}]);
-
+        appendNoData([{id: 'reusable1', title: q7title}]);
 
     }
-   
-    });
+
+    chartfactory.createBarChart(bardata, 'reusable1', q7title);
 
     function appendNoData(input){
 
         input.forEach(function(element){
 
-            $('#'+element.id).append('<h2>'+element.title+'</h2><h3>No data</h3>');
+            $('#'+element.id).append('<h6>'+element.title+'</h6><p>No data</p>');
 
         })
 
@@ -136,7 +121,6 @@
         return isnotnull;
 
     }
-
 
     </script>
 </div>
