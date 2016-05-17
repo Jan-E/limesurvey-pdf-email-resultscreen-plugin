@@ -69,6 +69,8 @@ Because limesurvey does not allow to configure a plugin on the survey level, thi
 
 ### Global config
 
+App subfolder: If the url to your app is a subfolder (www.example.com/subfolder), you can set your subfolder here.
+
 Path to phantomjs: This is set to the second option (dropin phantomjs). If you followed the steps above you shouldn't have to change this (if you do change, mind the '/' at the start).
 
 Download folder: If you followed the steps above you shouldn't have to change this (if you do change, mind the '/' at the start).
@@ -100,8 +102,7 @@ Parameters explained:
 
 NOTE: every string with 'http' in it will be parsed without quotes.
 
-One variable will always be available: baseurl. This is for your convenience because you can load css and javascript using this variable:
-for example: src="{!-baseurl-!}js/somejavascript.js". 
+One variable will always be available: baseurl. This is for your convenience because you can load css and javascript using this variable (if you have set a subfolder this will be appended to the baseurl). For example: src="{!-baseurl-!}js/somejavascript.js". 
 
 
 If you create one markerquestion at the end you can set javascript variables and use that variable to do things.
