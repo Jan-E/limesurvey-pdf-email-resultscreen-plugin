@@ -78,24 +78,41 @@ use H2P\TempFile;
 
             }
 
-             Yii::app()->loadHelper('admin/import');
+            $config = Yii::app()->getComponents(false);
+            
+            $prefix = $config['db']->tablePrefix;
 
-            $sFullFilePath = $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/demo/pdfgenerator_demo.lss';
+            $title = 'pdfgeneratordemo';
 
-            $aImportResults = importSurveyFile($sFullFilePath, true);
+            $query = Yii::app()->db->createCommand()
+            ->select('surveyls_title')
+            ->from($prefix.'surveys_languagesettings')
+            ->where('surveyls_title=:title', array(':title'=>$title))
+            ->queryRow();
+
+            if ($query['surveyls_title'] !== $title){
+
+                Yii::app()->loadHelper('admin/import');
+
+                $sFullFilePath = $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/demo/pdfgenerator_demo.lss';
+
+                $aImportResults = importSurveyFile($sFullFilePath, true);
 
 
 
-            if (isset($aImportResults['error'])){
+                if (isset($aImportResults['error'])){
 
-                //return array('status' => 'Error: '.$aImportResults['error']);
-                //CVarDumper::dump(['status' => 'Error: '.$aImportResults['error'] ]);
+                    //don't know how to show error messages from a background process
+                    //return array('status' => 'Error: '.$aImportResults['error']);
+                    //CVarDumper::dump(['status' => 'Error: '.$aImportResults['error'] ]);
 
-            }else{
-                
-                //return (int)$aImportResults['newsid'];
-                //CVarDumper::dump(['newsid' => 'newsid: '.$aImportResults['newsid'] ]);
-                
+                }else{
+                    
+                    //return (int)$aImportResults['newsid'];
+                    //CVarDumper::dump(['newsid' => 'newsid: '.$aImportResults['newsid'] ]);
+                    
+                }
+
             }
 
             if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom')) {
