@@ -84,7 +84,7 @@ The recommended usage is to create one markerquestion at the end of the survey. 
 ```
 {'showinresult=true| createpdf=true|resulttemplate=resultpagehandler.html| pdftemplate=pdfhandler.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11 | parsenested=true'}
 
-´´´
+```
 
 
 Parameters explained:
@@ -119,7 +119,7 @@ Example:
 ```
 {'footerheight=2cm|footercontent={ { pageNum } } / { { totalPages } }|orientation=landscape|border=2cm|footercontenttag=h1|footercontentid=footerid'}
 
-´´´
+```
 
 Explanation: It's just as explained in https://github.com/kriansa/h2p, but the only difference is you have to pass footercontent and footerheight and headercontent and headerheight because it is a nested array. You can also pass headercontenttag,headercontentclass,footercontenttag and footercontentclass to style. The text will be wrapped in a tag you provide with the class you provide. Mind the spaces between the brackets.
 
