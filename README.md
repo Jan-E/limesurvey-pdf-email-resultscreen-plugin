@@ -155,6 +155,8 @@ Always test your pdf template on the resultsreen first. If some external css or 
 
 There are many ways to make use of these variables. I will give an example. There may be better solutions (like using javacript classes etc).
 
+In the example folder you will find the files you need. There is also a limesurvey demo survey which works with this example. You have to fill out question 7 (about watergymnastics) to see a barchart. In the css and js files the path where to drop them are in the first line.
+
 
 ##### Example: reusing scripts
 

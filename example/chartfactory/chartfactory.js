@@ -1,3 +1,5 @@
+//yoursite/scripts/custom/chartfactory.js
+
 var chartfactory = {};
 
 chartfactory.createBarChart = function(dataset, domelementid, title){
