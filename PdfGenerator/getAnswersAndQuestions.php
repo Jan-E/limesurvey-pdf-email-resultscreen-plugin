@@ -110,6 +110,7 @@
         {
 
             $config = Yii::app()->getComponents(false);
+            
             $prefix = $config['db']->tablePrefix;
 
             $query = Yii::app()->db->createCommand()
