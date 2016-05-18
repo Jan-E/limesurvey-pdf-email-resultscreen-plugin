@@ -1,11 +1,12 @@
 <?php
-require __DIR__. '/../../vendor/autoload.php';
+require_once __DIR__. '/../../vendor/autoload.php';
+require_once 'PdfGeneratorInterface.php';
 
 use H2P\Converter\PhantomJS;
 use H2P\TempFile;
 //use SurveyDynamic;
 
-    class PdfGenerator extends \ls\pluginmanager\PluginBase {
+    class PdfGenerator extends \ls\pluginmanager\PluginBase implements PdfGeneratorInterface{
 
         protected $storage = 'DbStorage';
         static protected $description = 'pdf generator';
@@ -44,6 +45,8 @@ use H2P\TempFile;
                   
         );
 
+        private $parsedsettings = [];
+
         public function __construct(PluginManager $manager=null, $id=null) {
      
             parent::__construct($manager, $id);
@@ -51,6 +54,12 @@ use H2P\TempFile;
             $this->subscribe('cron');
             $this->subscribe('beforeActivate');
             $this->settings = $this->getPluginSettings(true);
+
+            foreach($this->settings as $k => $setting){
+
+                $this->parsedsettings[$k] = $setting['current'];
+
+            }
             
         }
 
@@ -70,13 +79,7 @@ use H2P\TempFile;
 
             //creates demo app
 
-            $settings = [];
-
-            foreach($this->settings as $k => $setting){
-
-                $settings[$k] = $setting['current'];
-
-            }
+            $settings = $this->parsedsettings;
 
             $config = Yii::app()->getComponents(false);
             
@@ -90,7 +93,9 @@ use H2P\TempFile;
             ->where('surveyls_title=:title', array(':title'=>$title))
             ->queryRow();
 
-            if ($query['surveyls_title'] !== $title){
+           if ($query['surveyls_title'] !== $title){
+
+                $pmanager   = $this->pluginManager->getAPI();
 
                 Yii::app()->loadHelper('admin/import');
 
@@ -102,42 +107,91 @@ use H2P\TempFile;
 
                 if (isset($aImportResults['error'])){
 
-                    //don't know how to show error messages from a background process
-                    //return array('status' => 'Error: '.$aImportResults['error']);
-                    //CVarDumper::dump(['status' => 'Error: '.$aImportResults['error'] ]);
+                    $err = $aImportResults['error'];
+                    $pmanager->setFlash("<p>Error: $err</p>");
 
                 }else{
+
+                    $errors = 0;
                     
-                    //return (int)$aImportResults['newsid'];
-                    //CVarDumper::dump(['newsid' => 'newsid: '.$aImportResults['newsid'] ]);
+                    if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom')) {
+
+                        try{
+
+                            mkdir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom', 0777, true);
+
+
+                        }catch(Exception $e){
+
+                            $errors++;
+
+                            $pmanager->setFlash("<p>Error creating directory:". $e->getMessage()."</p>");
+
+                        }
+
+                    }
+
+
+                    if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom/demo.css')) {
+
+                        try{
+
+                            copy($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/demo/css/demo.css', $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom/demo.css');
+
+                        }catch(Exception $e){
+
+                            $errors++;
+
+                            $pmanager->setFlash("<p>Error copying demo.css file:". $e->getMessage()."</p>");
+
+                        }
+
+                    }
+
+                    if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom')) {
+
+                        try{
+
+                            mkdir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom', 0777, true);
+
+                        }catch(Exception $e){
+
+                            $errors++;
+
+                            $pmanager->setFlash("<p>Error creating directory:". $e->getMessage()."</p>");
+
+                        }
+
+                    }
+
+
+                    if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom/chartfactory.js')) {
+
+                        try{
+
+                            copy($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/demo/chartfactory/chartfactory.js', $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom/chartfactory.js');
+
+                         }catch(Exception $e){
+
+                            $errors++;
+
+                            $pmanager->setFlash("<p>Error copying chartfactory.js file:". $e->getMessage()."</p>");
+
+                        }
+                        
+                    } 
+
+                    if ($errors === 0){
+
+                         $pmanager->setFlash("<p>Created demo survey named 'pdfgeneratordemo' and created its required javascript and css files.</p>");
+
+                    }
                     
                 }
 
-            }
-
-            if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom')) {
-
-                mkdir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom', 0777, true);
-            }
-
-
-            if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom/demo.css')) {
-
-                copy($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/demo/css/demo.css', $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom/demo.css');
 
             }
 
-            if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom')) {
-
-                mkdir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom', 0777, true);
-            }
-
-
-            if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom/chartfactory.js')) {
-
-                copy($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/demo/chartfactory/chartfactory.js', $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom/chartfactory.js');
-                
-            }  
 
         }
 
@@ -182,15 +236,8 @@ use H2P\TempFile;
         public function afterSurveyComplete()
         {
 
-            //set settings
-            $settings = [];
-
-            foreach($this->settings as $k => $setting){
-
-                $settings[$k] = $setting['current'];
-
-            }
-
+            $settings = $this->parsedsettings;
+            
             //scandir and cleanup files
 
             $this->cron();
@@ -534,7 +581,7 @@ use H2P\TempFile;
 
                     }
 
-                     foreach($vars as $k=>$v){
+                    foreach($vars as $k=>$v){
 
 
                         if($k !== 'headerheight' && $k !== 'headercontent' && $k !== 'footerheight' && $k !== 'footercontent' &&

@@ -1,10 +1,10 @@
 <?php
-
+require_once 'getAnswersAndQuestionsInterface.php';
 
 
 
  
-    class getAnswersAndQuestions  {
+    class getAnswersAndQuestions implements getAnswersAndQuestionsInterface {
 
 
         public function getResponse($surveyid)

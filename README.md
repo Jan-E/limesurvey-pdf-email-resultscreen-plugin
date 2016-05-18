@@ -7,7 +7,7 @@ A flexible limesurvey pdfcreator
 This is a limesurvey plugin to create a downloadable pdf after a respondent completes a survey and show this content in the completed page. 
 
 Because as far as I know, there is no option for a plugin to add functionality to the backend (ie It's not possible to create buttons with surveyspecific options, except for coding into the core, which would be erased after each update), this plugin uses markerquestions to configure. This way you can make use of conditional logic provided by limesurvey's expression manager. These markerquestions are of type 'equation type'.
-You also have to provide templates (html/javascript/css) and upload them to a folder.  In these templates you have to wrap your variables in {!-yourvariablename-!} (handlebar-exclamation mark-hyphen, no double handlebars because I don't want to conflict with Angular templates (Angular uses double handlebars as placeholders)).
+You also have to provide templates (html/javascript/css) and upload them to a folder.  In these templates you have to wrap your variables in {!-yourvariablename-!} (handlebar-exclamation mark-hyphen).
 
 ### Important
 
@@ -30,7 +30,7 @@ Google how to and make sure you know the path to phantomjs(.sh). For ubuntu see 
 
 #### Option 2: Get binary and drop in app
 
-http://phantomjs.org/download.html provides [download binaries](http://phantomjs.org/download.html). Find a way to determine which one you need. Now create a folder named 'phantomjs' in your rootfolder (sibling to the application-folder), and put in the folder named bin which you unpacked from the downloaded binary (you can put in all the other stuff but the bin-folder is the required one).
+http://phantomjs.org/download.html provides [binaries](http://phantomjs.org/download.html). Find a way to determine which one you need. Now create a folder named 'phantomjs' in your rootfolder (sibling to the application-folder), and put in the folder named bin which you unpacked from the downloaded binary (you can put in all the other stuff but the bin-folder is the required one).
 
 
 ### Create a download folder
@@ -115,11 +115,11 @@ If you create one markerquestion at the end you can set javascript variables and
 
 IMPORTANT: limesurvey tries to parse strings enclosed in curly brackets when there are no spaces directly after the opening and before the closing curly bracket in the result page. This wil affect your javascript. The workaround is to always have a space after the opening and before the closing bracket. So: var myObject = { key: value } (note the spaces);
 
-You can set different templates for the resultpage and for the pdfpage. This is because you may need to tweak your html and css to make your pdf look nice. Another reason is that limesurvey (2.5) has JQuery and Bootstrap allready loaded. Now you can only load these libraries in your pdf template only.
+You can set different templates for the resultpage and for the pdfpage. This is because you may need to tweak your html and css to make your pdf look nice. Another reason is that limesurvey (2.5) has JQuery and Bootstrap allready loaded. Now you can only these libraries in your pdf template only.
 
 
 
-You can also configure the pdf. This is also done by a markerquestion. This question has to contain the string 'pdfconfig'.
+You can also configure the pdf. This is also done by a markerquestion. This question has to contain the string 'pdfconfig' (just call it 'pdfconfig' and you are done.
 
 Example:
 
@@ -310,8 +310,7 @@ chartfactory.createBarChart = function(dataset, domelementid, title){
          .on("mouseenter", function (d) {
 
         var offset = $('#'+domelementid).offset();
-       
-        console.log('mouseenter trggeredd');
+  
         d3.select("#hoverbox"+domelementid)
           
           .style("left",  (d3.event.pageX - offset.left + 20)+'px' ) 
@@ -328,14 +327,12 @@ chartfactory.createBarChart = function(dataset, domelementid, title){
                 return (d.value/total)*100;
               });
 
-
             return d.label;
           });
           
       })
       .on("mouseout", function () { 
 
-        console.log('mouseout trggeredd');
         d3.select("#hoverbox"+domelementid)
           .style("display", "none")
           .attr("pointer-events", "none");
