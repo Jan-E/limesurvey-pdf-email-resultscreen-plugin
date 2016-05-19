@@ -342,11 +342,11 @@ use H2P\TempFile;
 
                         }
 
+                    }else{
+
+                        $resp->addContent("An error occurred your pdf may not be correct.");
+
                     }
-
-                }else{
-
-                    $resp->addContent("An error occurred your pdf may not be correct.");
 
                 }
 
@@ -378,6 +378,10 @@ use H2P\TempFile;
         private function parseTemplates($workload, $data, $settings)
         {
 
+            $pdf = [];
+            $res = [];
+            $parseerrors = [];
+
             $baseurl = "http://$_SERVER[HTTP_HOST]".$settings['PdfGenerator_app_subfolder'].'/';
 
             foreach ($workload as $k => $v){
@@ -408,6 +412,14 @@ use H2P\TempFile;
 
                         $reshtml = $this->replaceHelper($variables, $reshtml);
 
+                        $parseerr = parseErrorHelper($reshtml, $v['resulttemplate']);
+
+                        if(count($parseerr) > 0){
+
+                            $parseerrors[] = $parseerr;
+                            
+                        }
+
                         $res[] = $reshtml;
 
 
@@ -421,6 +433,14 @@ use H2P\TempFile;
 
                         $pdfhtml = $this->replaceHelper($variables, $pdfhtml);
 
+                        $parseerr = parseErrorHelper($pdfhtml, $v['pdftemplate']);
+
+                        if(count($parseerr) > 0){
+
+                            $parseerrors[] = $parseerr;
+
+                        }
+
                         $pdf[] = $pdfhtml;
 
                     }
@@ -429,7 +449,7 @@ use H2P\TempFile;
 
             }
 
-            $parseerrors = [];
+            
 
             return ['pdf'=> $pdf, 'res'=> $res, 'parseerrors' => $parseerrors];
 
@@ -848,6 +868,71 @@ use H2P\TempFile;
             }
 
             return $errors;
+
+        }
+
+
+        private function parseErrorHelper($html, $template)
+        {
+
+            $err = [];
+            $start = strpos($html, '{!-');
+            $end = strpos($html, '-!}');
+            $trace = '';
+
+            if($start !== false){
+
+                $trace = $this->createTraceHelper($html, $start);
+
+                if($end === false){  
+
+                    $err = ['error' => 'found opening tag for placeholder without closing tag', 'trace' => $trace, 'template' => $template];
+
+                }else{
+
+                    $err = ['error' => 'found tags for a variable which was not passed', 'trace' => $trace, 'template' => $template];
+
+                }
+
+            }else if($end !== false){
+
+                $trace = $this->createTraceHelper($html, $end);
+
+                $err = ['error' => 'found closing tag for placeholder without start tag', 'trace' => $trace, 'template' => $template];  
+                            
+            }
+
+            return $err;
+
+        }
+
+
+        private function createTraceHelper($html, $pos)
+
+        {
+            $length = 10;
+
+            if($pos > $length){
+
+                $tracestart = $pos - $length;
+            
+            }else{
+
+                $tracestart = 0;
+
+            }
+
+            if(strlen($html) > $pos + $length){
+
+                $traceend = $pos + $length;
+
+            }else{
+
+                $traceend = strlen($html);
+
+            }
+
+            return '....'.substr($html, $tracestart, $traceend - $tracestart).'....';
 
         }
        
