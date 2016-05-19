@@ -2,6 +2,6 @@
 interface getAnswersAndQuestionsInterface
 {  
 
-    public function getResponse();  
+    public function getResponse($surveyid);  
    
 }

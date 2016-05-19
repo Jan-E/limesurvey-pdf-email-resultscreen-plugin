@@ -412,7 +412,7 @@ use H2P\TempFile;
 
                         $reshtml = $this->replaceHelper($variables, $reshtml);
 
-                        $parseerr = parseErrorHelper($reshtml, $v['resulttemplate']);
+                        $parseerr = $this->parseErrorHelper($reshtml, $v['resulttemplate']);
 
                         if(count($parseerr) > 0){
 
@@ -433,7 +433,7 @@ use H2P\TempFile;
 
                         $pdfhtml = $this->replaceHelper($variables, $pdfhtml);
 
-                        $parseerr = parseErrorHelper($pdfhtml, $v['pdftemplate']);
+                        $parseerr = $this->parseErrorHelper($pdfhtml, $v['pdftemplate']);
 
                         if(count($parseerr) > 0){
 
