@@ -420,6 +420,8 @@ use H2P\TempFile;
                             
                         }
 
+                        $reshtml = $this->foolExpressionManager($reshtml);
+
                         $res[] = $reshtml;
 
 
@@ -440,6 +442,8 @@ use H2P\TempFile;
                             $parseerrors[] = $parseerr;
 
                         }
+
+                        $pdfhtml = $this->foolExpressionManager($pdfhtml);
 
                         $pdf[] = $pdfhtml;
 
@@ -512,8 +516,6 @@ use H2P\TempFile;
             $replarr = array_unique($replarr);
 
             $replaced = str_replace($searcharr, $replarr, $html);
-
-            $replaced = $this->foolExpressionManager($replaced);
             
             return $replaced;
 
@@ -910,7 +912,7 @@ use H2P\TempFile;
         private function createTraceHelper($html, $pos)
 
         {
-            $length = 10;
+            $length = 100;
 
             if($pos > $length){
 
@@ -932,7 +934,7 @@ use H2P\TempFile;
 
             }
 
-            return '....'.substr($html, $tracestart, $traceend - $tracestart).'....';
+            return '....'.htmlentities(substr($html, $tracestart, $traceend - $tracestart)).'....';
 
         }
        
