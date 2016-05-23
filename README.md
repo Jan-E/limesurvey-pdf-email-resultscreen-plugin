@@ -6,7 +6,7 @@ A flexible limesurvey pdfcreator
 
 This is a limesurvey plugin to create a downloadable pdf after a respondent completes a survey and show this content in the completed page. 
 
-Because as far as I know, there is no option for a plugin to add functionality to the backend (ie It's not possible to create buttons with surveyspecific options, except for coding into the core, which would be erased after each update), this plugin uses markerquestions to configure. This way you can make use of conditional logic provided by limesurvey's expression manager. These markerquestions are of type 'equation type'.
+~~Because as far as I know, there is no option for a plugin to add functionality to the backend (ie It's not possible to create buttons with surveyspecific options, except for coding into the core, which would be erased after each update), this plugin uses markerquestions to configure.~~ There is a way to configure a plugin for a specific survey, and maybe in the future this plugin will use this option. This plugin, for the time being, makes use of a global plugin configuration and it uses markerquestion to configure survey specifics. This way you can make use of conditional logic provided by limesurvey's expression manager. These markerquestions are of type 'equation type'.
 You also have to provide templates (html/javascript/css) and upload them to a folder.  In these templates you have to wrap your variables in {!-yourvariablename-!} (handlebar-exclamation mark-hyphen).
 
 ### Important
@@ -69,7 +69,7 @@ If you allready have a cron running you don't have to create another one. The pl
 
 # Configuration
 
-Because limesurvey does not allow to configure a plugin on the survey level, this will be done using marker questions. The global configuration is managed in the plugins' configuration page.
+~~Because limesurvey does not allow to configure a plugin on the survey level,~~ Configuring this plugin will be done using marker questions. The global configuration is managed in the plugins' configuration page.
 
 ### Global config
 
@@ -81,7 +81,7 @@ Download folder: If you followed the steps above you shouldn't have to change th
 
 Delete generated pdf after amount of minutes: This will cleanup files after x minutes.
 
-Debug: If this is set to true, you'll see the response of your query dumped in the resultscreen. This is convenient if you want to know what values your survey returns. For example: does a 'no answer'-option generate an empty string or a number?
+Debug: If this is set to true, you'll see the response of your survey dumped in the resultscreen. This is convenient if you want to know what values your survey returns. For example: does a 'no answer'-option generate an empty string or a number?
 
 Load demo: This loads the demo survey if it doesn't exist. To make it work you'll have to deactivate and reactivate the plugin.
 
@@ -99,7 +99,7 @@ Parameters explained:
 
 - showinresult: Mandatory. This will be added to the resultpage when set to true.
 - createpdf: Mandatory. This will create a pdf and will print a downloadlink on the resultpage.
-- pdftemplate: Mandatory. Set empty (pdftemplate=) when not needed. Must be placed in 
+- pdftemplate: Mandatory. Set empty (pdftemplate=) when not needed. Must be placed in the templates folder.
 - resulttemplate: Mandatory. Set empty (resulttemplate=) when not needed
 - variables. Mandatory. Comma separated variable names (question codes).
 
@@ -115,11 +115,11 @@ If you create one markerquestion at the end you can set javascript variables and
 
 IMPORTANT: limesurvey tries to parse strings enclosed in curly brackets when there are no spaces directly after the opening and before the closing curly bracket in the result page. This wil affect your javascript. The workaround is to always have a space after the opening and before the closing bracket. So: var myObject = { key: value } (note the spaces);
 
-You can set different templates for the resultpage and for the pdfpage. This is because you may need to tweak your html and css to make your pdf look nice. Another reason is that limesurvey (2.5) has JQuery and Bootstrap allready loaded. Now you can only these libraries in your pdf template only.
+You can set different templates for the resultpage and for the pdfpage. This is because you may need to tweak your html and css to make your pdf look nice. Another reason is that limesurvey (2.5) has JQuery and Bootstrap allready loaded. Now you can load these libraries in your pdf template only.
 
 
 
-You can also configure the pdf. This is also done by a markerquestion. This question has to contain the string 'pdfconfig' (just call it 'pdfconfig' and you are done.
+You can also configure the pdf. This is also done by a markerquestion. This question has to contain the string 'pdfconfig' (just call it 'pdfconfig' and you are done).
 
 Example:
 
@@ -129,6 +129,9 @@ Example:
 ```
 
 Explanation: It's just as explained in https://github.com/kriansa/h2p, but the only difference is you have to pass footercontent and footerheight and headercontent and headerheight because it is a nested array. You can also pass inline styles to headercontenttag and footercontenttag as attributes headercontentstyle and footercontentstyle to style. The text will be wrapped in a tag you provide with the inline style you provide. Mind the spaces between the brackets to prevent parsing by expression manager.
+
+The style for the footer and header are inline because adding a class or id to it and apply some external css does not seem to work. It's probably a parsing order thing.
+
 
 ### Templates
 
@@ -150,11 +153,11 @@ Now you have your survey parameters available in your template. From here you ca
 
 # Debugging
 
-Always test your pdf template on the resultsreen first. If some external css or javascript is not found, phantomjs will propably fail without any meaningfull errors. In the resultscreen you can monitor those errors in your console. Set createpdf to false.
+Always test your pdf template on the resultsreen first. If some external css or javascript is not found, phantomjs will probably fail without any meaningfull errors. In the resultscreen you can monitor those errors in your console. Set createpdf to false.
 
 # Quirks:
 
--It's not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem.
+-It's not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem. It is rendered quite big because an A4 format has a quite small width. I just set fonts to smaller values etc, but maybe tweaking the viewport or something may do the trick. Also the phantomjs zoomFactor property does not seem to work. I don't know why. 
 
 
 
@@ -168,7 +171,7 @@ Now the demo survey (pdfgeneratordemo) should be in your list of surveys, you on
 
 NOTE: It may not work because of webserver permissions. Go to your limesurvey config file and set debug to 1. It will show you permissions errors (after disable and re-enable this plugin with the 'load demo' checkbox checked.
 
-After activating, fill out question 7 about watergymnastics and you after submit you should see a resultscreen with a barchart and a link to download a pdf. 
+After activating, fill out question 7 about watergymnastics and after submit you should see a resultscreen with a barchart and a link to download a pdf. 
 
 ### Example explained
 
