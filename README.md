@@ -1,23 +1,27 @@
-# limesurvey-plugin-pdfcreator ((very) alpha)
+# limesurvey-plugin-pdf-email-creator ((very) alpha)
 
-A flexible limesurvey pdfcreator
+A flexible limesurvey pdf, resultscreen and email creator
+
+TODO pass in email as variable from the survey
 
 # Overview
 
-This is a limesurvey plugin to create a downloadable pdf after a respondent completes a survey and show this content in the completed page. 
+This is a limesurvey plugin to create a downloadable pdf, send this pdf as an attachment to an email and show survey results after a respondent completes on the completed page.
 
-~~Because as far as I know, there is no option for a plugin to add functionality to the backend (ie It's not possible to create buttons with surveyspecific options, except for coding into the core, which would be erased after each update), this plugin uses markerquestions to configure.~~ There is a way to configure a plugin for a specific survey, and maybe in the future this plugin will use this option. This plugin, for the time being, makes use of a global plugin configuration and it uses markerquestion to configure survey specifics. This way you can make use of conditional logic provided by limesurvey's expression manager. These markerquestions are of type 'equation type'.
+Dependencies: Composer, Phantomjs, h2p, swiftmailer
+
+You have to pass variables by creating a markerquestion are of type 'equation type' and name it 'pdfmarker'.
 You also have to provide templates (html/javascript/css) and upload them to a folder.  In these templates you have to wrap your variables in {!-yourvariablename-!} (handlebar-exclamation mark-hyphen).
 
 ### Important
 
-This is **NOT** a simple plug & play plugin. To make it function, you need to do some work. The main reason for this is that this plugin uses [kriansa's h2p library](https://github.com/kriansa/h2p "H2p"), which in turn makes use of [PhantomJS](http://phantomjs.org/ "PhantomJS"). You can install PhantomJS on your server (see for instance for ubuntu [this](https://gist.github.com/julionc/7476620)). However, on shared hosting you most probably can't do that so you'll need to run a precompiled binary.
+This is **NOT** a simple plug & play plugin. To make it function, you need to do some work. The main reason for this is that this plugin uses [kriansa's h2p library](https://github.com/kriansa/h2p "H2p"), which in turn makes use of [PhantomJS](http://phantomjs.org/ "PhantomJS"). You can install PhantomJS on your server (see for instance for ubuntu [this](https://gist.github.com/julionc/7476620)). However, on shared hosting you most probably can't do that so you'll need to run a precompiled binary (which is recommended by phantomjs anyway).
 
 On the other hand, PhantomJS makes use of [Qt WebKit](https://wiki.qt.io/Qt_WebKit "Qt WebKit"), which makes it possible to really render pages using javascript, html and css, including fonts etc. This is something (as far as I know) pure php-pdf-creators don't do.
 
 # Getting started
 
-First make sure you have limesurvey 2.05 or higher installed or 2.06 or higher for cronjob support.
+First make sure you have limesurvey 2.05 or higher installed ~~or 2.06 or higher for cronjob support~~.
 
 ### Install PhantomJS
 
@@ -47,6 +51,16 @@ Do (from your apps rootfolder) a
 or put "kriansa/h2p": "dev-master" in the require path of your composer.json and run composer update or install. The dev-master version is very important!. (Note to self: For OpenShift you may need to to downgrade some dependencies because it runs on php 5.4. Which ones you can see in the console while deploying).
 Now you should have a 'vendor' folder in your limesurvey rootfolder.
 
+### Install Swiftmailer
+
+Do (from your apps rootfolder) a 
+
+(sudo) composer require swiftmailer/swiftmailer @stable
+
+(Note to self: For OpenShift you may need to to downgrade some dependencies because it runs on php 5.4. Which ones you can see in the console while deploying).
+Now you should have swiftmailer in the 'vendor' folder in your limesurvey rootfolder.
+
+
 
 ### Install limesurvey-plugin-pdfcreator
 
@@ -55,21 +69,19 @@ Drop the PdfGenerator folder in your plugins folder.
 
 ### Activate pdfGenerator
 
-Go to your pluginmanager page in limesurvey and activate pdfGenerator. If you decided to use another path for your download or PhantomJS folder you can hit configure and change settings. If you installed PhantomJS on your machine you can change the path also in the configure screen. Also you can set after what time a pdf will be deleted. Default is 60 minutes.
+Go to your pluginmanager page in limesurvey and activate pdfGenerator. If you decided to use another path for your download or PhantomJS folder you can hit configure and change settings. If you installed PhantomJS on your machine you can change the path also in the configure screen. ~~Also you can set after what time a pdf will be deleted. Default is 60 minutes~~ (this is turned off right now).
 Now you should be good to go!
 
 
-### Activate cron (optional)
+~~### Activate cron (optional)
 
 Everytime a pdf is generated, the plugin will check if files should be deleted because the time they will be stored (according to your configuratioon) ran out. This will only be done when a new pdf is created, so if your survey is not used very often these files will remain in the download folder. With a cron you can periodically check for files which should be deleted.
 Just fire a php cli command php yourlimesurveydir/application/commands/console.php plugin cron --interval= < the same value as after which downloads are deleted > 
-If you allready have a cron running you don't have to create another one. The plugin will be triggered by that other cron.
+If you allready have a cron running you don't have to create another one. The plugin will be triggered by that other cron.~~
 
 
 
 # Configuration
-
-~~Because limesurvey does not allow to configure a plugin on the survey level,~~ Configuring this plugin will be done using marker questions. The global configuration is managed in the plugins' configuration page.
 
 ### Global config
 
@@ -77,36 +89,30 @@ App subfolder: If the url to your app is a subfolder (www.example.com/subfolder)
 
 Path to phantomjs: This is set to the second option (dropin phantomjs). If you followed the steps above you shouldn't have to change this (if you do change, mind the '/' at the start).
 
-Download folder: If you followed the steps above you shouldn't have to change this (if you do change, mind the '/' at the start).
+disabled right now: Delete generated pdf after amount of minutes.
 
-Delete generated pdf after amount of minutes: This will cleanup files after x minutes.
 
-Debug: If this is set to true, you'll see the response of your survey dumped in the resultscreen. This is convenient if you want to know what values your survey returns. For example: does a 'no answer'-option generate an empty string or a number?
+### Survey config
 
-Load demo: This loads the demo survey if it doesn't exist. To make it work you'll have to deactivate and reactivate the plugin.
+Survey configuration can be done in: surveypage-> click Survey properties -> click General settings & texts -> browse down to Plugins and click it (let it slide to the left to have a full screen with is recommended).
 
-### Survey specific configuration: markerquestions
+Just read the help text and it should be ok.
+
+
+### Survey markerquestion
+
+The markerquestion is used to pass variables from your survey to this plugin. The markerquestion should be named pdfmarker.
 
 The recommended usage is to create one markerquestion at the end of the survey. The markerquestion should look like this:
 
 ```
-{'showinresult=true| createpdf=true|resulttemplate=resultpagehandler.html| pdftemplate=pdfhandler.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11 | parsenested=true'}
+{'variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11'}
 
 ```
 
+The variables are the question codes. If you checked parse nested in your plugin config screen, you only have to provide the parent question codes(q1_SQ01 will be transformed in a javascript object).
 
-Parameters explained:
-
-- showinresult: Mandatory. This will be added to the resultpage when set to true.
-- createpdf: Mandatory. This will create a pdf and will print a downloadlink on the resultpage.
-- pdftemplate: Mandatory. Set empty (pdftemplate=) when not needed. Must be placed in the templates folder.
-- resulttemplate: Mandatory. Set empty (resulttemplate=) when not needed
-- variables. Mandatory. Comma separated variable names (question codes).
-
-- parsenested.: Optional (recommended). When set to true, you don't have pass all subquestion variables. For example: You can pass q1 as variable and q1_SQ01 gets parsed as a json object.
-
-
-NOTE: every string with 'http' in it will be parsed without quotes.
+NOTE: every string with 'http' in it will be parsed without quotes (so just use www.something if websites are answers or question in your survey).
 
 One variable will always be available: baseurl. This is for your convenience because you can load css and javascript using this variable (if you have set a subfolder this will be appended to the baseurl). For example: src="{!-baseurl-!}js/somejavascript.js". 
 
@@ -117,27 +123,14 @@ IMPORTANT: limesurvey tries to parse strings enclosed in curly brackets when the
 
 You can set different templates for the resultpage and for the pdfpage. This is because you may need to tweak your html and css to make your pdf look nice. Another reason is that limesurvey (2.5) has JQuery and Bootstrap allready loaded. Now you can load these libraries in your pdf template only.
 
-
-
-You can also configure the pdf. This is also done by a markerquestion. This question has to contain the string 'pdfconfig' (just call it 'pdfconfig' and you are done).
-
-Example:
-
-```
-{'footerheight=2cm|footercontent={ { pageNum } } / { { totalPages } }|orientation=landscape|border=2cm|footercontenttag=h1|footercontentstyle=color:red;background-color:blue;'}
-
-```
-
-Explanation: It's just as explained in https://github.com/kriansa/h2p, but the only difference is you have to pass footercontent and footerheight and headercontent and headerheight because it is a nested array. You can also pass inline styles to headercontenttag and footercontenttag as attributes headercontentstyle and footercontentstyle to style. The text will be wrapped in a tag you provide with the inline style you provide. Mind the spaces between the brackets to prevent parsing by expression manager.
-
-The style for the footer and header are inline because adding a class or id to it and apply some external css does not seem to work. It's probably a parsing order thing.
+The styling for the footer and header is inline because adding a class or id to it and apply some external css does not seem to work. It's probably a parsing order thing.
 
 
 ### Templates
 
 Templates should be in the folder : plugins/PdfGenerator/templates
 
-These templates can also be placed in a subfolder, just pass it to your resulttemplate and pdftemplate parameters (pdftemplate=mysubfolder/mypdftemplate.html).
+These templates can also be placed in a subfolder, just pass it to your survey config (mysubfolder/mypdftemplate.html).
 
 As stated in the previous section, passed variables replace that same variable name between '{!-' and '-!}'.
 

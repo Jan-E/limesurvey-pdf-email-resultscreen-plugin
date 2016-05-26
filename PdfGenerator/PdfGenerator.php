@@ -4,7 +4,7 @@ require_once 'PdfGeneratorInterface.php';
 
 use H2P\Converter\PhantomJS;
 use H2P\TempFile;
-//use SurveyDynamic;
+
 
     class PdfGenerator extends \ls\pluginmanager\PluginBase implements PdfGeneratorInterface{
 
@@ -23,20 +23,11 @@ use H2P\TempFile;
                 'label' => 'Path to phantomjs. Only change when you installed phantomjs on your box, probably to /usr/local/bin/phantomjs. Do not prepend the previously mentioned app subfolder',
                 'default' => '/phantomjs/bin/phantomjs',
             ),
-            /*'PdfGenerator_Download_Folder' => array(
-                'type' => 'text',
-                'label' => "Download folder (only change when you don't want it to be in your root/download folder)",
-                'default' => '/download',
-            ), */
             'PdfGenerator_Delete_Download_After' => array(
                 'type' => 'text',
                 'label' => 'Delete generated pdf after amount of minutes',
                 'default' => '60',
             ),
-            /*'Debug'  =>  array(
-                'type'=>'checkbox',
-                'label'=>'Check to enable debug mode',
-            ),*/
             'Load_Demo'  =>  array(
                 'type'=>'checkbox',
                 'label'=>'Check to load demo. deactivate and reactivate this plugin to load.',
@@ -103,6 +94,14 @@ use H2P\TempFile;
         public function beforeSurveySettings()
         {
             $event = $this->getEvent();
+
+            $downloadpdftext  = $this->get('downloadpdftext', 'Survey', $event->get('survey'));
+
+            if (!isset( $downloadpdftext ) || $downloadpdftext === '' ){
+
+                $downloadpdftext = 'You can download your pdf {!-here-!}';
+
+            }
 
             $emailtemplate  = $this->get('emailtemplate', 'Survey', $event->get('survey'));
 
@@ -193,6 +192,96 @@ use H2P\TempFile;
 
             }
 
+            $pdfconfig  = $this->get('pdfconfig', 'Survey', $event->get('survey'));
+
+            if (!isset( $pdfconfig ) || $pdfconfig === '' ){
+
+                $pdfconfig = 'border=0cm | orientation=portrait';
+
+            }
+
+            $pdfheader  = $this->get('pdfheader', 'Survey', $event->get('survey'));
+
+            if (!isset( $pdfheader ) || $pdfheader === '' ){
+
+                $pdfheader = '1';
+
+            }
+
+            $headercontent  = $this->get('headercontent', 'Survey', $event->get('survey'));
+
+            if (!isset( $headercontent ) || $headercontent === '' ){
+
+                $headercontent = 'Your survey';
+
+            }
+
+            $headercontenttag  = $this->get('headercontenttag', 'Survey', $event->get('survey'));
+
+            if (!isset( $headercontenttag ) || $headercontenttag === '' ){
+
+                $headercontenttag = 'p';
+
+            }
+
+            $headercontentstyle  = $this->get('headercontentstyle', 'Survey', $event->get('survey'));
+
+            if (!isset( $headercontentstyle ) || $headercontentstyle === '' ){
+
+                $headercontent = '';
+
+            }
+
+            $headerheight  = $this->get('headerheight', 'Survey', $event->get('survey'));
+
+            if (!isset( $headerheight ) || $headerheight === '' ){
+
+                $headerheight = '1cm';
+
+            }
+
+
+            $pdffooter  = $this->get('pdffooter', 'Survey', $event->get('survey'));
+
+            if (!isset( $pdffooter ) || $pdffooter === '' ){
+
+                $pdffooter = '1';
+
+            }
+
+            $footercontent  = $this->get('footercontent', 'Survey', $event->get('survey'));
+
+            if (!isset( $footercontent ) || $footercontent === '' ){
+
+                $footercontent = 'Your survey';
+
+            }
+
+            $footercontenttag  = $this->get('footercontenttag', 'Survey', $event->get('survey'));
+
+            if (!isset( $footercontenttag ) || $footercontenttag === '' ){
+
+                $footercontenttag = 'p';
+
+            }
+
+            $footercontentstyle  = $this->get('footercontentstyle', 'Survey', $event->get('survey'));
+
+            if (!isset( $footercontentstyle ) || $footercontentstyle === '' ){
+
+                $footercontentstyle = '';
+
+            }
+
+            $footerheight  = $this->get('footerheight', 'Survey', $event->get('survey'));
+
+            if (!isset( $footerheight ) || $footerheight === '' ){
+
+                $footerheight = '1cm';
+
+            }
+
+
            
 
             $event->set("surveysettings.{$this->id}", array(
@@ -215,6 +304,13 @@ use H2P\TempFile;
                         'default' => false,
                         'help'=> "<p>This will dump your variables on the resultscreen and sent emails by default to your 'Debug email' adress (see below)</p>",
                     ),
+                    'parsenested' => array(
+                        'type' => 'checkbox',
+                        'label' => "parse nested",
+                        'current' => $this->get('parsenested', 'Survey', $event->get('survey')),
+                        'default' => false,
+                        'help'=> "<p>This will parse nested variables, so subquestions will become nested objects within the containing question (recommended)</p>",
+                    ),
                     'dummypdf' => array(
                         'type' => 'checkbox',
                         'label' => 'PDF SETTINGS',
@@ -231,6 +327,21 @@ use H2P\TempFile;
                         'default' => false,
                         'help'=> "<p>Create pdf: This will create a pdf</p>",
                     ),
+                    'showdownloadpdftext' => array(
+                        'type' => 'checkbox',
+                        'label' => "Show download pdf text",
+                        'current' => $this->get('showdownloadpdftext', 'Survey', $event->get('survey')),
+                        'default' => false,
+                        'help'=> "<p>Show download pdf text: This will show a download pdf text in the resultscreen you provide below</p>",
+                    ),
+                    'downloadpdftext' => array(
+                        'type' => 'text',
+                        'label' => "Download pdf text",
+                        'current' => $this->get('downloadpdftext', 'Survey', $event->get('survey')),
+                        'default' => false,
+                        'help'=> "<p>Create pdf: This is the download text you provide</p>
+                                <p>Put the part of the text you want to be the clickable link between {!- and -!}. The whole text can be between html tags.</p>",
+                    ),
 
                     'pdftemplate' => array(
                         'type' => 'string',
@@ -239,8 +350,7 @@ use H2P\TempFile;
                         'default' => 'template.html',
                         'help'=> "<p>Templates should be in the folder : plugins/PdfGenerator/templates</p>
                                  <p>These templates can also be placed in a subfolder(mysubfolder/mypdftemplate.html).</p>",
-                    ), 
-                     
+                    ),
                     'PdfGenerator_Download_Folder' => array(
                         'type' => 'string',
                         'label' => "Download folder",
@@ -248,6 +358,116 @@ use H2P\TempFile;
                         'default' => '/download',
                         'help'=> "<p>Download folder (only change when you don't want it to be in your root/download folder).</p>
                                  <p>Will be prepended with your app's subfolder (see your plugin manager)</p>",
+                    ), 
+                    'pdfconfig' => array(
+                        'type' => 'text',
+                        'label' => "Pdf configuration",
+                        'current' => $pdfconfig,
+                        'default' => '1cm',
+                        'help'=> "<p>Pdf config</p>
+                                 <p>name=value, delimited by a  '|'. So border=1cm | orientation=landscape</p>",
+                    ),
+
+                    'dummypdfheaderfooter' => array(
+                        'type' => 'checkbox',
+                        'label' => 'PDF HEADERS/FOOTERS',
+                        'default' => false,
+                        'readOnly' => true,
+                        'help'=> '<h3>Pdf headers/footers</h3>
+                                    <p>Below you can configure your pdf headers and footers.</p>
+                                    <p>You can insert {{pageNum}} and  {{totalPages}}, for instance: {{pageNum}} / {{totalPages}}</p>
+                                    <p><b>IMPORTANT</b>{{pageNum}} and {{totalPages}}, can not have spaces in it!</p>',
+                                    
+                    ),
+
+                    'pdfheader' => array(
+                        'type' => 'checkbox',
+                        'label' => "Pdf header",
+                        'current' => $pdfheader,
+                        'default' => '1',
+                        'help'=> "<p>Pdf header</p>
+                                 <p>Check to create header</p>",
+                    ),
+
+                    'headercontent' => array(
+                        'type' => 'string',
+                        'label' => "Pdf header content",
+                        'current' => $headercontent,
+                        'default' => 'Your survey',
+                        'help'=> "<p>Pdf header content</p>
+                                 <p>The text you want in your header</p>",
+                    ), 
+                     
+                    'headercontenttag' => array(
+                        'type' => 'string',
+                        'label' => "Pdf header content tag",
+                        'current' => $headercontenttag,
+                        'default' => 'p',
+                        'help'=> "<p>Pdf header content tag</p>
+                                 <p>The html tag your headercontent will be wrapped in.</p>",
+                    ),
+
+                    'headercontentstyle' => array(
+                        'type' => 'text',
+                        'label' => "Pdf header content style",
+                        'current' => $headercontentstyle,
+                        'default' => 'p',
+                        'help'=> "<p>Pdf header content style</p>
+                                 <p>The content will be wrapped in the previously mentioned tag and this style will be appended inline.</p>
+                                 <p>This is because adding a class and apply external css does not work.</p>",
+                    ),
+                    'headerheight' => array(
+                        'type' => 'string',
+                        'label' => "Pdf header height",
+                        'current' => $headerheight,
+                        'default' => 'p',
+                        'help'=> "<p>Pdf header height</p>
+                                 <p>The header height: for example: 1cm or 5mm</p>",
+                    ), 
+
+                    'pdffooter' => array(
+                        'type' => 'checkbox',
+                        'label' => "Pdf footer",
+                        'current' => $pdffooter,
+                        'default' => '1',
+                        'help'=> "<p>Pdf footer</p>
+                                 <p>Check to create header</p>",
+                    ),
+
+                    'footercontent' => array(
+                        'type' => 'string',
+                        'label' => "Pdf footer content",
+                        'current' => $footercontent,
+                        'default' => '{ { pageNum } } / { { totalPages } }',
+                        'help'=> "<p>Pdf footer content</p>
+                                 <p>The text you want in your footer</p>",
+                    ), 
+                     
+                    'footercontenttag' => array(
+                        'type' => 'string',
+                        'label' => "Pdf header content tag",
+                        'current' => $footercontenttag,
+                        'default' => 'p',
+                        'help'=> "<p>Pdf footer content tag</p>
+                                 <p>The html tag your footercontent will be wrapped in.</p>",
+                    ),
+
+                    'footercontentstyle' => array(
+                        'type' => 'text',
+                        'label' => "Pdf footer content style",
+                        'current' => $footercontentstyle,
+                        'default' => 'p',
+                        'help'=> "<p>Pdf footer content style</p>
+                                 <p>The content will be wrapped in the previously mentioned tag and this style will be appended inline.</p>
+                                 <p>This is because adding a class and apply external css does not work.</p>",
+                    ),
+                    'footerheight' => array(
+                        'type' => 'string',
+                        'label' => "Pdf footer height",
+                        'current' => $footerheight,
+                        'default' => 'p',
+                        'help'=> "<p>Pdf footer height</p>
+                                 <p>The footer height: for example: 1cm or 5mm</p>",
                     ), 
 
                     'dummyresultscreen' => array(
@@ -548,12 +768,9 @@ use H2P\TempFile;
         {
 
             $settings = $this->parsedsettings;
-            
+             
+            //TODO find a way to make this work
             //scandir and cleanup files
-
-
-            
-
             //$this->cron();
 
             $event      = $this->getEvent();
@@ -566,20 +783,18 @@ use H2P\TempFile;
            
             /*
             this gets survey specific config TODO use this (cronjob creates a problem with different settings for different surveys)
-            $thissurveysettings=$this->get('message', 'Survey', $surveyId);
-
-             CVarDumper::dump($thissurveysettings);*/
+           */
         
             
             $settings['Debug']                          = $this->get('Debug', 'Survey', $surveyId);
+            $settings['parsenested']                    = $this->get('parsenested', 'Survey', $surveyId);
             $settings['createpdf']                      = $this->get('createpdf', 'Survey', $surveyId); 
             $settings['pdftemplate']                    = $this->get('pdftemplate', 'Survey', $surveyId); 
-            $settings['PdfGenerator_Download_Folder']   = $this->get('PdfGenerator_Download_Folder', 'Survey', $surveyId); 
             $settings['showinresult']                   = $this->get('showinresult', 'Survey', $surveyId); 
             $settings['resulttemplate']                 = $this->get('resulttemplate', 'Survey', $surveyId); 
 
 
-                CVarDumper::dump(['settings' => $settings]);
+               // CVarDumper::dump(['settings' => $settings]);
 
             $emailsettings = [];
 
@@ -594,11 +809,29 @@ use H2P\TempFile;
             $emailsettings['emailsuccessmessage']   = $this->get('emailsuccessmessage', 'Survey', $surveyId);
             $emailsettings['emailerrormessage']     = $this->get('emailerrormessage', 'Survey', $surveyId);
 
-             CVarDumper::dump(['emailsettings' => $emailsettings]);
+             
 
+            $pdfsettings = [];
 
+            $pdfsettings['createpdf']                       = $this->get('createpdf', 'Survey', $surveyId);
+            $pdfsettings['showdownloadpdftext']             = $this->get('showdownloadpdftext', 'Survey', $surveyId);
+            $pdfsettings['downloadpdftext']                 = $this->get('downloadpdftext', 'Survey', $surveyId);
+            $pdfsettings['pdftemplate']                     = $this->get('pdftemplate', 'Survey', $surveyId);
+            $pdfsettings['PdfGenerator_Download_Folder']    = $this->get('PdfGenerator_Download_Folder', 'Survey', $surveyId);
+            $pdfsettings['pdfconfig']                       = $this->get('pdfconfig', 'Survey', $surveyId);
+            $pdfsettings['pdfheader']                       = $this->get('pdfheader', 'Survey', $surveyId);
+            $pdfsettings['headercontent']                   = $this->get('headercontent', 'Survey', $surveyId);
+            $pdfsettings['headercontenttag']                = $this->get('headercontenttag', 'Survey', $surveyId);
+            $pdfsettings['headercontentstyle']              = $this->get('headercontentstyle', 'Survey', $surveyId);
+            $pdfsettings['headerheight']                    = $this->get('headerheight', 'Survey', $surveyId);
 
-            //$validationerrors = $this->validateMarker($response);
+            $pdfsettings['pdffooter']                       = $this->get('pdffooter', 'Survey', $surveyId);
+            $pdfsettings['footercontent']                   = $this->get('footercontent', 'Survey', $surveyId);
+            $pdfsettings['footercontenttag']                = $this->get('footercontenttag', 'Survey', $surveyId);
+            $pdfsettings['footercontentstyle']              = $this->get('footercontentstyle', 'Survey', $surveyId);
+            $pdfsettings['footerheight']                    = $this->get('footerheight', 'Survey', $surveyId);
+
+            
             $validationerrors = [];
 
             if(count($validationerrors) === 0){
@@ -613,10 +846,12 @@ use H2P\TempFile;
                 $aaq = new getAnswersAndQuestions();
 
                 $data = $aaq->getResponse($surveyId);
+
+                
              
                 $microtime = (string)(number_format((microtime(true) * 1000),0, '.', ''));
                 $pdfname = $microtime . '.pdf';
-                $downloadpath = $settings['PdfGenerator_app_subfolder'].$settings['PdfGenerator_Download_Folder'];
+                $downloadpath = $settings['PdfGenerator_app_subfolder'].$pdfsettings['PdfGenerator_Download_Folder'];
 
                 $c = $this->parseTemplates($workload, $data, $settings);
 
@@ -628,13 +863,24 @@ use H2P\TempFile;
 
                 }
 
+               
                 $resp = $event->getContent($this);
 
                 if(strlen($pdfall) > 0){
 
-                    //first get config
-                    
-                    $configpdf = $this->getPdfConfig($response);
+                    $configpdf = $this->getPdfConfig($pdfsettings);
+
+                    if($settings['Debug'] === '1'){
+
+                        echo '<h1>Pdf config</h1>';
+
+                        CVarDumper::dump($configpdf);
+
+                        echo '<br><br>';
+
+                    }
+
+
 
                     try{
 
@@ -650,7 +896,7 @@ use H2P\TempFile;
                         }
        
                         $params = array_merge(['search_paths' => $path ], $configpdf);
-         
+
                         $converter = new PhantomJS($params);
                    
                         $input = new TempFile($pdfall, 'html');
@@ -659,7 +905,16 @@ use H2P\TempFile;
 
                         $link = "http://$_SERVER[HTTP_HOST]/$downloadpath/$pdfname";
 
-                        $resp->addContent("<p>You can download your results <a href='$link'>here</a> </p>");
+                        if($pdfsettings['showdownloadpdftext'] === '1'){
+
+                            $dltxt = str_replace('{!-', "<a href='$link'>", $pdfsettings['downloadpdftext']);
+                            $dltxt = str_replace('-!}', "</a>", $dltxt);
+
+                            $resp->addContent($dltxt);
+
+                        }
+
+                        
 
                         if($emailsettings['sendemail'] === '1'){
 
@@ -668,8 +923,6 @@ use H2P\TempFile;
                             $mailer = new ResultMailer();
 
                             $mailresult = $mailer->sendMail($link, $pdfname, $emailsettings, $settings, $dynamicemailsettings);
-
-                            CVarDumper::dump(['mailresult' => $mailresult]);
 
                             if($mailresult === 1){
 
@@ -686,7 +939,7 @@ use H2P\TempFile;
 
                     }catch (Exception $e){
 
-                        if($settings['Debug'] !== null){
+                        if($settings['Debug'] === '1'){
 
                             CVarDumper::dump(['error' => $e, 'message' => $e->getMessage()]);
 
@@ -700,7 +953,7 @@ use H2P\TempFile;
 
                 if (count($c['parseerrors']) > 0){
 
-                    if($settings['Debug'] !== null){
+                    if($settings['Debug'] === '1'){
 
                         foreach($c['parseerrors'] as $err){
                                 
@@ -722,7 +975,11 @@ use H2P\TempFile;
 
                 if($settings['Debug'] === '1'){
 
-                    CVarDumper::dump(['data' => $data]);
+                    echo '<h1>Data</h1>';
+
+                    CVarDumper::dump($data);
+
+                    echo '<br><br>';
 
                 }
 
@@ -736,13 +993,21 @@ use H2P\TempFile;
 
                 $resp = $event->getContent($this);
 
-                foreach($validationerrors as $error){
+                if($settings['Debug'] === '1'){
 
-                    $errortitle = $error['error'];
-                    $errortext = $error['msg'];
-                    $tmpl = $error['template'];
+                    foreach($validationerrors as $error){
 
-                    $resp->addContent("<h4>$errortitle</h4><p>$errortext</p><p>template: $tmpl</p>");
+                        $errortitle = $error['error'];
+                        $errortext = $error['msg'];
+                        $tmpl = $error['template'];
+
+                        $resp->addContent("<h4>$errortitle</h4><p>$errortext</p><p>template: $tmpl</p>");
+
+                    }
+
+                }else{
+
+                    $resp->addContent("<h4>An error occured...</p>");
 
                 }
 
@@ -768,7 +1033,7 @@ use H2P\TempFile;
 
                 }else{
 
-                    if(isset($v['parsenested']) && trim($v['parsenested']) === 'true'){
+                    if(isset($settings['parsenested']) && trim($settings['parsenested']) === '1'){
 
                         $variables = $data['nested'];
 
@@ -897,144 +1162,83 @@ use H2P\TempFile;
 
         }
 
-        private function getPdfConfig($response){
+        private function getPdfConfig($pdfsettings){
 
             $config = [];
 
-            foreach ($response as $k => $v){
+            $listsettings = $pdfsettings['pdfconfig'];
 
-                if(strrpos(trim($k), 'pdfconfig') !== false){
+            $listsettings   = preg_replace('/\s+/', '', $listsettings);
+            $listsettings   = preg_replace('~\x{00a0}~','',$listsettings);
 
-                    $v= preg_replace('/\s+/', '', $v);
-                    $v = preg_replace('~\x{00a0}~','',$v);
+            $varstemp = array_map('trim', explode('|', $listsettings));
 
-                    $varstemp = array_map('trim', explode('|', $v));
+            foreach($varstemp as $v){
 
-                    $vars = [];
+                $t = explode('=', $v);
+                $config[$t[0]] = $t[1];
 
-                    foreach($varstemp as $v){
+            }
 
-                        $t = explode('=', $v);
-                        $vars[$t[0]] = $t[1];
+            if(isset($pdfsettings['pdfheader']) && $pdfsettings['pdfheader'] === '1'){
 
-                    }
+                $config['header'] = [];
+                $config['header']['height'] = $pdfsettings['headerheight'];
+                $config['header']['content'] = $pdfsettings['headercontent'];
 
-                    if(isset($vars['headerheight'])){
+                if(isset($pdfsettings['headercontenttag']) && $pdfsettings['headercontenttag'] !== ''){
 
-                        if(!isset($config['header'])){
+                    $tag = $pdfsettings['headercontenttag'];
 
-                            $config['header'] = [];
-                            $config['header']['height'] = $vars['headerheight'];
+                    if(isset($pdfsettings['headercontentstyle']) && $pdfsettings['headercontentstyle'] !== ''){
 
-                        }else{
+                        $style = $pdfsettings['headercontentstyle'];
 
-                            $config['header']['height'] = $vars['headerheight'];
+                        $config['header']['content'] = "<$tag style='$style'>". $pdfsettings['headercontent']."</$tag>";
 
-                        }
+                    }else{
 
-                    }
-
-                    if(isset($vars['headercontent'])){
-
-                        if(!isset($config['header'])){
-
-                            $config['header'] = [];
-                            $config['header']['content'] = $vars['headercontent'];
-
-                        }else{
-
-                            $config['header']['content'] = $vars['headercontent'];
-
-                        }
+                        $config['header']['content'] = "<$tag>". $pdfsettings['headercontent']."</$tag>";
 
                     }
 
-                    if(isset($vars['footerheight'])){
+                }else{
 
-                        if(!isset($config['footer'])){
-
-                            $config['footer'] = [];
-                            $config['footer']['height'] = $vars['footerheight'];
-
-                        }else{
-
-                            $config['footer']['height'] = $vars['footerheight'];
-
-                        }
-
-                    }
-
-                    if(isset($vars['footercontent'])){
-
-                        if(!isset($config['footer'])){
-
-                            $config['footer'] = [];
-                            $config['footer']['content'] = $vars['footercontent'];
-
-                        }else{
-
-                            $config['footer']['content'] = $vars['footercontent'];
-
-                        }
-
-                    }
-
-                    foreach($vars as $k=>$v){
-
-
-                        if($k !== 'headerheight' && $k !== 'headercontent' && $k !== 'footerheight' && $k !== 'footercontent' &&
-                             $k !== 'headercontenttag' && $k !== 'headercontentstyle' && $k !== 'footercontenttag' && $k !== 'footercontentstyle'){
-
-                            $config[$k] = $v;
-
-                        }
-
-                    }
-
-                    if(isset($vars['headercontent']) && isset($vars['headercontenttag'])){
-
-                        $tag = $vars['headercontenttag'];
-
-                        if(isset($vars['headercontentstyle'])){
-
-                            $style = $vars['headercontentstyle'];
-                            
-
-                            $config['header']['content'] = "<$tag style='$style'>". $vars['headercontent']."</$tag>";
-
-                        }else{
-
-                            $config['header']['content']= "<$tag>". $vars['headercontent']."</$tag>";
-
-                        }
-
-
-                    }
-
-                    if(isset($vars['footercontent']) && isset($vars['footercontenttag'])){
-
-                        $tag = $vars['footercontenttag'];
-
-                        if(isset($vars['footercontentstyle'])){
-
-                            $style = $vars['footercontentstyle'];
-                            
-
-                            $config['footer']['content'] = "<$tag style='$style'>". $vars['footercontent']."</$tag>";
-
-                        }else{
-
-                            $config['footer']['content'] = "<$tag>". $vars['footercontent']."</$tag>";
-
-                        }
-
-
-                    }
-
-                    break;
+                    $config['header']['content'] = $pdfsettings['headercontent'];
 
                 }
-       
+
+            }
+
+
+
+            if(isset($pdfsettings['pdffooter']) && $pdfsettings['pdffooter'] === '1'){
+
+                $config['footer'] = [];
+                $config['footer']['height'] = $pdfsettings['footerheight'];
+                $config['footer']['content'] = $pdfsettings['footercontent'];
+
+                if(isset($pdfsettings['footercontenttag']) && $pdfsettings['footercontenttag'] !== ''){
+
+                    $tag = $pdfsettings['footercontenttag'];
+
+                    if(isset($pdfsettings['footercontentstyle']) && $pdfsettings['footercontentstyle'] !== ''){
+
+                        $style = $pdfsettings['footercontentstyle'];
+
+                        $config['footer']['content'] = "<$tag style='$style'>". $pdfsettings['footercontent']."</$tag>";
+
+                    }else{
+
+                        $config['footer']['content'] = "<$tag>". $pdfsettings['footercontent']."</$tag>";
+
+                    }
+
+                }else{
+
+                    $config['footer']['content'] = $pdfsettings['footercontent'];
+
+                }
 
             }
 
@@ -1043,7 +1247,7 @@ use H2P\TempFile;
         }
 
 
-        private function createWorkload($response, $settings)
+        private function createWorkload($response)
         {
 
             $workload = [];
@@ -1072,11 +1276,7 @@ use H2P\TempFile;
 
                         $p = array_map('trim', explode('=', $val));
 
-                       /* if($p[0] !== 'variables' && $p[0] !== 'externalcss' && $p[0] !== 'externaljs'  && $p[0] !== 'baseurl'){
-
-                            $t[trim($p[0])] = trim($p[1]);
-
-                        }else */if($p[0] === 'variables'){
+                        if($p[0] === 'variables'){
 
                             $vars = array_map('trim', explode(',', $p[1]));
 
@@ -1104,11 +1304,7 @@ use H2P\TempFile;
 
                             $t[$p[0]] = $varray; 
 
-                        }/*else if($p[0] === 'baseurl'){
-
-                            $baseurl = ['name' => $p[1], 'url' => "http://$_SERVER[HTTP_HOST]"];
-
-                        }*/else{
+                        }else{
                        
                             continue;
 
@@ -1170,135 +1366,9 @@ use H2P\TempFile;
 
             }
 
-           
-
-            /*if(count($baseurl) > 0){
-
-                foreach($workload as $key=>$val){
-
-                    if (isset($val['variables'])){
-
-                        $workload[$key]['variables'][$baseurl['name']] = $baseurl['url'];
-
-                    }
-
-                }
-
-
-            }*/
-
             return ['workload'=> $workload, 'dynamicemailsettings' => $dynamicemailsettings]; 
 
         }
-
-
-
-
-
-
-        private function validateMarker($response)
-        {
-
-            $errors = [];
-
-            $mandatory = ['variables'];
-
-            foreach ($response as $k => $val){
-
-                if(isset($val['response'])){
-
-                    $v = $val['response'];
-
-                    $keys = [];
-
-                    if(strrpos(trim($k), 'pdfmarker') !== false){
-
-                        $t = [];
-
-                        $temp = array_map('trim', explode('|', $v));
-
-                        foreach($temp as $val){
-
-                            $p = array_map('trim', explode('=', $val));
-
-                            $keys[$p[0]] = $p[1];
-
-                        }
-
-                  
-
-                        //mandatory keys
-                       if(isset($keys['showinresult']) && isset($keys['showinpdf'])){
-
-                            if($keys['showinresult'] === 'false' && $keys['showinpdf'] === 'false'){
-
-                            //no problem
-
-                            }else{
-
-                                //check keys 
-                                $check = $this->checkKeysHelper($keys, ['variables'], $k);
-
-                                if($check !== false){
-
-                                    $errors[] = $check;
-
-                                }
-
-                            }
-
-                        }else{
-
-                            $count = 0;
-
-                            if(isset($keys['showinresult'])){
-
-                                $showres = '';
-
-                            }else{
-
-                                $count++;
-
-                                $showres = "missing variable 'showinresult'";
-
-                            }
-
-                            if(isset($keys['showinpdf'])){
-
-                                $and = '';
-                                $showpdf = '';
-
-                            }else{
-
-                                $and = '';
-
-                                if($count === 1){
-
-                                    $and = ' and ';
-                                }
-
-                                $showpdf = "missing variable 'showinpdf'";
-
-                            }
-
-                            $errors[] = ['error' => 'validation error', 'msg' => "markerquestion $k :  $showres$and$showpdf" ];
-
-                        }
-
-                    }
-
-                }else{
-
-                    continue;
-
-                }     
-
-            }
-
-            return $errors;
-
-        }
-
 
         private function parseErrorHelper($html, $template)
         {
