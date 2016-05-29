@@ -198,6 +198,7 @@ To override the survey configuration dynamically (because you want to set option
 
 
 ** The part between [link] and [/link] wil be parsed as a clickable link to the pdf. Html tags must be between brackets ([ instead of <]).
+
 *** Note the spaces between { and { and between } and }.
 
 
