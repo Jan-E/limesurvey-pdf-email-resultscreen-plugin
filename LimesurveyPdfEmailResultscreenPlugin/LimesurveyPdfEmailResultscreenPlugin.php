@@ -1,29 +1,32 @@
 <?php
 require_once __DIR__. '/../../vendor/autoload.php';
-require_once 'PdfGeneratorInterface.php';
+require_once 'LimesurveyPdfEmailResultscreenPluginInterface.php';
 
 use H2P\Converter\PhantomJS;
 use H2P\TempFile;
 
 
-    class PdfGenerator extends \ls\pluginmanager\PluginBase implements PdfGeneratorInterface{
+    class LimesurveyPdfEmailResultscreenPlugin extends \ls\pluginmanager\PluginBase implements  LimesurveyPdfEmailResultscreenPluginInterface{
 
         protected $storage = 'DbStorage';
-        static protected $description = 'pdf generator';
-        static protected $name = 'pdfGenerator';
+        static protected $description = 'Limesurvey-Pdf-Email-Resultscreen-Plugin';
+        static protected $name = 'LimesurveyPdfEmailResultscreenPlugin';
 
         protected $settings = array(
-            'PdfGenerator_app_subfolder' => array(
+            
+            'LimesurveyPdfEmailResultscreenPlugin_app_subfolder' => array(
                 'type' => 'text',
                 'label' => 'If your app is in a subfolder: for example: Your app is on http://www.example.com/limesurveyapp/, you can put it in here. Start with a slash, no trailing slash. Note: Do not name your subfolder phantomjs',
                 'default' => '/',
             ),
-            'PdfGenerator_phantomjs_Path' => array(
+           
+            'LimesurveyPdfEmailResultscreenPlugin_phantomjs_Path' => array(
                 'type' => 'text',
                 'label' => 'Path to phantomjs. Only change when you installed phantomjs on your box, probably to /usr/local/bin/phantomjs. Do not prepend the previously mentioned app subfolder',
                 'default' => '/phantomjs/bin/phantomjs',
             ),
-            'PdfGenerator_Delete_Download_After' => array(
+            
+            'LimesurveyPdfEmailResultscreenPlugin_Delete_Download_After' => array(
                 'type' => 'text',
                 'label' => 'Delete generated pdf after amount of minutes',
                 'default' => '60',
@@ -144,7 +147,7 @@ use H2P\TempFile;
             }
 
             
-            $emsucmsg  = $this->get('emailsubject', 'Survey', $event->get('survey'));
+            $emsucmsg  = $this->get('emailsuccessmessage', 'Survey', $event->get('survey'));
 
             if (!isset( $emsucmsg ) || $emsucmsg === '' ){
 
@@ -152,7 +155,7 @@ use H2P\TempFile;
 
             }
 
-            $emerrmsg  = $this->get('emailsubject', 'Survey', $event->get('survey'));
+            $emerrmsg  = $this->get('emailerrormessage', 'Survey', $event->get('survey'));
 
             if (!isset( $emerrmsg ) || $emerrmsg === '' ){
 
@@ -618,7 +621,7 @@ use H2P\TempFile;
             
             $prefix = $config['db']->tablePrefix;
 
-            $title = 'pdfgeneratordemo';
+            $title = 'LimesurveyPdfEmailResultscreenPluginDemo';
 
             $query = Yii::app()->db->createCommand()
             ->select('surveyls_title')
@@ -632,7 +635,7 @@ use H2P\TempFile;
 
                 Yii::app()->loadHelper('admin/import');
 
-                $sFullFilePath = $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/demo/pdfgenerator_demo.lss';
+                $sFullFilePath = $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/demo/LimesurveyPdfEmailResultscreenPluginDemo.lss';
 
                 $aImportResults = importSurveyFile($sFullFilePath, true);
 
@@ -647,11 +650,11 @@ use H2P\TempFile;
 
                     $errors = 0;
                     
-                    if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom')) {
+                    if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/styles-public/custom')) {
 
                         try{
 
-                            mkdir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom', 0777, true);
+                            mkdir($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/styles-public/custom', 0777, true);
 
 
                         }catch(Exception $e){
@@ -665,11 +668,11 @@ use H2P\TempFile;
                     }
 
 
-                    if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom/demo.css')) {
+                    if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/styles-public/custom/demo.css')) {
 
                         try{
 
-                            copy($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/demo/css/demo.css', $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/styles-public/custom/demo.css');
+                            copy($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/demo/css/demo.css', $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/styles-public/custom/demo.css');
 
                         }catch(Exception $e){
 
@@ -681,11 +684,11 @@ use H2P\TempFile;
 
                     }
 
-                    if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom')) {
+                    if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/scripts/custom')) {
 
                         try{
 
-                            mkdir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom', 0777, true);
+                            mkdir($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/scripts/custom', 0777, true);
 
                         }catch(Exception $e){
 
@@ -698,11 +701,11 @@ use H2P\TempFile;
                     }
 
 
-                    if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom/chartfactory.js')) {
+                    if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/scripts/custom/chartfactory.js')) {
 
                         try{
 
-                            copy($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/demo/chartfactory/chartfactory.js', $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/scripts/custom/chartfactory.js');
+                            copy($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/demo/chartfactory/chartfactory.js', $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/scripts/custom/chartfactory.js');
 
                          }catch(Exception $e){
 
@@ -716,7 +719,7 @@ use H2P\TempFile;
 
                     if ($errors === 0){
 
-                         $pmanager->setFlash("<p>Created demo survey named 'pdfgeneratordemo' and created its required javascript and css files.</p>");
+                         $pmanager->setFlash("<p>Created demo survey named 'LimesurveyPdfEmailResultscreenPluginDemo' and created its required javascript and css files.</p>");
 
                     }
                     
@@ -740,21 +743,21 @@ use H2P\TempFile;
 
             }
 
-            if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].$settings['PdfGenerator_Download_Folder'])) {
+            if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].$settings['PdfGenerator_Download_Folder'])) {
 
-                mkdir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].$settings['PdfGenerator_Download_Folder'], 0777, true);
+                mkdir($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].$settings['PdfGenerator_Download_Folder'], 0777, true);
 
             }
 
-            $files = scandir($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].$settings['PdfGenerator_Download_Folder']);
+            $files = scandir($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].$settings['PdfGenerator_Download_Folder']);
 
             $nowtime = microtime(true) * 1000;
 
             foreach ($files as $file){
 
-                if( $file[0] !== '.' && intval(explode('.', $file)[0]) < $nowtime - (1000 * intval($settings['PdfGenerator_Delete_Download_After']))  ){
+                if( $file[0] !== '.' && intval(explode('.', $file)[0]) < $nowtime - (1000 * intval($settings['LimesurveyPdfEmailResultscreenPlugin_Delete_Download_After']))  ){
 
-                    unlink($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].$settings['PdfGenerator_Download_Folder'].'/'.$file);
+                    unlink($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].$settings['PdfGenerator_Download_Folder'].'/'.$file);
 
                 }
 
@@ -894,7 +897,7 @@ use H2P\TempFile;
              
                 $microtime = (string)(number_format((microtime(true) * 1000),0, '.', ''));
                 $pdfname = $microtime . '.pdf';
-                $downloadpath = $settings['PdfGenerator_app_subfolder'].$pdfsettings['pdfdownloadfolder'];
+                $downloadpath = $settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].$pdfsettings['pdfdownloadfolder'];
 
                 $c = $this->parseTemplates($workload, $data, $settings, $pdfsettings);
 
@@ -928,13 +931,13 @@ use H2P\TempFile;
                     try{
 
                         //check if is relative path
-                        if (strpos($settings['PdfGenerator_phantomjs_Path'], '/phantomjs') === 0){
+                        if (strpos($settings['LimesurveyPdfEmailResultscreenPlugin_phantomjs_Path'], '/phantomjs') === 0){
 
-                            $path = $_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].$settings['PdfGenerator_phantomjs_Path'];
+                            $path = $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].$settings['LimesurveyPdfEmailResultscreenPlugin_phantomjs_Path'];
 
                         }else{
 
-                            $path = $settings['PdfGenerator_phantomjs_Path'];
+                            $path = $settings['LimesurveyPdfEmailResultscreenPlugin_phantomjs_Path'];
 
                         }
        
@@ -1066,7 +1069,7 @@ use H2P\TempFile;
             $res = [];
             $parseerrors = [];
 
-            $baseurl = "http://$_SERVER[HTTP_HOST]".$settings['PdfGenerator_app_subfolder'].'/';
+            $baseurl = "http://$_SERVER[HTTP_HOST]".$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/';
 
             foreach ($workload as $k => $v){
 
@@ -1090,7 +1093,7 @@ use H2P\TempFile;
 
                     if (isset($settings['showinresult']) && $settings['showinresult'] === '1'){
 
-                        $reshtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/templates/'.$settings['resulttemplate']);
+                        $reshtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/PdfGenerator/templates/'.$settings['resulttemplate']);
 
                         $reshtml = html_entity_decode($reshtml);
 
@@ -1113,7 +1116,7 @@ use H2P\TempFile;
 
                     if (isset($v) && isset($settings['createpdf']) && $settings['createpdf'] === '1'){
 
-                        $pdfhtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/templates/'.$settings['pdftemplate']);
+                        $pdfhtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/PdfGenerator/templates/'.$settings['pdftemplate']);
 
                         $pdfhtml = html_entity_decode($pdfhtml);
 

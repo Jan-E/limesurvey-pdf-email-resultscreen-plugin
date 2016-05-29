@@ -1,5 +1,5 @@
 <?php 
-interface PdfGeneratorInterface
+interface  LimesurveyPdfEmailResultscreenPluginInterface
 {  
 
     public function beforeActivate();  

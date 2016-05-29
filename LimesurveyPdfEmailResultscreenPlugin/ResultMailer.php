@@ -59,7 +59,7 @@ class ResultMailer {
 
         }else{
 
-            $message->setTo($dynamicemailsettingsp['toemail']);
+            $message->setTo($dynamicemailsettings['toemail']);
 
         }
 
@@ -97,7 +97,7 @@ class ResultMailer {
     private function createBody($tmplpath, $settings, $variables)
     {
 
-        $bodyhtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/emailtemplates/'.$tmplpath);
+        $bodyhtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/emailtemplates/'.$tmplpath);
 
         $bodyhtml = html_entity_decode($bodyhtml);
 

@@ -1,12 +1,10 @@
-# limesurvey-plugin-pdf-email-creator ((very) alpha)
+# Limesurvey-Pdf-Email-Resultscreen-Plugin (bèta)
 
-A flexible limesurvey pdf, resultscreen and email creator
-
-TODO pass in email as variable from the survey
+A flexible limesurvey pdf, email and resultscreen creator
 
 # Overview
 
-This is a limesurvey plugin to create a downloadable pdf, send this pdf as an attachment with an email and show survey results after a respondent completes on the completed page.
+This is a limesurvey plugin to create a downloadable pdf, send this pdf as an attachment with an email and show survey results after a respondent completes a survey on the completed page.
 
 Dependencies: Composer, Phantomjs, h2p, swiftmailer
 
@@ -68,14 +66,14 @@ Now you should have swiftmailer in the 'vendor' folder in your limesurvey rootfo
 
 
 
-### Install limesurvey-plugin-pdfcreator
+### Install Limesurvey-Pdf-Email-Resultscreen-Plugin
 
-Drop the PdfGenerator folder in your plugins folder. 
+Drop the LimesurveyPdfEmailResultscreenPlugin folder in your plugins folder. 
 
 
-### Activate pdfGenerator
+### Activate Limesurvey-Pdf-Email-Resultscreen-Plugin
 
-Go to your pluginmanager page in limesurvey and activate pdfGenerator. If you decided to use another path for your PhantomJS folder you can hit configure and change settings. If you installed PhantomJS on your machine you can change the path also in the configure screen. ~~Also you can set after what time a pdf will be deleted. Default is 60 minutes~~ (this is turned off right now).
+Go to your pluginmanager page in limesurvey and activate Limesurvey-Pdf-Email-Resultscreen-Plugin. If you decided to use another path for your PhantomJS folder you can hit configure and change settings. If you installed PhantomJS on your machine you can change the path also in the configure screen. ~~Also you can set after what time a pdf will be deleted. Default is 60 minutes~~ (this is turned off right now).
 Now you should be good to go!
 
 
@@ -114,7 +112,7 @@ The markerquestions are used to pass variables and settings from your survey to 
 
 The variablemarkerquestion is used to pass variables from your survey to this plugin. The variable markerquestion should be named variablemarker (or at least have 'variablemarker' in it, so variablemarker2 is also ok).
 
-The recommended usage is to create one variable markerquestion at the end of the survey. (type equation type and hide it in production offcourse). The markerquestion should look like this:
+The recommended usage is to create one variable markerquestion at the end of the survey. (type equation type and hide it in production ofcourse). The markerquestion should look like this:
 
 ```
 {'variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11'}
@@ -140,19 +138,19 @@ The styling for the footer and header is inline because adding a class or id to 
 
 The emailmarkerquestion is used to pass variables and email adresses from your survey to your email. The  email markerquestion should be named emailmarker (or at least have 'emailmarker' in it, so emailmarker2 is also ok).
 
-The recommended usage is to create one email markerquestion at the end of the survey. (type equation type and hide it in production offcourse). The email markerquestion should look like this:
+The recommended usage is to create one email markerquestion at the end of the survey. (type equation type and hide it in production ofcourse). The email markerquestion should look like this:
 
 ```
 {'toemail=email1@example.com, email2@example.com | variables=q1,q2'}
 
 ```
 
-You can send to multiple email adresses. Jus comma seperate them. The variables should be strings. It is only used to add some dynamic content to you email (like a name or something). In your email you can now parse these variables like in other templates:  {!-q1-!}.
+You can send to multiple email adresses. Just comma seperate them. The variables should be strings. It is only used to add some dynamic content to your email (like a name or something). In your email you can now parse these variables like in other templates:  {!-q1-!}.
 
 
 ### Override Survey config
 
-To override the survey configuration dynamically (because you want to set options dynamically, for instance only when a respondent has checked a checkbox with 'create a pdf' or prevent creating a pdf when the respondent hasn't answered any questions orsomething), you can create a markerquestion called 'overridesettings'. This equation type question should output a string. For example:
+To override the survey configuration dynamically (because you want to set options dynamically, for instance only when a respondent has checked a checkbox with 'create a pdf' or prevent creating a pdf when the respondent hasn't answered any questions or something), you can create a markerquestion called 'overridesettings'. This equation type question should output a string. For example:
 
 ```
 {'debug=true|parsenested=true|createpdf=false|sendemail=true'}
@@ -204,7 +202,7 @@ To override the survey configuration dynamically (because you want to set option
 
 ### Templates
 
-Templates should be in the folder : plugins/PdfGenerator/templates
+Templates should be in the folder : plugins/LimesurveyPdfEmailResultscreenPlugin/templates
 
 These templates can also be placed in a subfolder, just pass it to your survey config (mysubfolder/mypdftemplate.html).
 
@@ -238,16 +236,16 @@ After you made sure the external stylesheets an javascript libraries are loaded 
 
 If you don't want to copy everything to the required folders etc you have to activate this plugin, check the 'load demo' checkbox in the plugin configuration screen and then de-activate and re-activate the plugin (sorry about that workaround :)).
 
-Now the demo survey (pdfgeneratordemo) should be in your list of surveys, you only have to activate it.
+Now the demo survey (LimesurveyPdfEmailResultscreenPluginDemo) should be in your list of surveys, you only have to activate it.
 
 NOTE: It may not work because of webserver permissions. Go to your limesurvey config file and set debug to 1. It will show you permissions errors (after disable and re-enable this plugin with the 'load demo' checkbox checked.
 
-Now put this in your pdfgeneratordemo config (this can't be preloaded):
+Now put this in your LimesurveyPdfEmailResultscreenPluginDemo config (this can't be preloaded):
 
 -check 'parse nested'
 -check 'Create pdf'
 -check 'Show download pdf text'
--put in the 'Download pdf text'-textbox: You can download your pdf {!-here-!}
+-put in the 'Download pdf text'-textbox: [p]You can download your pdf [[here]][/p]
 -set 'Pdf template' to 'demo/pdf.html' 
 -keep 'Download folder' as '/download' (don't change)
 -put in 'border=1cm | orientation=portrait' in 'Pdf configuration'
@@ -260,6 +258,8 @@ Now put this in your pdfgeneratordemo config (this can't be preloaded):
 -keep 'Pdf header content tag' as 'p'
 -put in 'Pdf footer content style' the following: 'color:red;text-align:center;'
 -keep 'Pdf footer height' as '1cm'
+-check 'Show in result'
+-set 'Result template' to demo/resultscreen.html
 -do not check 'Send email'
 
 activate survey and execute
@@ -272,9 +272,9 @@ After activating, fill out question 7 about watergymnastics and after submit you
 
 ### Example explained
 
-There are many ways to make use of these variables. I will give an example. There may be better solutions (like using javacript classes etc).
+There are many ways to make use of these variables. This is just an example. There may be better solutions (like using javacript classes etc).
 
-In the example folder you will find the files you need. There is also a limesurvey demo survey which works with this example. You have to fill out question 7 (about watergymnastics) to see a barchart. In the css and js files the path where to drop them are in the first line.
+If you choose not to autoload these files you can find them in the demo folder. There is also a limesurvey demo survey which works with this example. You have to fill out question 7 (about watergymnastics) to see a barchart. In the css and js files the path where to drop them are in the first line.
 
 
 ##### Example: reusing scripts
@@ -451,15 +451,15 @@ chartfactory.createBarChart = function(dataset, domelementid, title){
 ```
 
 
-After that you can create a markerfile which loads and uses this javascript file:
+After that you can create a variablemarker question which populates the variables in your javascript file:
 
-Markerfile
+Question 'variablemarker' (equation type)
 
-``` {'showinresult=true| createpdf=true |resulttemplate=demo/resultscreen.html | pdftemplate=demo/pdf.html|variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,pdf |parsenested=true'}```
+``` {'variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11'}```
 
-Just to prove the pdf config works create a markerquestion 'pdfconfig':
+Just to prove overriding settings works create a markerquestion 'overridesettings':
 
-``` {'footerheight=2cm|footercontent={ { pageNum } } / { { totalPages } }|orientation=landscape|border=2cm|footercontenttag=h1|footercontentstyle=color:red;background-color:blue;'}```
+``` {'headercontentstyle=color:blue;text-align:center; | downloadpdftext= [p]This a overriden downloadtext. You can download the pdf [link]here[/link][/p]'}```
 
 Templates:
 
@@ -731,9 +731,38 @@ demo/pdf.html (the same but you can use body, html and head because it's a stand
 
 ```
 
+### Send an Email
 
+To send an email you have to create an email marker question:
 
+Question 'emailmarker' (equation type)
 
+``` {'toemail={email}| variables=email'}```
 
+In the demo survey there is a question named 'email'. I pass this variable to the 'toemail'-property using expression manager: (toemail={email}).
 
+I also pass the same email property as variable to use in my email template:
 
+emailtemplates/standardmessage.html:
+
+```
+<div class="jumbotron" style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;padding-top: 30px;padding-bottom: 30px;margin-bottom: 30px;color: inherit;background-color: #eee;padding-right: 60px;padding-left: 60px;border-radius: 6px;">
+<h1 style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;margin: .67em 0;font-size: 63px;font-family: inherit;font-weight: 500;line-height: 1.1;color: inherit;margin-top: 20px;margin-bottom: 10px;">You completed your survey</h1>
+<p>You provided this email: {!-email-!}</p>
+</div>
+
+```
+
+I just pass in inline css because it's an email. (I used http://templates.mailchimp.com/resources/inline-css/ to inlinify it);
+
+Now I have to enable sending an email in the plugin settings screen:
+
+-check 'Send email'
+-check 'Attach pdf'
+
+Keep the rest as is.
+
+Now an email should be send on survey complete. You must make sure that in your Configuration->global settings->tab Email settings the email settings is SMTP.
+To use it with gmail (to test) you can set it to SMTP, SMTP host: smtp.gmail.com:465, username and pw of your gmail, SMTP encryption: SSL. After that you have to change your gmail to [Allowing less secure apps to access your account](https://support.google.com/accounts/answer/6010255).
+
+Now answer the question about watergymnastics and provide your email in the email question. An email with a pdf attached should be sent.
