@@ -225,8 +225,8 @@ After you made sure the external stylesheets an javascript libraries are loaded 
 
 # Quirks:
 
--PDF's are not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem. It is rendered quite big because an A4 format has a quite small width so it will be rendered like a smartphone or tablet which may be too big. I just set fonts to smaller values etc, but maybe tweaking the viewport or something may do the trick. Also the phantomjs zoomFactor property does not seem to work. I don't know why.
--On linux hosting (probably most of you host on linux), phantomjs states: 'The system must have GLIBCXX_3.4.9 and GLIBC_2.7'. This is probably enabled by hosting provider but I don't really know. If it's not enabled your fonts won't work as expected. I don't know whether loading these fonts in your css will solve this problem, maybe it does.
+- PDF's are not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem. It is rendered quite big because an A4 format has a quite small width so it will be rendered like a smartphone or tablet which may be too big. I just set fonts to smaller values etc, but maybe tweaking the viewport or something may do the trick. Also the phantomjs zoomFactor property does not seem to work. I don't know why.
+- On linux hosting (probably most of you host on linux), phantomjs states: 'The system must have GLIBCXX_3.4.9 and GLIBC_2.7'. This is probably enabled by hosting provider but I don't really know. If it's not enabled your fonts won't work as expected. I don't know whether loading these fonts in your css will solve this problem, maybe it does.
 
 
 
@@ -242,25 +242,25 @@ NOTE: It may not work because of webserver permissions. Go to your limesurvey co
 
 Now put this in your LimesurveyPdfEmailResultscreenPluginDemo config (this can't be preloaded):
 
--check 'parse nested'
--check 'Create pdf'
--check 'Show download pdf text'
--put in the 'Download pdf text'-textbox: [p]You can download your pdf [[here]][/p]
--set 'Pdf template' to 'demo/pdf.html' 
--keep 'Download folder' as '/download' (don't change)
--put in 'border=1cm | orientation=portrait' in 'Pdf configuration'
--check 'Pdf header'
--put in 'Pdf header content' the text: 'Your result'
--keep 'Pdf header content tag' as 'p'
--put in 'Pdf header content style' the following: 'color:blue;font-weight:900;'
--keep 'Pdf header height' as '1cm'
--put in 'Pdf footer content' the following: '{{pageNum}} / {{totalPages}}'
--keep 'Pdf header content tag' as 'p'
--put in 'Pdf footer content style' the following: 'color:red;text-align:center;'
--keep 'Pdf footer height' as '1cm'
--check 'Show in result'
--set 'Result template' to demo/resultscreen.html
--do not check 'Send email'
+- check 'parse nested'
+- check 'Create pdf'
+- check 'Show download pdf text'
+- put in the 'Download pdf text'-textbox: [p]You can download your pdf [[here]][/p]
+- set 'Pdf template' to 'demo/pdf.html' 
+- keep 'Download folder' as '/download' (don't change)
+- put in 'border=1cm | orientation=portrait' in 'Pdf configuration'
+- check 'Pdf header'
+- put in 'Pdf header content' the text: 'Your result'
+- keep 'Pdf header content tag' as 'p'
+- put in 'Pdf header content style' the following: 'color:blue;font-weight:900;'
+- keep 'Pdf header height' as '1cm'
+- put in 'Pdf footer content' the following: '{{pageNum}} / {{totalPages}}'
+- keep 'Pdf header content tag' as 'p'
+- put in 'Pdf footer content style' the following: 'color:red;text-align:center;'
+- keep 'Pdf footer height' as '1cm'
+- check 'Show in result'
+- set 'Result template' to demo/resultscreen.html
+- do not check 'Send email'
 
 activate survey and execute
 
@@ -757,8 +757,8 @@ I just pass in inline css because it's an email. (I used http://templates.mailch
 
 Now I have to enable sending an email in the plugin settings screen:
 
--check 'Send email'
--check 'Attach pdf'
+- check 'Send email'
+- check 'Attach pdf'
 
 Keep the rest as is.
 
