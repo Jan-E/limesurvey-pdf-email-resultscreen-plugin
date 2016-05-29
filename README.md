@@ -1,12 +1,14 @@
 # Limesurvey-Pdf-Email-Resultscreen-Plugin (bèta)
 
+twigbranch incorporate twig as templating engine
+
 A flexible limesurvey pdf, email and resultscreen creator
 
 # Overview
 
 This is a limesurvey plugin to create a downloadable pdf, send this pdf as an attachment with an email and show survey results after a respondent completes a survey on the completed page.
 
-Dependencies: Composer, Phantomjs, h2p, swiftmailer
+Dependencies: Composer, Phantomjs, h2p, swiftmailer, twig
 
 You have to pass variables by creating a markerquestion are of type 'equation type' and name it 'variablemarker'.
 You also have to provide templates (html/javascript/css) and upload them to a folder.  In these templates you have to wrap your variables in {!-yourvariablename-!} (handlebar-exclamation mark-hyphen).
