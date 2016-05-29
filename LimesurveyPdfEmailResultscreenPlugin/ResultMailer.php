@@ -1,12 +1,13 @@
 <?php
 require_once __DIR__. '/../../vendor/autoload.php';
+require_once 'TwigParser.php';
 
 
 class ResultMailer {
 
 
 
-    public function sendMail($attachmentpath, $filename, $emailsettings, $settings, $dynamicemailsettings)
+    public function sendMail($attachmentpath, $filename, $emailsettings, $settings, $dynamicemailsettings, $tmplfolders)
     {
 
         $username = Yii::app()->getConfig('emailsmtpuser');
@@ -25,30 +26,16 @@ class ResultMailer {
 
         $mailer = Swift_Mailer::newInstance($transporter);
 
-        $body = $this->createBody($emailsettings['emailtemplate'], $settings, $dynamicemailsettings['variables']);
+        $body = $this->createBody($emailsettings['emailtemplate'], $settings, $dynamicemailsettings['variables'], $tmplfolders);
 
 
         $message = Swift_Message::newInstance($transporter)
 
-        // Give the message a subject
         ->setSubject($emailsettings['emailsubject'])
 
-        // Set the From address with an associative array
         ->setFrom(array($emailsettings['fromemail'] => $emailsettings['fromemailname']))
 
-        // Set the To addresses with an associative array
-        //->setTo(array('receiver@domain.org', 'other@domain.org' => 'A name'))
-        //->setTo(array('rienk.eisma@gmail.com'))
-
-        // Give it a body
-
         ->setBody($body, $emailsettings['emailtemplatetype'])
-
-        // And optionally an alternative body
-        //->addPart('Deze email is automatisch gegenereerd.', 'text/html')
-      
-
-        // Optionally add any attachments
 
         ;
 
@@ -94,55 +81,12 @@ class ResultMailer {
     }
 
 
-    private function createBody($tmplpath, $settings, $variables)
+    private function createBody($tmplpath, $settings, $variables, $tmplfolders)
     {
 
-        $bodyhtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/emailtemplates/'.$tmplpath);
+        $emailtwigparser = new TwigParser();
 
-        $bodyhtml = html_entity_decode($bodyhtml);
-
-        return  $this->emailReplaceHelper($variables, $bodyhtml);
-
-    }
-
-
-    private function emailReplaceHelper($variables, $html)
-
-    {
-
-        $searcharr = [];
-
-        $replarr = [];
-
-        foreach($variables as  $vark => $varv){
-
-            $varv = $varv;
-
-            $vark = trim($vark);
-
-            $searcharr[] = "{!-$vark-!}";
-
-            if(!is_array($varv) && trim($varv) === ''){
-
-                $rvar = '';
-
-            }else{
-
-                //email no quotes
-                $rvar = trim($varv, '"');
-                $rvar = trim($varv, "'");
-                
-            }
-
-            $replarr[] = $rvar;
-
-        }
-
-        $replarr = array_unique($replarr);
-
-        $replaced = str_replace($searcharr, $replarr, $html);
-        
-        return $replaced;
+        return  $emailtwigparser->parse($settings, $tmplpath, $data, $tmplfolders);
 
     }
 

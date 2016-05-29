@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__. '/../../vendor/autoload.php';
 require_once 'LimesurveyPdfEmailResultscreenPluginInterface.php';
+require_once 'TwigParser.php';
 
 use H2P\Converter\PhantomJS;
 use H2P\TempFile;
@@ -899,9 +900,23 @@ use H2P\TempFile;
                 $pdfname = $microtime . '.pdf';
                 $downloadpath = $settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].$pdfsettings['pdfdownloadfolder'];
 
-                $c = $this->parseTemplates($workload, $data, $settings, $pdfsettings);
+                /*
+                * Hook in twig here
+                *
+                */
+
+                if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/compilationcache')) {
+
+                    mkdir($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/compilationcache', 0777, true);
+
+                }
+
+
+                $c = $this->parseTwig($workload, $data, $settings);
 
                 $pdfall = '';
+
+                $c['parseerrors'] = [];
 
 
                 foreach($c['pdf'] as $pv){
@@ -968,7 +983,7 @@ use H2P\TempFile;
 
                             $mailer = new ResultMailer();
 
-                            $mailresult = $mailer->sendMail($link, $pdfname, $emailsettings, $settings, $dynamicemailsettings);
+                            $mailresult = $mailer->sendMail($link, $pdfname, $emailsettings, $settings, $dynamicemailsettings, $tmplfolders);
 
                             if($mailresult === 1){
 
@@ -1029,6 +1044,8 @@ use H2P\TempFile;
 
                 }
 
+
+                CVarDumper::dump(['reslength' => count($c['res'])]);
                 foreach($c['res'] as $attach){
 
                     $resp->addContent($attach);
@@ -1062,14 +1079,12 @@ use H2P\TempFile;
         }
 
 
-        private function parseTemplates($workload, $data, $settings, $pdfsettings)
+        private function parseTwig($workload, $data, $settings)
         {
 
             $pdf = [];
             $res = [];
             $parseerrors = [];
-
-            $baseurl = "http://$_SERVER[HTTP_HOST]".$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/';
 
             foreach ($workload as $k => $v){
 
@@ -1079,60 +1094,20 @@ use H2P\TempFile;
 
                 }else{
 
-                    if(isset($settings['parsenested']) && trim($settings['parsenested']) === '1'){
-
-                        $variables = $data['nested'];
-
-                    }else{
-
-                        $variables = $data['bykey'];
-
-                    }
-
-                    $variables['baseurl'] = $baseurl;
 
                     if (isset($settings['showinresult']) && $settings['showinresult'] === '1'){
 
-                        $reshtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/PdfGenerator/templates/'.$settings['resulttemplate']);
+                        $restwigparser = new TwigParser();
 
-                        $reshtml = html_entity_decode($reshtml);
-
-                        $reshtml = $this->replaceHelper($variables, $reshtml);
-
-                        $parseerr = $this->parseErrorHelper($reshtml, $settings['resulttemplate']);
-
-                        if(count($parseerr) > 0){
-
-                            $parseerrors[] = $parseerr;
-                            
-                        }
-
-                        $reshtml = $this->foolExpressionManager($reshtml);
-
-                        $res[] = $reshtml;
-
+                        $res[] = $restwigparser->parse($settings, $settings['resulttemplate'], $data, $tmplfolders);
 
                     }
 
                     if (isset($v) && isset($settings['createpdf']) && $settings['createpdf'] === '1'){
 
-                        $pdfhtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/PdfGenerator/templates/'.$settings['pdftemplate']);
+                        $pdftwigparser = new TwigParser();
 
-                        $pdfhtml = html_entity_decode($pdfhtml);
-
-                        $pdfhtml = $this->replaceHelper($variables, $pdfhtml);
-
-                        $parseerr = $this->parseErrorHelper($pdfhtml, $settings['pdftemplate']);
-
-                        if(count($parseerr) > 0){
-
-                            $parseerrors[] = $parseerr;
-
-                        }
-
-                        $pdfhtml = $this->foolExpressionManager($pdfhtml);
-
-                        $pdf[] = $pdfhtml;
+                        $pdf[] = $pdftwigparser->parse($settings, $settings['pdftemplate'], $data, $tmplfolders);
 
                     }
 
@@ -1144,67 +1119,6 @@ use H2P\TempFile;
 
         }
 
-        private function foolExpressionManager($string)
-        {
-
-
-            return str_replace(['{', '}'], ['{ ', ' }'], $string);
-
-        }
-
-        private function replaceHelper($variables, $html)
-        {
-
-            $searcharr = [];
-
-            $replarr = [];
-
-            foreach($variables as  $vark => $varv){
-
-                
-           
-                $varv = $varv;
-
-                $vark = trim($vark);
-
-                $searcharr[] = "{!-$vark-!}";
-
-                if(!is_array($varv) && trim($varv) === ''){
-
-                    $rvar = "''";
-
-                }else{
-
-                    
-
-                    if(!is_array($varv) && strpos($varv, 'http') !== false){
-                        //links no quotes
-                        $rvar = trim($varv, '"');
-                        $rvar = trim($varv, "'");
-
-                    }else if(is_array($varv)){
-
-                        $rvar = json_encode($varv);
-
-                    }else{
-
-                        $rvar = "'".$varv."'";
-
-                    }
-                    
-                }
-
-                $replarr[] = $rvar;
-
-            }
-
-            $replarr = array_unique($replarr);
-
-            $replaced = str_replace($searcharr, $replarr, $html);
-            
-            return $replaced;
-
-        }
 
         private function getPdfConfig($pdfsettings){
 
@@ -1420,51 +1334,6 @@ use H2P\TempFile;
 
                     }
 
-                    /*$v= preg_replace('/\s+/', '', $v);
-                    $v = preg_replace('~\x{00a0}~','',$v);
-
-                    $v = stripslashes($v);
-
-                    $temp = array_map('trim', explode('|', $v));
-
-                    foreach($temp as $val){
-
-                        $p = array_map('trim', explode('=', $val));
-
-                        if($p[0] === 'variables'){
-
-                            $vars = array_map('trim', explode(',', $p[1]));
-
-                            $varray = [];
-
-                            foreach($vars as $varv){
-
-                                if (strlen($varv) > 0){
-
-                                    if(isset($response[$varv])){
-
-                                        $val = $response[$varv];
-
-                                    }else{
-
-                                        $val = '';
-
-                                    }
-
-                                    $varray[$varv] = $val;
-
-                                }        
-                            
-                            }       
-
-                            $t[$p[0]] = $varray; 
-
-                        }
-
-                        $dynamicemailsettings[] = $t;
-
-                    }*/
-
                 }
 
             }
@@ -1514,71 +1383,6 @@ use H2P\TempFile;
 
 
             return ['overridesettings' => $overridesettings];
-
-        }
-
-
-        private function parseErrorHelper($html, $template)
-        {
-
-            $err = [];
-            $start = strpos($html, '{!-');
-            $end = strpos($html, '-!}');
-            $trace = '';
-
-            if($start !== false){
-
-                $trace = $this->createTraceHelper($html, $start);
-
-                if($end === false){  
-
-                    $err = ['error' => 'found opening tag for placeholder without closing tag', 'trace' => $trace, 'template' => $template];
-
-                }else{
-
-                    $err = ['error' => 'found tags for a variable which was not passed', 'trace' => $trace, 'template' => $template];
-
-                }
-
-            }else if($end !== false){
-
-                $trace = $this->createTraceHelper($html, $end);
-
-                $err = ['error' => 'found closing tag for placeholder without start tag', 'trace' => $trace, 'template' => $template];  
-                            
-            }
-
-            return $err;
-
-        }
-
-
-        private function createTraceHelper($html, $pos)
-
-        {
-            $length = 100;
-
-            if($pos > $length){
-
-                $tracestart = $pos - $length;
-            
-            }else{
-
-                $tracestart = 0;
-
-            }
-
-            if(strlen($html) > $pos + $length){
-
-                $traceend = $pos + $length;
-
-            }else{
-
-                $traceend = strlen($html);
-
-            }
-
-            return '....'.htmlentities(substr($html, $tracestart, $traceend - $tracestart)).'....';
 
         }
        

@@ -1,5 +1,7 @@
 # Limesurvey-Pdf-Email-Resultscreen-Plugin (bèta)
 
+todo fix template folder to search with twig
+
 twigbranch incorporate twig as templating engine
 
 A flexible limesurvey pdf, email and resultscreen creator
@@ -11,7 +13,7 @@ This is a limesurvey plugin to create a downloadable pdf, send this pdf as an at
 Dependencies: Composer, Phantomjs, h2p, swiftmailer, twig
 
 You have to pass variables by creating a markerquestion are of type 'equation type' and name it 'variablemarker'.
-You also have to provide templates (html/javascript/css) and upload them to a folder.  In these templates you have to wrap your variables in {!-yourvariablename-!} (handlebar-exclamation mark-hyphen).
+You also have to provide templates (html/javascript/css) and upload them to a folder.  The default twig placeholders ({{ }}) have been replaced by {!- and -!}. This is because I want to be able to parse angular templates without conflicts (angular uses {{ and }} as placeholders also). In these templates you have to wrap your variables in {!-yourvariablename-!} (handlebar-exclamation mark-hyphen).
 
 ### Important
 
@@ -66,6 +68,34 @@ Do (from your apps rootfolder) a
 (Note to self: For OpenShift you may need to to downgrade some dependencies because it runs on php 5.4. Which ones you can see in the console while deploying).
 Now you should have swiftmailer in the 'vendor' folder in your limesurvey rootfolder.
 
+### Install Twig
+
+
+This is for my own reference see installing twig: http://twig.sensiolabs.org/doc/installation.html
+Do (from your apps rootfolder) a 
+
+```
+(sudo) composer require twig/twig:~1.0
+
+```
+
+optional but recommended for twig:
+
+```
+cd vendor/twig/twig/ext/twig
+(sudo) phpize
+./configure
+make
+make install
+
+```
+
+and enable it in your php.ini
+
+```
+extension=twig.so 
+
+```
 
 
 ### Install Limesurvey-Pdf-Email-Resultscreen-Plugin
