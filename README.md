@@ -6,7 +6,7 @@ TODO pass in email as variable from the survey
 
 # Overview
 
-This is a limesurvey plugin to create a downloadable pdf, send this pdf as an attachment to an email and show survey results after a respondent completes on the completed page.
+This is a limesurvey plugin to create a downloadable pdf, send this pdf as an attachment with an email and show survey results after a respondent completes on the completed page.
 
 Dependencies: Composer, Phantomjs, h2p, swiftmailer
 
@@ -23,7 +23,7 @@ On the other hand, PhantomJS makes use of [Qt WebKit](https://wiki.qt.io/Qt_WebK
 
 First make sure you have limesurvey 2.05 or higher installed ~~or 2.06 or higher for cronjob support~~.
 
-### Install PhantomJS
+### Install PhantomJS (it's not really installing I know)
 
 Install PhantomJS on your server or developmentbox (option 1) or get the binary and place it in your app (option 2, the shared hosting way).
 
@@ -46,7 +46,10 @@ Create a download folder in the root folder (sibling to the application-folder).
 
 Do (from your apps rootfolder) a 
 
+```
 (sudo) composer require kriansa/h2p:dev-master 
+
+```
 
 or put "kriansa/h2p": "dev-master" in the require path of your composer.json and run composer update or install. The dev-master version is very important!. (Note to self: For OpenShift you may need to to downgrade some dependencies because it runs on php 5.4. Which ones you can see in the console while deploying).
 Now you should have a 'vendor' folder in your limesurvey rootfolder.
@@ -55,7 +58,10 @@ Now you should have a 'vendor' folder in your limesurvey rootfolder.
 
 Do (from your apps rootfolder) a 
 
+```
 (sudo) composer require swiftmailer/swiftmailer @stable
+
+```
 
 (Note to self: For OpenShift you may need to to downgrade some dependencies because it runs on php 5.4. Which ones you can see in the console while deploying).
 Now you should have swiftmailer in the 'vendor' folder in your limesurvey rootfolder.
@@ -69,13 +75,13 @@ Drop the PdfGenerator folder in your plugins folder.
 
 ### Activate pdfGenerator
 
-Go to your pluginmanager page in limesurvey and activate pdfGenerator. If you decided to use another path for your download or PhantomJS folder you can hit configure and change settings. If you installed PhantomJS on your machine you can change the path also in the configure screen. ~~Also you can set after what time a pdf will be deleted. Default is 60 minutes~~ (this is turned off right now).
+Go to your pluginmanager page in limesurvey and activate pdfGenerator. If you decided to use another path for your PhantomJS folder you can hit configure and change settings. If you installed PhantomJS on your machine you can change the path also in the configure screen. ~~Also you can set after what time a pdf will be deleted. Default is 60 minutes~~ (this is turned off right now).
 Now you should be good to go!
 
 
-~~### Activate cron (optional)
+### ~~Activate cron (optional)~~
 
-Everytime a pdf is generated, the plugin will check if files should be deleted because the time they will be stored (according to your configuratioon) ran out. This will only be done when a new pdf is created, so if your survey is not used very often these files will remain in the download folder. With a cron you can periodically check for files which should be deleted.
+~~Everytime a pdf is generated, the plugin will check if files should be deleted because the time they will be stored (according to your configuratioon) ran out. This will only be done when a new pdf is created, so if your survey is not used very often these files will remain in the download folder. With a cron you can periodically check for files which should be deleted.
 Just fire a php cli command php yourlimesurveydir/application/commands/console.php plugin cron --interval= < the same value as after which downloads are deleted > 
 If you allready have a cron running you don't have to create another one. The plugin will be triggered by that other cron.~~
 
@@ -94,25 +100,30 @@ disabled right now: Delete generated pdf after amount of minutes.
 
 ### Survey config
 
-Survey configuration can be done in: surveypage-> click Survey properties -> click General settings & texts -> browse down to Plugins and click it (let it slide to the left to have a full screen with is recommended).
+Survey configuration can be done in: surveypage-> click Survey properties -> click General settings & texts -> browse down to Plugins and click it (You can let it slide to the left to have a full screen (it's not the smallest configuration page you've ever seen :)).
 
-Just read the help text and it should be ok.
+Just read the help text below every setting and it should be ok.
 
 
-### Survey markerquestion
+### Survey markerquestions
 
-The markerquestion is used to pass variables from your survey to this plugin. The markerquestion should be named pdfmarker.
+The markerquestions are used to pass variables and settings from your survey to this plugin. If you want to pass variables you should create a markerquestion named 'variablemarker'. Also, if you intent to send an email you should create a markerquestion named emailmarker.
 
-The recommended usage is to create one markerquestion at the end of the survey. The markerquestion should look like this:
+
+#### Variable markerquestion
+
+The variablemarkerquestion is used to pass variables from your survey to this plugin. The variable markerquestion should be named variablemarker (or at least have 'variablemarker' in it, so variablemarker2 is also ok).
+
+The recommended usage is to create one variable markerquestion at the end of the survey. (type equation type and hide it in production offcourse). The markerquestion should look like this:
 
 ```
 {'variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11'}
 
 ```
 
-The variables are the question codes. If you checked parse nested in your plugin config screen, you only have to provide the parent question codes(q1_SQ01 will be transformed in a javascript object).
+The variables are the question codes. If you checked parse nested in your plugin config screen, you only have to provide the parent question codes(q1_SQ01 will be transformed in a javascript object as a child of q1).
 
-NOTE: every string with 'http' in it will be parsed without quotes (so just use www.something if websites are answers or question in your survey).
+NOTE: every string with 'http' in it will be parsed without quotes (so just use www.something (without http://) if websites are answers or question in your survey).
 
 One variable will always be available: baseurl. This is for your convenience because you can load css and javascript using this variable (if you have set a subfolder this will be appended to the baseurl). For example: src="{!-baseurl-!}js/somejavascript.js". 
 
@@ -124,6 +135,70 @@ IMPORTANT: limesurvey tries to parse strings enclosed in curly brackets when the
 You can set different templates for the resultpage and for the pdfpage. This is because you may need to tweak your html and css to make your pdf look nice. Another reason is that limesurvey (2.5) has JQuery and Bootstrap allready loaded. Now you can load these libraries in your pdf template only.
 
 The styling for the footer and header is inline because adding a class or id to it and apply some external css does not seem to work. It's probably a parsing order thing.
+
+#### Email markerquestion
+
+The emailmarkerquestion is used to pass variables and email adresses from your survey to your email. The  email markerquestion should be named emailmarker (or at least have 'emailmarker' in it, so emailmarker2 is also ok).
+
+The recommended usage is to create one email markerquestion at the end of the survey. (type equation type and hide it in production offcourse). The email markerquestion should look like this:
+
+```
+{'toemail=email1@example.com, email2@example.com | variables=q1,q2'}
+
+```
+
+You can send to multiple email adresses. Jus comma seperate them. The variables should be strings. It is only used to add some dynamic content to you email (like a name or something). In your email you can now parse these variables like in other templates:  {!-q1-!}.
+
+
+### Override Survey config
+
+To override the survey configuration dynamically (because you want to set options dynamically, for instance only when a respondent has checked a checkbox with 'create a pdf' or prevent creating a pdf when the respondent hasn't answered any questions orsomething), you can create a markerquestion called 'overridesettings'. This equation type question should output a string. For example:
+
+```
+{'debug=true,parsenested=true,createpdf=false,sendemail=true'}
+
+```
+
+#### List of overridable settings
+
+| Attributes          | Values                      |  Example                                                                              |
+| -------------       |:-------------:              |:-------------:                                                                        |  
+| debug               | true/false                  |  debug=true                                                                           |
+| parsenested         | true/false                  |  parsenested=false                                                                    |
+| createpdf           | true/false                  |  createpdf=false                                                                      |
+| pdftemplate         | path/string                 |  pdftemplate=myproject/mypdf.html                                                     |
+| showinresult        | true/false                  |  showinresult=true                                                                    |
+| resulttemplate      | path/string                 |  pdftemplate=myproject/myresult.html                                                  |
+|                     |                             |                                                                                       |
+| fromemail           | email                       |  fromemail=admin@example.com                                                          |
+| fromemailname       | name                        |  fromemailname=limesurvey admin                                                       |
+| sendemail           | true/false                  |  sendemail=true                                                                       |
+| attachpdf           | true/false                  |  attachpdf=true                                                                       |
+| attachmentname      | pdf name/string             |  attachmentname=yourresult.pdf                                                        |
+| emailsubject        | string                      |  emailsubject=Your result                                                             |
+| emailtemplate       | path/string                 |  emailtemplate=myproject/emailtemplate.html                                           |
+| emailtemplatetype   | 'text/html'/'text/plain'    |  emailtemplatetype=text/html                                                          |
+| emailsuccessmessage | string                      |  emailsuccessmessage=Your email has been sent                                         |
+| emailerrormessage   | string                      |  emailerrormessage=An error occured sending your email                                |
+|                     |                             |                                                                                       |
+| showdownloadpdftext | true/false                  |  showdownloadpdftext=true                                                             |
+| downloadpdftext     | string                      |  downloadpdftext=[p class='someclass']You can download your pdf [link]here[/link][/p]*|
+| pdfdownloadfolder   | path/string                 |  pdfdownloadfolder=downloadfolder/myproject                                           |
+| pdfconfig           | string                      |  pdfconfig=border=1cm & orientation=landscape                                         |
+| pdfheader           | true/false                  |  pdfheader=true                                                                       |
+| headercontent       | string                      |  headercontent=my new text                                                            |
+| headercontenttag    | string                      |  headercontenttag=h1                                                                  |
+| headercontentstyle  | string                      |  headercontentstyle=color:blue;text-align:center;                                     |
+| headerheight        | string                      |  headerheight=7mm                                                                     |
+|                     |                             |                                                                                       |
+| pdffooter           | true/false                  |  pdffooter=false                                                                      |
+| footercontent       | string                      |  footercontent=page { { pageNum } } of { { totalPages } }  pages  **                  |
+| footercontentstyle  | string                      |  footercontentstyle=color:blue;text-align:center;                                     |
+| footerheight        | string                      |  footerheight=1cm                                                                     |
+
+
+* The part between [link] and [/link] wil be parsed as a clickable link to the pdf. Html tags must be between brackets ([ instead of <]).
+** Note the spaces between { and { and between } and }.
 
 
 ### Templates
@@ -147,10 +222,12 @@ Now you have your survey parameters available in your template. From here you ca
 # Debugging
 
 Always test your pdf template on the resultsreen first. If some external css or javascript is not found, phantomjs will probably fail without any meaningfull errors. In the resultscreen you can monitor those errors in your console. Set createpdf to false.
+After you made sure the external stylesheets an javascript libraries are loaded you can set createpdf to true and tweak your pdf layout. This tweaking (at least for me) is necessary. See quirks below.
 
 # Quirks:
 
--It's not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem. It is rendered quite big because an A4 format has a quite small width. I just set fonts to smaller values etc, but maybe tweaking the viewport or something may do the trick. Also the phantomjs zoomFactor property does not seem to work. I don't know why. 
+-PDF's are not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem. It is rendered quite big because an A4 format has a quite small width so it will be rendered like a smartphone or tablet which may be too big. I just set fonts to smaller values etc, but maybe tweaking the viewport or something may do the trick. Also the phantomjs zoomFactor property does not seem to work. I don't know why.
+-On linux hosting (probably most of you host on linux), phantomjs states: 'The system must have GLIBCXX_3.4.9 and GLIBC_2.7'. This is probably enabled by hosting provider but I don't really know. If it's not enabled your fonts won't work as expected. I don't know whether loading these fonts in your css will solve this problem, maybe it does.
 
 
 
@@ -163,6 +240,32 @@ If you don't want to copy everything to the required folders etc you have to act
 Now the demo survey (pdfgeneratordemo) should be in your list of surveys, you only have to activate it.
 
 NOTE: It may not work because of webserver permissions. Go to your limesurvey config file and set debug to 1. It will show you permissions errors (after disable and re-enable this plugin with the 'load demo' checkbox checked.
+
+Now put this in your pdfgeneratordemo config (this can't be preloaded):
+
+-check 'parse nested'
+-check 'Create pdf'
+-check 'Show download pdf text'
+-put in the 'Download pdf text'-textbox: You can download your pdf {!-here-!}
+-set 'Pdf template' to 'demo/pdf.html' 
+-keep 'Download folder' as '/download' (don't change)
+-put in 'border=1cm | orientation=portrait' in 'Pdf configuration'
+-check 'Pdf header'
+-put in 'Pdf header content' the text: 'Your result'
+-keep 'Pdf header content tag' as 'p'
+-put in 'Pdf header content style' the following: 'color:blue;font-weight:900;'
+-keep 'Pdf header height' as '1cm'
+-put in 'Pdf footer content' the following: '{{pageNum}} / {{totalPages}}'
+-keep 'Pdf header content tag' as 'p'
+-put in 'Pdf footer content style' the following: 'color:red;text-align:center;'
+-keep 'Pdf footer height' as '1cm'
+-do not check 'Send email'
+
+activate survey and execute
+
+
+
+
 
 After activating, fill out question 7 about watergymnastics and after submit you should see a resultscreen with a barchart and a link to download a pdf. 
 

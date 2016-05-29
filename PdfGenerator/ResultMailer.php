@@ -25,7 +25,7 @@ class ResultMailer {
 
         $mailer = Swift_Mailer::newInstance($transporter);
 
-        $body = $this->createBody($emailsettings['emailtemplate'], $settings);
+        $body = $this->createBody($emailsettings['emailtemplate'], $settings, $dynamicemailsettings['variables']);
 
 
         $message = Swift_Message::newInstance($transporter)
@@ -38,7 +38,7 @@ class ResultMailer {
 
         // Set the To addresses with an associative array
         //->setTo(array('receiver@domain.org', 'other@domain.org' => 'A name'))
-        ->setTo(array('rienk.eisma@gmail.com'))
+        //->setTo(array('rienk.eisma@gmail.com'))
 
         // Give it a body
 
@@ -51,6 +51,17 @@ class ResultMailer {
         // Optionally add any attachments
 
         ;
+
+        if($settings['debug'] === '1'){
+
+            $message->setTo(array($emailsettings['debugemail']));
+
+
+        }else{
+
+            $message->setTo($dynamicemailsettingsp['toemail']);
+
+        }
 
         if($emailsettings['attachpdf'] === '1'){
 
@@ -72,8 +83,6 @@ class ResultMailer {
 
             }
 
-            
-
         }
         
         
@@ -85,14 +94,56 @@ class ResultMailer {
     }
 
 
-    private function createBody($tmplpath, $settings)
+    private function createBody($tmplpath, $settings, $variables)
     {
 
         $bodyhtml = file_get_contents($_SERVER['DOCUMENT_ROOT'].$settings['PdfGenerator_app_subfolder'].'/plugins/PdfGenerator/emailtemplates/'.$tmplpath);
 
-        return  html_entity_decode($bodyhtml);
+        $bodyhtml = html_entity_decode($bodyhtml);
+
+        return  $this->emailReplaceHelper($variables, $bodyhtml);
 
     }
 
+
+    private function emailReplaceHelper($variables, $html)
+
+    {
+
+        $searcharr = [];
+
+        $replarr = [];
+
+        foreach($variables as  $vark => $varv){
+
+            $varv = $varv;
+
+            $vark = trim($vark);
+
+            $searcharr[] = "{!-$vark-!}";
+
+            if(!is_array($varv) && trim($varv) === ''){
+
+                $rvar = '';
+
+            }else{
+
+                //email no quotes
+                $rvar = trim($varv, '"');
+                $rvar = trim($varv, "'");
+                
+            }
+
+            $replarr[] = $rvar;
+
+        }
+
+        $replarr = array_unique($replarr);
+
+        $replaced = str_replace($searcharr, $replarr, $html);
+        
+        return $replaced;
+
+    }
 
 }

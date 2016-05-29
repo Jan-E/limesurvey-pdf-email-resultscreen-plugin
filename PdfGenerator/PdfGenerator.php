@@ -297,10 +297,10 @@ use H2P\TempFile;
                                     <p>Below are pdf, resultscreen and email settings.</p>
                                     <p>First some settings regarding the whole plugin can be set.</p>',
                     ),
-                    'Debug' => array(
+                    'debug' => array(
                         'type' => 'checkbox',
                         'label' => "Debug",
-                        'current' => $this->get('Debug', 'Survey', $event->get('survey')),
+                        'current' => $this->get('debug', 'Survey', $event->get('survey')),
                         'default' => false,
                         'help'=> "<p>This will dump your variables on the resultscreen and sent emails by default to your 'Debug email' adress (see below)</p>",
                     ),
@@ -340,7 +340,7 @@ use H2P\TempFile;
                         'current' => $this->get('downloadpdftext', 'Survey', $event->get('survey')),
                         'default' => false,
                         'help'=> "<p>Create pdf: This is the download text you provide</p>
-                                <p>Put the part of the text you want to be the clickable link between {!- and -!}. The whole text can be between html tags.</p>",
+                                <p>Put the part of the text you want to be the clickable link between [[ and ]]. The whole text can be between html tags.</p>",
                     ),
 
                     'pdftemplate' => array(
@@ -782,22 +782,20 @@ use H2P\TempFile;
 
            
             /*
-            this gets survey specific config TODO use this (cronjob creates a problem with different settings for different surveys)
+            this gets and sets survey specific config
            */
         
             
-            $settings['Debug']                          = $this->get('Debug', 'Survey', $surveyId);
+            $settings['debug']                          = $this->get('debug', 'Survey', $surveyId);
             $settings['parsenested']                    = $this->get('parsenested', 'Survey', $surveyId);
             $settings['createpdf']                      = $this->get('createpdf', 'Survey', $surveyId); 
             $settings['pdftemplate']                    = $this->get('pdftemplate', 'Survey', $surveyId); 
             $settings['showinresult']                   = $this->get('showinresult', 'Survey', $surveyId); 
             $settings['resulttemplate']                 = $this->get('resulttemplate', 'Survey', $surveyId); 
 
-
-               // CVarDumper::dump(['settings' => $settings]);
-
             $emailsettings = [];
 
+            $emailsettings['debugemail']            = $this->get('debugemail', 'Survey', $surveyId);
             $emailsettings['fromemail']             = $this->get('fromemail', 'Survey', $surveyId);
             $emailsettings['fromemailname']         = $this->get('fromemailname', 'Survey', $surveyId);
             $emailsettings['sendemail']             = $this->get('sendemail', 'Survey', $surveyId);
@@ -817,7 +815,7 @@ use H2P\TempFile;
             $pdfsettings['showdownloadpdftext']             = $this->get('showdownloadpdftext', 'Survey', $surveyId);
             $pdfsettings['downloadpdftext']                 = $this->get('downloadpdftext', 'Survey', $surveyId);
             $pdfsettings['pdftemplate']                     = $this->get('pdftemplate', 'Survey', $surveyId);
-            $pdfsettings['PdfGenerator_Download_Folder']    = $this->get('PdfGenerator_Download_Folder', 'Survey', $surveyId);
+            $pdfsettings['pdfdownloadfolder']               = $this->get('PdfGenerator_Download_Folder', 'Survey', $surveyId);
             $pdfsettings['pdfconfig']                       = $this->get('pdfconfig', 'Survey', $surveyId);
             $pdfsettings['pdfheader']                       = $this->get('pdfheader', 'Survey', $surveyId);
             $pdfsettings['headercontent']                   = $this->get('headercontent', 'Survey', $surveyId);
@@ -831,6 +829,51 @@ use H2P\TempFile;
             $pdfsettings['footercontentstyle']              = $this->get('footercontentstyle', 'Survey', $surveyId);
             $pdfsettings['footerheight']                    = $this->get('footerheight', 'Survey', $surveyId);
 
+             /*
+            check for overrides
+           */
+
+            $overrides = $this->checkOverrides($response);
+
+             /*
+            Set overrides
+           */
+
+            $settingskeys = ['debug', 'parsenested', 'createpdf', 'pdftemplate', 'showinresult', 'resulttemplate'];
+            $emailsettingskeys = ['debugemail', 'fromemail', 'fromemailname', 'sendemail', 'attachpdf', 'attachmentname', 'emailsubject', 'emailtemplate', 'emailtemplatetype', 'emailsuccessmessage', 'emailerrormessage'];
+            $pdfsettingskeys = [ 'showdownloadpdftext', 'downloadpdftext', 'pdfdownloadfolder', 'pdfconfig', 'pdfheader', 'headercontent', 'headercontenttag', 'headercontentstyle', 'headerheight', 'pdffooter', 'footercontent', 'footercontenttag', 'footercontentstyle', 'footerheight'];
+
+
+            foreach($overrides['overridesettings'] as $k => $v) {
+
+                if(in_array($k, $settingskeys)){
+
+                    $settings[$k] = $v;
+
+                }
+
+                if(in_array($k, $emailsettingskeys)){
+
+                    $emailsettings[$k] = $v;
+
+                }
+
+                if(in_array($k, $pdfsettingskeys)){
+
+                    $pdfsettings[$k] = $v;
+
+                }
+
+            }
+
+            $pdfsettings['footercontent'] = str_replace('{ { ', "{{", $pdfsettings['footercontent']);
+            $pdfsettings['footercontent'] = str_replace(' } }', "}}", $pdfsettings['footercontent']);
+
+            $pdfsettings['headercontent'] = str_replace('{ { ', "{{", $pdfsettings['headercontent']);
+            $pdfsettings['headercontent'] = str_replace(' } }', "}}", $pdfsettings['headercontent']);
+
+
+
             
             $validationerrors = [];
 
@@ -839,7 +882,7 @@ use H2P\TempFile;
                 $parsedworkload = $this->createWorkload($response, $settings);
                 $workload = $parsedworkload['workload'];
 
-                $dynamicemailsettings = $parsedworkload['dynamicemailsettings'];
+                $dynamicemailsettings = $parsedworkload['emailsettings'];
 
                 require __DIR__. '/getAnswersAndQuestions.php';
 
@@ -851,26 +894,26 @@ use H2P\TempFile;
              
                 $microtime = (string)(number_format((microtime(true) * 1000),0, '.', ''));
                 $pdfname = $microtime . '.pdf';
-                $downloadpath = $settings['PdfGenerator_app_subfolder'].$pdfsettings['PdfGenerator_Download_Folder'];
+                $downloadpath = $settings['PdfGenerator_app_subfolder'].$pdfsettings['pdfdownloadfolder'];
 
-                $c = $this->parseTemplates($workload, $data, $settings);
+                $c = $this->parseTemplates($workload, $data, $settings, $pdfsettings);
 
                 $pdfall = '';
+
 
                 foreach($c['pdf'] as $pv){
 
                     $pdfall .= $pv;
 
                 }
-
-               
+      
                 $resp = $event->getContent($this);
 
                 if(strlen($pdfall) > 0){
 
                     $configpdf = $this->getPdfConfig($pdfsettings);
 
-                    if($settings['Debug'] === '1'){
+                    if($settings['debug'] === '1'){
 
                         echo '<h1>Pdf config</h1>';
 
@@ -907,14 +950,14 @@ use H2P\TempFile;
 
                         if($pdfsettings['showdownloadpdftext'] === '1'){
 
-                            $dltxt = str_replace('{!-', "<a href='$link'>", $pdfsettings['downloadpdftext']);
-                            $dltxt = str_replace('-!}', "</a>", $dltxt);
+                            $dltxt = str_replace('[link]', "<a href='$link'>", $pdfsettings['downloadpdftext']);
+                            $dltxt = str_replace('[/link]', "</a>", $dltxt);
+                            $dltxt = str_replace('[', "<", $dltxt);
+                            $dltxt = str_replace(']', ">", $dltxt);
 
                             $resp->addContent($dltxt);
 
                         }
-
-                        
 
                         if($emailsettings['sendemail'] === '1'){
 
@@ -939,7 +982,7 @@ use H2P\TempFile;
 
                     }catch (Exception $e){
 
-                        if($settings['Debug'] === '1'){
+                        if($settings['debug'] === '1'){
 
                             CVarDumper::dump(['error' => $e, 'message' => $e->getMessage()]);
 
@@ -953,7 +996,7 @@ use H2P\TempFile;
 
                 if (count($c['parseerrors']) > 0){
 
-                    if($settings['Debug'] === '1'){
+                    if($settings['debug'] === '1'){
 
                         foreach($c['parseerrors'] as $err){
                                 
@@ -973,7 +1016,7 @@ use H2P\TempFile;
 
                 }
 
-                if($settings['Debug'] === '1'){
+                if($settings['debug'] === '1'){
 
                     echo '<h1>Data</h1>';
 
@@ -993,7 +1036,7 @@ use H2P\TempFile;
 
                 $resp = $event->getContent($this);
 
-                if($settings['Debug'] === '1'){
+                if($settings['debug'] === '1'){
 
                     foreach($validationerrors as $error){
 
@@ -1016,7 +1059,7 @@ use H2P\TempFile;
         }
 
 
-        private function parseTemplates($workload, $data, $settings)
+        private function parseTemplates($workload, $data, $settings, $pdfsettings)
         {
 
             $pdf = [];
@@ -1093,8 +1136,6 @@ use H2P\TempFile;
                 }
 
             }
-
-            
 
             return ['pdf'=> $pdf, 'res'=> $res, 'parseerrors' => $parseerrors];
 
@@ -1252,7 +1293,7 @@ use H2P\TempFile;
 
             $workload = [];
 
-            $dynamicemailsettings = [];
+            $emailsettings = [];
 
             $css = [];
             $js = [];
@@ -1261,7 +1302,7 @@ use H2P\TempFile;
 
             foreach ($response as $k => $v){
 
-                if(strrpos(trim($k), 'pdfmarker') !== false){
+                if(strrpos(trim($k), 'variablemarker') !== false){
 
                     $t = [];
 
@@ -1316,7 +1357,67 @@ use H2P\TempFile;
 
                 }else if(strrpos(trim($k), 'emailmarker') !== false){
 
-                    $v= preg_replace('/\s+/', '', $v);
+                    //$v= preg_replace('/\s+/', '', $v);
+                    //$v = preg_replace('~\x{00a0}~','',$v);
+
+                    $v = stripslashes($v);
+
+                    $temp = array_map('trim', explode('|', $v));
+
+                    foreach($temp as $k => $v){
+
+                        $p = array_map('trim', explode('=', $v));
+
+                        if(trim($p[0]) === 'toemail'){
+
+                            $toemails = array_map('trim', explode(',', $p[1]));
+
+                            $emailsettings[trim($p[0])] = [];
+
+                            foreach($toemails as $em){
+
+                                $emailsettings[trim($p[0])][] = $em;
+
+                            }
+
+                        }else if(trim($p[0]) === 'variables'){
+
+                            $vars = array_map('trim', explode(',', $p[1]));
+
+                            $varray = [];
+
+                            foreach($vars as $varv){
+
+                                if (strlen($varv) > 0){
+
+                                    if(isset($response[$varv])){
+
+                                        $val = $response[$varv];
+
+                                    }else{
+
+                                        $val = '';
+
+                                    }
+
+                                    $varray[$varv] = $val;
+
+                                }        
+                            
+                            }
+
+                            $emailsettings[trim($p[0])] = $varray; 
+
+
+                        }else{
+
+                            continue;
+
+                        }
+
+                    }
+
+                    /*$v= preg_replace('/\s+/', '', $v);
                     $v = preg_replace('~\x{00a0}~','',$v);
 
                     $v = stripslashes($v);
@@ -1359,6 +1460,48 @@ use H2P\TempFile;
 
                         $dynamicemailsettings[] = $t;
 
+                    }*/
+
+                }
+
+            }
+
+            return ['workload'=> $workload, 'emailsettings' => $emailsettings]; 
+
+        }
+
+        private function checkOverrides($response)
+        {
+
+            $configkeys = ['debug', 'parsenested', 'createpdf', 'pdftemplate', 'showinresult', 'resulttemplate', 'fromemail', 'fromemailname', 'sendemail', 'attachpdf', 'attachmentname', 'emailsubject', 'emailtemplate', 'emailtemplatetype', 'emailsuccessmessage', 'emailerrormessage', 'showdownloadpdftext', 'downloadpdftext', 'pdfdownloadfolder', 'pdfconfig', 'pdfheader', 'headercontent', 'headercontenttag', 'headercontentstyle', 'headerheight', 'pdffooter', 'footercontent', 'footercontenttag', 'footercontentstyle', 'footerheight'];
+ 
+            $overridesettings = [];
+
+            foreach ($response as $k => $v){
+
+                if(strrpos(trim($k), 'overridesettings') !== false){
+
+                    //first check for pdfconfig
+                    $temp =  explode('|', $v);
+
+                    foreach($temp as $key => $val){
+
+                        $tt = explode('=', $val);
+                        
+
+                        if(trim($tt[1]) === 'true'){
+
+                            $tt[1] = '1';
+
+                        }
+
+                        if(trim($tt[0]) === 'pdfconfig'){
+
+                            $tt[1]  = str_replace('&', '|', $tt[1]);
+
+                        }
+
+                        $overridesettings[trim($tt[0])] = $tt[1];
 
                     }
 
@@ -1366,9 +1509,11 @@ use H2P\TempFile;
 
             }
 
-            return ['workload'=> $workload, 'dynamicemailsettings' => $dynamicemailsettings]; 
+
+            return ['overridesettings' => $overridesettings];
 
         }
+
 
         private function parseErrorHelper($html, $template)
         {
