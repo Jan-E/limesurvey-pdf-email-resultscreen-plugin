@@ -8,7 +8,7 @@ This is a limesurvey plugin to create a downloadable pdf, send this pdf as an at
 
 Dependencies: Composer, Phantomjs, h2p, swiftmailer
 
-You have to pass variables by creating a markerquestion are of type 'equation type' and name it 'pdfmarker'.
+You have to pass variables by creating a markerquestion are of type 'equation type' and name it 'variablemarker'.
 You also have to provide templates (html/javascript/css) and upload them to a folder.  In these templates you have to wrap your variables in {!-yourvariablename-!} (handlebar-exclamation mark-hyphen).
 
 ### Important
