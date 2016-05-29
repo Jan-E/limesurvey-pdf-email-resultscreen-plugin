@@ -161,44 +161,44 @@ To override the survey configuration dynamically (because you want to set option
 
 #### List of overridable settings
 
-| Attributes          | Values                      |  Example                                                                              |
-| -------------       |:-------------:              |:-------------:                                                                        |  
-| debug               | true/false                  |  debug=true                                                                           |
-| parsenested         | true/false                  |  parsenested=false                                                                    |
-| createpdf           | true/false                  |  createpdf=false                                                                      |
-| pdftemplate         | path/string                 |  pdftemplate=myproject/mypdf.html                                                     |
-| showinresult        | true/false                  |  showinresult=true                                                                    |
-| resulttemplate      | path/string                 |  pdftemplate=myproject/myresult.html                                                  |
-|                     |                             |                                                                                       |
-| fromemail           | email                       |  fromemail=admin@example.com                                                          |
-| fromemailname       | name                        |  fromemailname=limesurvey admin                                                       |
-| sendemail           | true/false                  |  sendemail=true                                                                       |
-| attachpdf           | true/false                  |  attachpdf=true                                                                       |
-| attachmentname      | pdf name/string             |  attachmentname=yourresult.pdf                                                        |
-| emailsubject        | string                      |  emailsubject=Your result                                                             |
-| emailtemplate       | path/string                 |  emailtemplate=myproject/emailtemplate.html                                           |
-| emailtemplatetype   | 'text/html'/'text/plain'    |  emailtemplatetype=text/html                                                          |
-| emailsuccessmessage | string                      |  emailsuccessmessage=Your email has been sent                                         |
-| emailerrormessage   | string                      |  emailerrormessage=An error occured sending your email                                |
-|                     |                             |                                                                                       |
-| showdownloadpdftext | true/false                  |  showdownloadpdftext=true                                                             |
-| downloadpdftext     | string                      |  downloadpdftext=[p class='someclass']You can download your pdf [link]here[/link][/p]*|
-| pdfdownloadfolder   | path/string                 |  pdfdownloadfolder=downloadfolder/myproject                                           |
-| pdfconfig           | string                      |  pdfconfig=border=1cm & orientation=landscape                                         |
-| pdfheader           | true/false                  |  pdfheader=true                                                                       |
-| headercontent       | string                      |  headercontent=my new text                                                            |
-| headercontenttag    | string                      |  headercontenttag=h1                                                                  |
-| headercontentstyle  | string                      |  headercontentstyle=color:blue;text-align:center;                                     |
-| headerheight        | string                      |  headerheight=7mm                                                                     |
-|                     |                             |                                                                                       |
-| pdffooter           | true/false                  |  pdffooter=false                                                                      |
-| footercontent       | string                      |  footercontent=page { { pageNum } } of { { totalPages } }  pages  **                  |
-| footercontentstyle  | string                      |  footercontentstyle=color:blue;text-align:center;                                     |
-| footerheight        | string                      |  footerheight=1cm                                                                     |
+| Attributes          | Values                      |  Example                                                                                |
+| -------------       |:-------------:              |:-------------:                                                                          |  
+| debug               | true/false                  |  debug=true                                                                             |
+| parsenested         | true/false                  |  parsenested=false                                                                      |
+| createpdf           | true/false                  |  createpdf=false                                                                        |
+| pdftemplate         | path/string                 |  pdftemplate=myproject/mypdf.html                                                       |
+| showinresult        | true/false                  |  showinresult=true                                                                      |
+| resulttemplate      | path/string                 |  pdftemplate=myproject/myresult.html                                                    |
+|                     |                             |                                                                                         |
+| fromemail           | email                       |  fromemail=admin@example.com                                                            |
+| fromemailname       | name                        |  fromemailname=limesurvey admin                                                         |
+| sendemail           | true/false                  |  sendemail=true                                                                         |
+| attachpdf           | true/false                  |  attachpdf=true                                                                         |
+| attachmentname      | pdf name/string             |  attachmentname=yourresult.pdf                                                          |
+| emailsubject        | string                      |  emailsubject=Your result                                                               |
+| emailtemplate       | path/string                 |  emailtemplate=myproject/emailtemplate.html                                             |
+| emailtemplatetype   | 'text/html'/'text/plain'    |  emailtemplatetype=text/html                                                            |
+| emailsuccessmessage | string                      |  emailsuccessmessage=Your email has been sent                                           |
+| emailerrormessage   | string                      |  emailerrormessage=An error occured sending your email                                  |
+|                     |                             |                                                                                         |
+| showdownloadpdftext | true/false                  |  showdownloadpdftext=true                                                               |
+| downloadpdftext     | string                      |  downloadpdftext=[p class='someclass']You can download your pdf [link]here[/link][/p]** |
+| pdfdownloadfolder   | path/string                 |  pdfdownloadfolder=downloadfolder/myproject                                             |
+| pdfconfig           | string                      |  pdfconfig=border=1cm & orientation=landscape                                           |
+| pdfheader           | true/false                  |  pdfheader=true                                                                         |
+| headercontent       | string                      |  headercontent=my new text                                                              |
+| headercontenttag    | string                      |  headercontenttag=h1                                                                    |
+| headercontentstyle  | string                      |  headercontentstyle=color:blue;text-align:center;                                       |
+| headerheight        | string                      |  headerheight=7mm                                                                       |
+|                     |                             |                                                                                         |
+| pdffooter           | true/false                  |  pdffooter=false                                                                        |
+| footercontent       | string                      |  footercontent=page { { pageNum } } of { { totalPages } }  pages  ***                   |
+| footercontentstyle  | string                      |  footercontentstyle=color:blue;text-align:center;                                       |
+| footerheight        | string                      |  footerheight=1cm                                                                       |
 
 
-* The part between [link] and [/link] wil be parsed as a clickable link to the pdf. Html tags must be between brackets ([ instead of <]).
-** Note the spaces between { and { and between } and }.
+** The part between [link] and [/link] wil be parsed as a clickable link to the pdf. Html tags must be between brackets ([ instead of <]).
+*** Note the spaces between { and { and between } and }.
 
 
 ### Templates
