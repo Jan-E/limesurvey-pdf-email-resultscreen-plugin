@@ -155,7 +155,7 @@ You can send to multiple email adresses. Jus comma seperate them. The variables 
 To override the survey configuration dynamically (because you want to set options dynamically, for instance only when a respondent has checked a checkbox with 'create a pdf' or prevent creating a pdf when the respondent hasn't answered any questions orsomething), you can create a markerquestion called 'overridesettings'. This equation type question should output a string. For example:
 
 ```
-{'debug=true,parsenested=true,createpdf=false,sendemail=true'}
+{'debug=true|parsenested=true|createpdf=false|sendemail=true'}
 
 ```
 
