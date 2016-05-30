@@ -21,7 +21,7 @@ require_once 'getAnswersAndQuestionsInterface.php';
                 $iSurveyID = $_SESSION['survey_'.$iSurveyID]['sid'];
             }
 
-            // Set the language for dispay
+            // Set the language for display
             if (isset($_SESSION['survey_'.$iSurveyID]['s_lang']))
             {
                 $sLanguage = $_SESSION['survey_'.$iSurveyID]['s_lang'];
@@ -110,7 +110,6 @@ require_once 'getAnswersAndQuestionsInterface.php';
             }
 
             return ['nested' => $newresponse, 'bykey' => $bykeyresponse, 'nestedjson' => $jsonarray];
-
 
         }
 

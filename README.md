@@ -137,47 +137,20 @@ Just read the help text below every setting and it should be ok.
 
 ### Survey markerquestions
 
-The markerquestions are used to pass variables and settings from your survey to this plugin. If you want to pass variables you should create a markerquestion named 'variablemarker'. Also, if you intent to send an email you should create a markerquestion named emailmarker.
-
-
-#### Variable markerquestion
-
-The variablemarkerquestion is used to pass variables from your survey to this plugin. The variable markerquestion should be named variablemarker (or at least have 'variablemarker' in it, so variablemarker2 is also ok).
-
-The recommended usage is to create one variable markerquestion at the end of the survey. (type equation type and hide it in production ofcourse). The markerquestion should look like this:
-
-```
-{'variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11'}
-
-```
-
-The variables are the question codes. If you checked parse nested in your plugin config screen, you only have to provide the parent question codes(q1_SQ01 will be transformed in a javascript object as a child of q1).
-
-NOTE: every string with 'http' in it will be parsed without quotes (so just use www.something (without http://) if websites are answers or question in your survey).
-
-One variable will always be available: baseurl. This is for your convenience because you can load css and javascript using this variable (if you have set a subfolder this will be appended to the baseurl). For example: src="{!-baseurl-!}js/somejavascript.js". 
-
-
-If you create one markerquestion at the end you can set javascript variables and use that variable to do things.
-
-IMPORTANT: limesurvey tries to parse strings enclosed in curly brackets when there are no spaces directly after the opening and before the closing curly bracket in the result page. This wil affect your javascript. The workaround is to always have a space after the opening and before the closing bracket. So: var myObject = { key: value } (note the spaces);
-
-You can set different templates for the resultpage and for the pdfpage. This is because you may need to tweak your html and css to make your pdf look nice. Another reason is that limesurvey (2.5) has JQuery and Bootstrap allready loaded. Now you can load these libraries in your pdf template only.
-
-The styling for the footer and header is inline because adding a class or id to it and apply some external css does not seem to work. It's probably a parsing order thing.
+The markerquestions are used to pass variables and settings from your survey to this plugin. 
 
 #### Email markerquestion
 
-The emailmarkerquestion is used to pass variables and email adresses from your survey to your email. The  email markerquestion should be named emailmarker (or at least have 'emailmarker' in it, so emailmarker2 is also ok).
+The emailmarkerquestion is used to pass one or more email adresses from your survey to the emailer. The  email markerquestion should be named emailmarker (or at least have 'emailmarker' in it, so emailmarker2 is also ok).
 
 The recommended usage is to create one email markerquestion at the end of the survey. (type equation type and hide it in production ofcourse). The email markerquestion should look like this:
 
 ```
-{'toemail=email1@example.com, email2@example.com | variables=q1,q2'}
+{'toemail=email1@example.com, email2@example.com'}
 
 ```
 
-You can send to multiple email adresses. Just comma seperate them. The variables should be strings. It is only used to add some dynamic content to your email (like a name or something). In your email you can now parse these variables like in other templates:  {!-q1-!}.
+You can send to multiple email adresses. Just comma seperate them. Variables passed from the variable markerquestions can be used in the email template. In your survey settings page you can set Bcc's.
 
 
 ### Override Survey config
@@ -241,17 +214,33 @@ To override the survey configuration dynamically (because you want to set option
 
 Templates should be in the folder : plugins/LimesurveyPdfEmailResultscreenPlugin/templates
 
-These templates can also be placed in a subfolder. You must provide the subfolders your want twig to search. Also the subfolders for included folders must be provided. In your configuration.
+These templates can also be placed in a subfolder. You must provide the subfolders you want twig to search. Also the subfolders for included templates must be provided in your configuration.
 
-As stated in the previous section, passed variables replace that same variable name between '{{' and '}}'.
+#### Variables in templates
+
+This plugin serves your survey variables in tree ways: 'datanested', 'databykey', adn 'nestedjson'.
+
+- datanested: This is a nested array and can be used in twig loops etc.
+~~- databykey: With this you can get single variable (much like expression manager does).~~
+- nestedjson: This is very convenient to put a parent question code with all it's children in one javascript variable.
+- baseurl: This is very convenient to load javascript or css files from your site: {{baseurl}}js/myjs.js
+
+As stated before, passed variables replace that same variable name between '{{' and '}}'. See the twig documentation for loops etc.
 
 For instance:
 
 ```
-var question1 = {{question1}};
-var question2 = {{question2}};
+var question1 = {{nestedjson.question1| raw}}; //object
+console.log(question1);
+
+<h1>Hi {{datanested.q5.q5_SQ002[2]}}</h1>
 
 ```
+
+If you check debug in your survey settings this data will be dumped on your screen. The quotes in the json are escaped as they should.
+
+To make it parse as json in your template you have to pass the raw flag to you placeholder: {{jsonvariable | raw}}
+
 
 Now you have your survey parameters available in your template. From here you can do your frontend magic. See Example below.
 
@@ -264,6 +253,7 @@ After you made sure the external stylesheets an javascript libraries are loaded 
 
 - PDF's are not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem. It is rendered quite big because an A4 format has a quite small width so it will be rendered like a smartphone or tablet which may be too big. I just set fonts to smaller values etc, but maybe tweaking the viewport or something may do the trick. Also the phantomjs zoomFactor property does not seem to work. I don't know why.
 - On linux hosting (probably most of you host on linux), phantomjs states: 'The system must have GLIBCXX_3.4.9 and GLIBC_2.7'. This is probably enabled by hosting provider but I don't really know. If it's not enabled your fonts won't work as expected. I don't know whether loading these fonts in your css will solve this problem, maybe it does.
+- While debugging, if you have hidden javascript/css in your survey, this javascript/css will be dumped on the resultscreen. This can influence other elements on the resultscreen.
 
 
 
@@ -500,7 +490,7 @@ Just to prove overriding settings works create a markerquestion 'overridesetting
 
 Templates:
 
-demo/resultscreen.html (does not need bootstrap and jquery because this is allready loaded):
+demo/resultscreen.html.twig (does not need bootstrap and jquery because this is allready loaded):
 
 ``` 
 <div>
@@ -554,17 +544,17 @@ demo/resultscreen.html (does not need bootstrap and jquery because this is allre
     </div>
     <script>
 
-    var q1 = {!-q1-!};
-    var q2 = {!-q2-!};
-    var q3 = {!-q3-!};
-    var q4 = {!-q4-!};
-    var q5 = {!-q5-!};
-    var q6 = {!-q6-!};
-    var q7 = {!-q7-!};
-    var q8 = {!-q8-!};
-    var q9 = {!-q9-!};
-    var q10 = {!-q10-!};
-    var q11 = {!-q11-!};
+    var q1 = {{nestedjson.q1 |raw}};
+    var q2 = {{nestedjson.q2 |raw}};
+    var q3 = {{nestedjson.q3 |raw}};
+    var q4 = {{nestedjson.q4 |raw}};
+    var q5 = {{nestedjson.q5 |raw}};
+    var q6 = {{nestedjson.q6 |raw}};
+    var q7 = {{nestedjson.q7 |raw}};
+    var q8 = {{nestedjson.q8 |raw}};
+    var q9 = {{nestedjson.q9 |raw}};
+    var q10 = {{nestedjson.q10 |raw}};
+    var q11 = {{nestedjson.q11 |raw}};
 
     var bardata = [];
     var q7title = '';
@@ -630,7 +620,7 @@ demo/resultscreen.html (does not need bootstrap and jquery because this is allre
 ```
 
 
-demo/pdf.html (the same but you can use body, html and head because it's a standalone webpage. Loading bootstrap and jquery because it's not in the resultpage):
+demo/pdf.html.twig (the same but you can use body, html and head because it's a standalone webpage. Loading bootstrap and jquery because it's not in the resultpage):
 
 
 ```
@@ -692,17 +682,17 @@ demo/pdf.html (the same but you can use body, html and head because it's a stand
         </div>
         <script>
 
-        var q1 = {!-q1-!};
-        var q2 = {!-q2-!};
-        var q3 = {!-q3-!};
-        var q4 = {!-q4-!};
-        var q5 = {!-q5-!};
-        var q6 = {!-q6-!};
-        var q7 = {!-q7-!};
-        var q8 = {!-q8-!};
-        var q9 = {!-q9-!};
-        var q10 = {!-q10-!};
-        var q11 = {!-q11-!};
+        var q1 = {{nestedjson.q1 |raw}};
+        var q2 = {{nestedjson.q2 |raw}};
+        var q3 = {{nestedjson.q3 |raw}};
+        var q4 = {{nestedjson.q4 |raw}};
+        var q5 = {{nestedjson.q5 |raw}};
+        var q6 = {{nestedjson.q6 |raw}};
+        var q7 = {{nestedjson.q7 |raw}};
+        var q8 = {{nestedjson.q8 |raw}};
+        var q9 = {{nestedjson.q9 |raw}};
+        var q10 = {{nestedjson.q10 |raw}};
+        var q11 = {{nestedjson.q11 |raw}};
 
         var bardata = [];
         var q7title = '';
@@ -774,18 +764,18 @@ To send an email you have to create an email marker question:
 
 Question 'emailmarker' (equation type)
 
-``` {'toemail={email}| variables=email'}```
+``` {'toemail={email}, another@example.com'}```
 
 In the demo survey there is a question named 'email'. I pass this variable to the 'toemail'-property using expression manager: (toemail={email}).
 
-I also pass the same email property as variable to use in my email template:
+The variables you passed in the variable markerquestion can be used in your email template (remember not to use javascript in emails).
 
 emailtemplates/standardmessage.html:
 
 ```
 <div class="jumbotron" style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;padding-top: 30px;padding-bottom: 30px;margin-bottom: 30px;color: inherit;background-color: #eee;padding-right: 60px;padding-left: 60px;border-radius: 6px;">
 <h1 style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;margin: .67em 0;font-size: 63px;font-family: inherit;font-weight: 500;line-height: 1.1;color: inherit;margin-top: 20px;margin-bottom: 10px;">You completed your survey</h1>
-<p>You provided this email: {!-email-!}</p>
+<p>You provided this email: {{email}}</p>
 </div>
 
 ```

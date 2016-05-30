@@ -32,9 +32,9 @@
           display: none;
         }
     </style>
-    <link rel='stylesheet' href='{!-baseurl-!}styles-public/custom/demo.css'>
+    <link rel='stylesheet' href='{{baseurl}}styles-public/custom/demo.css'>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-    <script src="{!-baseurl-!}scripts/custom/chartfactory.js"></script>
+    <script src="{{baseurl}}scripts/custom/chartfactory.js"></script>
     <h1>Results</h1>  
     <div class='row'>
         <div class='col-md-4'>
@@ -50,17 +50,17 @@
     </div>
     <script>
 
-    var q1 = '{!-nestedjson.q1-!}';
-    var q2 = '{!-nestedjson.q2-!}';
-    var q3 = '{!-nestedjson.q3-!}';
-    var q4 = '{!-nestedjson.q4-!}';
-    var q5 = '{!-nestedjson.q5-!}';
-    var q6 = '{!-datanested.q6-!}';
-    var q7 = '{!-nestedjson.q7-!}';
-    var q8 = '{!-datanested.q8-!}';
-    var q9 = '{!-nestedjson.q9-!}';
-    var q10 = '{!-nestedjson.q10-!}';
-    var q11 = '{!-nestedjson.q11-!}';
+       /* var q1 = {{nestedjson.q1 |raw}};
+        var q2 = {{nestedjson.q2 |raw}};
+        var q3 = {{nestedjson.q3 |raw}};
+        var q4 = {{nestedjson.q4 |raw}};
+        var q5 = {{nestedjson.q5 |raw}};
+        var q6 = {{nestedjson.q6 |raw}};*/
+        var q7 = {{nestedjson.q7 |raw}};
+        /*var q8 = {{nestedjson.q8 |raw}};
+        var q9 = {{nestedjson.q9 |raw}};
+        var q10 = {{nestedjson.q10 |raw}};
+        var q11 = {{nestedjson.q11 |raw}};*/
 
     var bardata = [];
     var q7title = '';

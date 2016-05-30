@@ -30,18 +30,15 @@ class TwigParser {
 
         $loader = new Twig_Loader_Filesystem($folders);
 
-        $twig = new Twig_Environment($loader, array(
-            'cache' => $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/compilationcache',
-        ));
+        $envoptions = ['cache' => $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/compilationcache'];
 
-       /* $lexer = new Twig_Lexer($twig, array(
-            'tag_comment'   => array('{#', '#}'),
-            'tag_block'     => array('{%', '%}'),
-            'tag_variable'  => array('{!-', '-!}'),
-            'interpolation' => array('#{', '}'),
-        ));
+        if($settings['debug'] === '1'){
 
-        $twig->setLexer($lexer);*/
+            $envoptions['debug'] = true;
+
+        }
+
+        $twig = new Twig_Environment($loader, $envoptions);
 
         $template = $twig->loadTemplate($tmplname);
 

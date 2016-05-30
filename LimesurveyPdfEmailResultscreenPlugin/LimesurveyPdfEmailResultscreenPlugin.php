@@ -109,7 +109,7 @@ use H2P\TempFile;
 
             $emailtemplate  = $this->get('emailtemplate', 'Survey', $event->get('survey'));
 
-            if (!isset( $emtmpl ) || $emtmpl === '' ){
+            if (!isset( $emailtemplate ) || $emailtemplate === '' ){
 
                 $emailtemplate = 'standardmessage.html';
 
@@ -128,6 +128,14 @@ use H2P\TempFile;
             if (!isset( $fromemname ) || $fromemname === '' ){
 
                 $fromemname = 'Survey admin';
+
+            }
+
+            $bcc  = $this->get('bcc', 'Survey', $event->get('survey'));
+
+            if (!isset( $bcc ) || $bcc === '' ){
+
+                $bcc = '';
 
             }
 
@@ -285,7 +293,13 @@ use H2P\TempFile;
 
             }
 
+            $emailtemplatefolders  = $this->get('emailtemplatefolders', 'Survey', $event->get('survey'));
 
+            $resulttemplatefolders  = $this->get('resulttemplatefolders', 'Survey', $event->get('survey'));
+
+            $pdftemplatefolders  = $this->get('pdftemplatefolders', 'Survey', $event->get('survey'));
+
+            $emailtemplatetype = $this->get('emailtemplatetype', 'Survey', $event->get('survey'));
            
 
             $event->set("surveysettings.{$this->id}", array(
@@ -357,8 +371,8 @@ use H2P\TempFile;
                     ),
                     'pdftemplatefolders' => array(
                         'type' => 'string',
-                        'label' => "Pdf template",
-                        'current' => '',
+                        'label' => "Pdf template folders",
+                        'current' => $pdftemplatefolders,
                         'default' => '',
                         'help'=> "<p>Template folders should be in the folder : plugins/PdfGenerator/templates</p>
                                  <p>You can create subfolders, pass them here: demo/pdftemplate | demo/pdftemplate/headers | etc</p>",
@@ -510,8 +524,8 @@ use H2P\TempFile;
                     ),
                     'resulttemplatefolders' => array(
                         'type' => 'string',
-                        'label' => "Result template",
-                        'current' => '',
+                        'label' => "Result template folders",
+                        'current' => $resulttemplatefolders,
                         'default' => '',
                         'help'=> "<p>Template folders should be in the folder : plugins/PdfGenerator/templates</p>
                                  <p>You can create subfolders, pass them here: demo/resulttemplate | demo/resulttemplate/headers | etc</p>",
@@ -554,6 +568,14 @@ use H2P\TempFile;
                         'default' => 'Survey admin',
                         'help'=> "<p>from email name: The alias name of the email addres you are mailing from</p>",
                     ),
+
+                    'bcc' => array(
+                        'type' => 'string',
+                        'label' => "bcc",
+                        'current' => $bcc,
+                        'default' => '',
+                        'help'=> "<p>bcc: Comma separate when more then one: info@example.com, info2@example.com</p>",
+                    ),
                     'attachpdf' => array(
                         'type' => 'checkbox',
                         'label' => "Attach pdf",
@@ -582,10 +604,10 @@ use H2P\TempFile;
                         'default' => 'standardmessage.html',
                         'help'=> "<p>Email template: Name of the email template in the PdfGenerator/emailtemplates folder (or subfoldername/emailtemplate.html. <br> Variables should be between {{ and }}. Pass variables in your markerquestion named 'emailmarker' as 'variables=q1,q2'</p>",
                     ),
-                    'emailtemplatefolder' => array(
+                    'emailtemplatefolders' => array(
                         'type' => 'string',
-                        'label' => "Email template",
-                        'current' => '',
+                        'label' => "Email template folders",
+                        'current' => $emailtemplatefolders,
                         'default' => '',
                         'help'=> "<p>Template folders should be in the folder : plugins/PdfGenerator/templates</p>
                                  <p>You can create subfolders, pass them here: demo/emailtemplate | demo/emailtemplate/headers | etc</p>",
@@ -597,7 +619,7 @@ use H2P\TempFile;
                             'text/html'=>'text/html',
                             'text/plain'=>'text/plain',
                         ),
-                        'current' => $emailtemplate,
+                        'current' => $emailtemplatetype,
                         'default' => 'html',
                         'help'=> '<p>Email template type: Type of email template, html or plain text. Plain/text not tested yet.</p><br>',
                     ),
@@ -828,6 +850,7 @@ use H2P\TempFile;
             $emailsettings['debugemail']            = $this->get('debugemail', 'Survey', $surveyId);
             $emailsettings['fromemail']             = $this->get('fromemail', 'Survey', $surveyId);
             $emailsettings['fromemailname']         = $this->get('fromemailname', 'Survey', $surveyId);
+            $emailsettings['bcc']                   = $this->get('bcc', 'Survey', $surveyId);
             $emailsettings['sendemail']             = $this->get('sendemail', 'Survey', $surveyId);
             $emailsettings['attachpdf']             = $this->get('attachpdf', 'Survey', $surveyId);
             $emailsettings['attachmentname']        = $this->get('attachmentname', 'Survey', $surveyId);
@@ -943,7 +966,7 @@ use H2P\TempFile;
 
                 $pdfall = '';
 
-                $c['parseerrors'] = [];
+                
 
 
                 foreach($c['pdf'] as $pv){
@@ -957,18 +980,6 @@ use H2P\TempFile;
                 if(strlen($pdfall) > 0){
 
                     $configpdf = $this->getPdfConfig($pdfsettings);
-
-                    if($settings['debug'] === '1'){
-
-                        echo '<h1>Pdf config</h1>';
-
-                        CVarDumper::dump($configpdf);
-
-                        echo '<br><br>';
-
-                    }
-
-
 
                     try{
 
@@ -1004,25 +1015,7 @@ use H2P\TempFile;
 
                         }
 
-                        if($emailsettings['sendemail'] === '1'){
-
-                            require __DIR__. '/ResultMailer.php';
-
-                            $mailer = new ResultMailer();
-
-                            $mailresult = $mailer->sendMail($link, $pdfname, $emailsettings, $settings, $dynamicemailsettings);
-
-                            if($mailresult === 1){
-
-                                $resp->addContent($emailsettings['emailsuccessmessage']);
-
-                            }else{
-
-                                $resp->addContent($emailsettings['emailerrormessage']);
-
-                            }
-
-                        }
+                        
 
 
                     }catch (Exception $e){
@@ -1039,40 +1032,49 @@ use H2P\TempFile;
 
                 }
 
-                if (count($c['parseerrors']) > 0){
 
-                    if($settings['debug'] === '1'){
+                if($emailsettings['sendemail'] === '1'){
 
-                        foreach($c['parseerrors'] as $err){
-                                
-                            $er = $err['error'];
-                            $tra = $err['trace'];
-                            $templ = $err['template'];
+                    require __DIR__. '/ResultMailer.php';
 
-                            $resp->addContent("<h4>Parse-error</h4><p>Error: $er</p><p>Trace: $tra</p><p>Template: $templ</p>");
+                    $mailer = new ResultMailer();
 
-                        }
+                    $mailresult = $mailer->sendMail($link, $pdfname, $emailsettings, $settings, $dynamicemailsettings, $data);
+
+                    if($mailresult === 'success'){
+
+                        $resp->addContent($emailsettings['emailsuccessmessage']);
 
                     }else{
 
-                        $resp->addContent("An error occurred your pdf may not be correct.");
+                        $ems = '';
+                        $i = 0;
+
+                        $allems = array_merge($mailresult['errors'], $mailresult['bccerrors']);
+
+                        foreach($allems as $em){
+
+                            if($i === 0){
+
+                                $ems = $em;
+
+                                $i++;
+
+                            }else{
+
+                                $ems .= ', '.$em;
+
+                            }
+
+                        }
+
+                        $resp->addContent($emailsettings['emailerrormessage'].'('.$ems.')');
 
                     }
-
-                }
-
-                if($settings['debug'] === '1'){
-
-                    echo '<h1>Data</h1>';
-
-                    CVarDumper::dump($data);
-
-                    echo '<br><br>';
-
+     
                 }
 
 
-                CVarDumper::dump(['reslength' => count($c['res'])]);
                 foreach($c['res'] as $attach){
 
                     $resp->addContent($attach);
@@ -1102,6 +1104,44 @@ use H2P\TempFile;
                 }
 
             }
+
+            if($settings['debug'] === '1'){
+
+               
+                echo '<h1>Pdf config</h1>';
+                echo "<pre>"; 
+
+                CVarDumper::dump($pdfsettings);
+
+                echo "</pre>"; 
+                echo '<br><br>';
+
+                echo '<h1>Pdf document config</h1>';
+                echo "<pre>"; 
+
+                CVarDumper::dump($configpdf);
+
+                echo "</pre>"; 
+                echo '<br><br>';
+
+                echo '<h1>Email config</h1>';
+                echo "<pre>"; 
+
+                CVarDumper::dump($emailsettings);
+
+                echo "</pre>"; 
+                echo '<br><br>';
+
+
+                echo '<h1>Data</h1>';
+                echo "<pre>"; 
+
+                CVarDumper::dump($data);
+
+                echo "</pre>"; 
+                echo '<br><br>';
+
+            }
            
         }
 
@@ -1111,7 +1151,7 @@ use H2P\TempFile;
 
             $pdf = [];
             $res = [];
-            $parseerrors = [];
+            
 
             foreach ($workload as $k => $v){
 
@@ -1146,7 +1186,7 @@ use H2P\TempFile;
 
             }
 
-            return ['pdf'=> $pdf, 'res'=> $res, 'parseerrors' => $parseerrors];
+            return ['pdf'=> $pdf, 'res'=> $res];
 
         }
 

@@ -7,8 +7,12 @@ class ResultMailer {
 
 
 
-    public function sendMail($attachmentpath, $filename, $emailsettings, $settings, $dynamicemailsettings, $tmplfolders)
+    public function sendMail($attachmentpath, $filename, $emailsettings, $settings, $dynamicemailsettings, $data)
     {
+
+        
+
+        $tmplfolders = array_map('trim', explode('|', $emailsettings['emailtemplatefolders'] ));
 
         $username = Yii::app()->getConfig('emailsmtpuser');
         $password = Yii::app()->getConfig('emailsmtppassword');
@@ -26,7 +30,7 @@ class ResultMailer {
 
         $mailer = Swift_Mailer::newInstance($transporter);
 
-        $body = $this->createBody($emailsettings['emailtemplate'], $settings, $dynamicemailsettings['variables'], $tmplfolders);
+        $body = $this->createBody($emailsettings['emailtemplate'], $settings, $data, $tmplfolders);
 
 
         $message = Swift_Message::newInstance($transporter)
@@ -39,6 +43,8 @@ class ResultMailer {
 
         ;
 
+        $ems = [];
+
         if($settings['debug'] === '1'){
 
             $message->setTo(array($emailsettings['debugemail']));
@@ -46,7 +52,19 @@ class ResultMailer {
 
         }else{
 
-            $message->setTo($dynamicemailsettings['toemail']);
+            $ems = array_map('trim', explode(',', $dynamicemailsettings['toemail'] ));
+
+            $message->setTo(array_unique($ems));
+
+        }
+
+        $bcems = [];
+
+        if($emailsettings['bcc'] !== ''){
+
+            $bcems = array_map('trim', explode(',', $emailsettings['bcc'] ));
+
+            $message->setBcc(array_unique($bcems));
 
         }
 
@@ -71,17 +89,53 @@ class ResultMailer {
             }
 
         }
-        
-        
-        $result =  $mailer->send($message);
 
-        return $result;
+        $errors = [];
+
+        $bccerrors = [];
+        
+        
+        if(!$mailer->send($message, $failures)){
+
+            foreach($failures as $val){
+
+                if (in_array($val, $ems)){
+
+                    //return error message;
+                    $errors[] = $val;
+
+                }
+
+                if (in_array($val, $bcems)){
+
+                    //return email error for bcc when in debug mode;
+                    if($settings['debug'] === '1'){
+
+                        $bccerrors[] = $val;
+
+                    }
+
+                }
+
+            }
+
+       }
+
+        if(count($errors)>0 || count($bccerrors)>0){
+
+            return ['errors' => $errors, 'bccerrors' => $bccerrors];
+
+        }else{
+
+
+            return 'success';
+        }        
 
 
     }
 
 
-    private function createBody($tmplpath, $settings, $variables, $tmplfolders)
+    private function createBody($tmplpath, $settings, $data, $tmplfolders)
     {
 
         $emailtwigparser = new TwigParser();
