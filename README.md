@@ -153,54 +153,59 @@ The recommended usage is to create one email markerquestion at the end of the su
 You can send to multiple email adresses. Just comma seperate them. Variables passed from the variable markerquestions can be used in the email template. In your survey settings page you can set Bcc's.
 
 
-### Override Survey config
+#### Override Survey config markerquestion
 
 To override the survey configuration dynamically (because you want to set options dynamically, for instance only when a respondent has checked a checkbox with 'create a pdf' or prevent creating a pdf when the respondent hasn't answered any questions or something), you can create a markerquestion called 'overridesettings'. This equation type question should output a string. For example:
 
 ```
-{'debug=true|parsenested=true|createpdf=false|sendemail=true'}
+{'debug=true|createpdf=false|sendemail=true'}
 
 ```
 
 #### List of overridable settings
 
-| Attributes            | Values                      |  Example                                                                                |
-| -------------         |:-------------:              |:-------------:                                                                          |  
-| debug                 | true/false                  |  debug=true                                                                             |
-| parsenested           | true/false                  |  parsenested=false                                                                      |
-| createpdf             | true/false                  |  createpdf=false                                                                        |
-| pdftemplate           | string                      |  pdftemplate=mypdf.html.twig                                                            |
-| pdftemplatefolders    | path(s)                     |  pdftemplatefolders=demo/pdf&demo/pdf/headers**                                         |
-| showinresult          | true/false                  |  showinresult=true                                                                      |
-| resulttemplate        | string                      |  resulttemplate=myresult.html.twig                                                      |
-| resulttemplatefolders | path(s)&                    |  templatefolders=demo/result&demo/result/headers**                                      |
-|                       |                             |                                                                                         |
-| fromemail             | email                       |  fromemail=admin@example.com                                                            |
-| fromemailname         | name                        |  fromemailname=limesurvey admin                                                         |
-| sendemail             | true/false                  |  sendemail=true                                                                         |
-| attachpdf             | true/false                  |  attachpdf=true                                                                         |
-| attachmentname        | pdf name/string             |  attachmentname=yourresult.pdf                                                          |
-| emailsubject          | string                      |  emailsubject=Your result                                                               |
-| emailtemplate         | string                      |  emailtemplate=emailtemplate.html.twig                                                  |
-| emailtemplatefolders  | path(s)&                    |  emailtemplatefolders=demo/email&demo/email/headers**                                   |
-| emailtemplatetype     | 'text/html'/'text/plain'    |  emailtemplatetype=text/html                                                            |
-| emailsuccessmessage   | string                      |  emailsuccessmessage=Your email has been sent                                           |
-| emailerrormessage     | string                      |  emailerrormessage=An error occured sending your email                                  |
-|                       |                             |                                                                                         |
-| showdownloadpdftext   | true/false                  |  showdownloadpdftext=true                                                               |
-| downloadpdftext       | string                      |  downloadpdftext=[p class='someclass']You can download your pdf [link]here[/link][/p]***|
-| pdfdownloadfolder     | path/string                 |  pdfdownloadfolder=downloadfolder/myproject                                             |
-| pdfconfig             | string                      |  pdfconfig=border=1cm & orientation=landscape                                           |
-| pdfheader             | true/false                  |  pdfheader=true                                                                         |
-| headercontent         | string                      |  headercontent=my new text                                                              |
-| headercontenttag      | string                      |  headercontenttag=h1                                                                    |
-| headercontentstyle    | string                      |  headercontentstyle=color:blue;text-align:center;                                       |
-| headerheight          | string                      |  headerheight=7mm                                                                       |
-|                       |                             |                                                                                         |
-| pdffooter             | true/false                  |  pdffooter=false                                                                        |
-| footercontent         | string                      |  footercontent=page { { pageNum } } of { { totalPages } }  pages  ****                  |
-| footercontentstyle    | string                      |  footercontentstyle=color:blue;text-align:center;                                       |
-| footerheight          | string                      |  footerheight=1cm                                                                       |
+| Attributes                        | Values                      |  Example                                                                                |
+| -------------                     |:-------------:              |:-------------:                                                                          |  
+| debug                             | true/false                  |  debug=true                                                                             |
+| exludequestions                   | questioncode(s)&            |  q1&q2&q3                                                                               |
+|                                   |                             |                                                                                         |
+| createpdf                         | true/false                  |  createpdf=false                                                                        |
+| showdownloadpdftext               | true/false                  |  showdownloadpdftext=true                                                               |
+| downloadpdftext                   | string                      |  downloadpdftext=[p class='someclass']You can download your pdf [link]here[/link][/p]***|
+| pdftemplate                       | string                      |  pdftemplate=mypdf.html.twig                                                            |
+| pdftemplatefolders                | path(s)                     |  pdftemplatefolders=demo/pdf&demo/pdf/headers**                                         |
+| pdfdownloadfolder                 | path/string                 |  pdfdownloadfolder=downloadfolder/myproject                                             |
+| pdfconfig                         | string                      |  pdfconfig=border=1cm & orientation=landscape                                           |
+|                                   |                             |                                                                                         |
+| pdfheader                         | true/false                  |  pdfheader=true                                                                         |
+| headercontent                     | string                      |  headercontent=my new text                                                              |
+| headercontenttag                  | string                      |  headercontenttag=h1                                                                    |
+| headercontentstyle                | string                      |  headercontentstyle=color:blue;text-align:center;                                       |
+| headerheight                      | string                      |  headerheight=7mm                                                                       |
+|                                   |                             |                                                                                         |
+| pdffooter                         | true/false                  |  pdffooter=false                                                                        |
+| footercontent                     | string                      |  footercontent=page { { pageNum } } of { { totalPages } }  pages  ****                  |
+| footercontentstyle                | string                      |  footercontentstyle=color:blue;text-align:center;                                       |
+| footerheight                      | string                      |  footerheight=1cm                                                                       |
+|                                   |                             |                                                                                         |
+| showinresult                      | true/false                  |  showinresult=true                                                                      |
+| resulttemplate                    | string                      |  resulttemplate=myresult.html.twig                                                      |
+| resulttemplatefolders             | path(s)&                    |  templatefolders=demo/result&demo/result/headers**                                      |
+|                                   |                             |                                                                                         |
+| sendemail                         | true/false                  |  sendemail=true                                                                         |
+| fromemail                         | email                       |  fromemail=admin@example.com                                                            |
+| fromemailname                     | name                        |  fromemailname=limesurvey admin                                                         |
+| bcc                               | email                       |  bcc=admin@example.com                                                                  |
+| attachpdf                         | true/false                  |  attachpdf=true                                                                         |
+| attachmentname                    | pdf name/string             |  attachmentname=yourresult.pdf                                                          |
+| emailsubject                      | string                      |  emailsubject=Your result                                                               |
+| emailtemplate                     | string                      |  emailtemplate=emailtemplate.html.twig                                                  |
+| emailtemplatefolders              | path(s)&                    |  emailtemplatefolders=demo/email&demo/email/headers**                                   |
+| emailtemplatetype                 | 'text/html'/'text/plain'    |  emailtemplatetype=text/html                                                            |
+| emailsuccessmessage               | string                      |  emailsuccessmessage=Your email has been sent                                           |
+| emailerrormessage                 | string                      |  emailerrormessage=An error occured sending your email                                  |
+| emailvalidationerrormessage       | string                      |  emailvalidationerrormessage=Email validation error:                                    |
+
 
 
 ** Every folder must be present. Twig will search those folders for templates. Also folders for included templates must be present. Create unique names for your templates.
@@ -218,10 +223,10 @@ These templates can also be placed in a subfolder. You must provide the subfolde
 
 #### Variables in templates
 
-This plugin serves your survey variables in tree ways: 'datanested', 'databykey', adn 'nestedjson'.
+This plugin serves your survey variables in tree ways: 'datanested', ~~'databykey'~~, and 'nestedjson'.
 
 - datanested: This is a nested array and can be used in twig loops etc.
-~~- databykey: With this you can get single variable (much like expression manager does).~~
+- ~~databykey: With this you can get single variable (much like expression manager does).~~
 - nestedjson: This is very convenient to put a parent question code with all it's children in one javascript variable.
 - baseurl: This is very convenient to load javascript or css files from your site: {{baseurl}}js/myjs.js
 
@@ -253,7 +258,7 @@ After you made sure the external stylesheets an javascript libraries are loaded 
 
 - PDF's are not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem. It is rendered quite big because an A4 format has a quite small width so it will be rendered like a smartphone or tablet which may be too big. I just set fonts to smaller values etc, but maybe tweaking the viewport or something may do the trick. Also the phantomjs zoomFactor property does not seem to work. I don't know why.
 - On linux hosting (probably most of you host on linux), phantomjs states: 'The system must have GLIBCXX_3.4.9 and GLIBC_2.7'. This is probably enabled by hosting provider but I don't really know. If it's not enabled your fonts won't work as expected. I don't know whether loading these fonts in your css will solve this problem, maybe it does.
-- While debugging, if you have hidden javascript/css in your survey, this javascript/css will be dumped on the resultscreen. This can influence other elements on the resultscreen.
+- While debugging, if you have hidden javascript/css in your survey, this javascript/css will be dumped on the resultscreen. This can influence other elements on the resultscreen. You can add questioncodes to the 'Excluded questions' field in the configuration. These questioncodes will not be dumped and can't be passed to a template.
 
 
 
@@ -269,11 +274,11 @@ NOTE: It may not work because of webserver permissions. Go to your limesurvey co
 
 Now put this in your LimesurveyPdfEmailResultscreenPluginDemo config (this can't be preloaded):
 
-- check 'parse nested'
 - check 'Create pdf'
 - check 'Show download pdf text'
 - put in the 'Download pdf text'-textbox: [p]You can download your pdf [[here]][/p]
-- set 'Pdf template' to 'demo/pdf.html' 
+- set 'Pdf template' to 'demo/pdf.html.twig' 
+- set 'Pdf template folders' to 'demo' 
 - keep 'Download folder' as '/download' (don't change)
 - put in 'border=1cm | orientation=portrait' in 'Pdf configuration'
 - check 'Pdf header'
@@ -281,12 +286,14 @@ Now put this in your LimesurveyPdfEmailResultscreenPluginDemo config (this can't
 - keep 'Pdf header content tag' as 'p'
 - put in 'Pdf header content style' the following: 'color:blue;font-weight:900;'
 - keep 'Pdf header height' as '1cm'
+- check 'Pdf footer'
 - put in 'Pdf footer content' the following: '{{pageNum}} / {{totalPages}}'
-- keep 'Pdf header content tag' as 'p'
+- keep 'Pdf footer content tag' as 'p'
 - put in 'Pdf footer content style' the following: 'color:red;text-align:center;'
 - keep 'Pdf footer height' as '1cm'
 - check 'Show in result'
-- set 'Result template' to demo/resultscreen.html
+- set 'Result template' to resultscreen.html.twig
+- set 'Result template folders' to 'demo' 
 - do not check 'Send email'
 
 activate survey and execute
@@ -478,11 +485,6 @@ chartfactory.createBarChart = function(dataset, domelementid, title){
 ```
 
 
-After that you can create a variablemarker question which populates the variables in your javascript file:
-
-Question 'variablemarker' (equation type)
-
-``` {'variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11'}```
 
 Just to prove overriding settings works create a markerquestion 'overridesettings':
 
@@ -659,12 +661,12 @@ demo/pdf.html.twig (the same but you can use body, html and head because it's a 
           display: none;
         }
         </style>
-        <link rel='stylesheet' href='{!-baseurl-!}styles-public/custom/demo.css'>
+        <link rel='stylesheet' href='{{baseurl}}styles-public/custom/demo.css'>
         <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css'>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-        <script src="{!-baseurl-!}scripts/custom/chartfactory.js"></script>
+        <script src="{{baseurl}}scripts/custom/chartfactory.js"></script>
     </head>
     <body>
         <h1>Results</h1>    

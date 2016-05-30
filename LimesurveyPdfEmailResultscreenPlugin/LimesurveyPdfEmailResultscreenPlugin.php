@@ -172,6 +172,14 @@ use H2P\TempFile;
 
             }
 
+            $emvaliderrmsg  = $this->get('emailvalidationerrormessage', 'Survey', $event->get('survey'));
+
+            if (!isset( $emvaliderrmsg ) || $emvaliderrmsg === '' ){
+
+                $emvaliderrmsg = 'Email validation error:';
+
+            }
+
             $debugemail  = $this->get('debugemail', 'Survey', $event->get('survey'));
 
             if (!isset( $debugemail ) || $debugemail === '' ){
@@ -293,6 +301,14 @@ use H2P\TempFile;
 
             }
 
+            $excludequestions = $this->get('excludequestions', 'Survey', $event->get('survey'));
+
+            if (!isset( $excludequestions ) || $excludequestions === '' ){
+
+                $excludequestions = '';
+
+            }
+
             $emailtemplatefolders  = $this->get('emailtemplatefolders', 'Survey', $event->get('survey'));
 
             $resulttemplatefolders  = $this->get('resulttemplatefolders', 'Survey', $event->get('survey'));
@@ -322,13 +338,26 @@ use H2P\TempFile;
                         'default' => false,
                         'help'=> "<p>This will dump your variables on the resultscreen and sent emails by default to your 'Debug email' adress (see below)</p>",
                     ),
-                    'parsenested' => array(
+                    /*'parsenested' => array(
                         'type' => 'checkbox',
                         'label' => "parse nested",
                         'current' => $this->get('parsenested', 'Survey', $event->get('survey')),
                         'default' => false,
                         'help'=> "<p>This will parse nested variables, so subquestions will become nested objects within the containing question (recommended)</p>",
+                    ),*/
+
+                    'excludequestions' => array(
+                        'type' => 'string',
+                        'label' => "Excluded questions",
+                        'current' => $excludequestions,
+                        'default' => '',
+                        'help'=> "<p>Questions you can exclude from parsing</p>
+                                 <p>If you are sure you don't need the value and subvalues of this question you can add the question codes here (comma separated: q1,q2)</p>
+                                 <p>If you exclude question parsing will be faster.</p>
+                                 <p>Also if you exclude question containing javascript, this javascript will not be dumped in the resultscreen in debug mode and therefore not interfere with your javascript on the resultscreen </p>
+                                 <p>Moreover, your dumped variables will be more conveniently arranged because non-relevant variables are not printed</p>",
                     ),
+
                     'dummypdf' => array(
                         'type' => 'checkbox',
                         'label' => 'PDF SETTINGS',
@@ -471,7 +500,7 @@ use H2P\TempFile;
                      
                     'footercontenttag' => array(
                         'type' => 'string',
-                        'label' => "Pdf header content tag",
+                        'label' => "Pdf footer content tag",
                         'current' => $footercontenttag,
                         'default' => 'p',
                         'help'=> "<p>Pdf footer content tag</p>
@@ -636,6 +665,13 @@ use H2P\TempFile;
                         'current' => $emerrmsg,
                         'default' => 'Oops.. an error occurred while sending your email',
                         'help'=> '<p>Email error message: Shown at the result page (only when "Send email" is checked)</p>',
+                    ),
+                    'emailvalidationerrormessage' => array(
+                        'type' => 'string',
+                        'label' => "Email validation error message",
+                        'current' => $emvaliderrmsg,
+                        'default' => 'email Invalid:',
+                        'help'=> '<p>Email validation error message: Shown at the result page (only when "Send email" is checked)</p>',
                     ),
 
                 )
@@ -837,29 +873,31 @@ use H2P\TempFile;
         
             
             $settings['debug']                          = $this->get('debug', 'Survey', $surveyId);
-            $settings['parsenested']                    = $this->get('parsenested', 'Survey', $surveyId);
+            //$settings['parsenested']                    = $this->get('parsenested', 'Survey', $surveyId);
             $settings['createpdf']                      = $this->get('createpdf', 'Survey', $surveyId); 
             $settings['pdftemplate']                    = $this->get('pdftemplate', 'Survey', $surveyId);
             $settings['pdftemplatefolders']             = $this->get('pdftemplatefolders', 'Survey', $surveyId); 
             $settings['showinresult']                   = $this->get('showinresult', 'Survey', $surveyId); 
             $settings['resulttemplate']                 = $this->get('resulttemplate', 'Survey', $surveyId);
-            $settings['resulttemplatefolders']          = $this->get('resulttemplatefolders', 'Survey', $surveyId); 
+            $settings['resulttemplatefolders']          = $this->get('resulttemplatefolders', 'Survey', $surveyId);
+            $settings['excludequestions']               = $this->get('excludequestions', 'Survey', $surveyId);
 
             $emailsettings = [];
 
-            $emailsettings['debugemail']            = $this->get('debugemail', 'Survey', $surveyId);
-            $emailsettings['fromemail']             = $this->get('fromemail', 'Survey', $surveyId);
-            $emailsettings['fromemailname']         = $this->get('fromemailname', 'Survey', $surveyId);
-            $emailsettings['bcc']                   = $this->get('bcc', 'Survey', $surveyId);
-            $emailsettings['sendemail']             = $this->get('sendemail', 'Survey', $surveyId);
-            $emailsettings['attachpdf']             = $this->get('attachpdf', 'Survey', $surveyId);
-            $emailsettings['attachmentname']        = $this->get('attachmentname', 'Survey', $surveyId);
-            $emailsettings['emailsubject']          = $this->get('emailsubject', 'Survey', $surveyId);
-            $emailsettings['emailtemplate']         = $this->get('emailtemplate', 'Survey', $surveyId);
-            $emailsettings['emailtemplatefolders']  = $this->get('emailtemplatefolders', 'Survey', $surveyId);
-            $emailsettings['emailtemplatetype']     = $this->get('emailtemplatetype', 'Survey', $surveyId);
-            $emailsettings['emailsuccessmessage']   = $this->get('emailsuccessmessage', 'Survey', $surveyId);
-            $emailsettings['emailerrormessage']     = $this->get('emailerrormessage', 'Survey', $surveyId);
+            $emailsettings['debugemail']                    = $this->get('debugemail', 'Survey', $surveyId);
+            $emailsettings['fromemail']                     = $this->get('fromemail', 'Survey', $surveyId);
+            $emailsettings['fromemailname']                 = $this->get('fromemailname', 'Survey', $surveyId);
+            $emailsettings['bcc']                           = $this->get('bcc', 'Survey', $surveyId);
+            $emailsettings['sendemail']                     = $this->get('sendemail', 'Survey', $surveyId);
+            $emailsettings['attachpdf']                     = $this->get('attachpdf', 'Survey', $surveyId);
+            $emailsettings['attachmentname']                = $this->get('attachmentname', 'Survey', $surveyId);
+            $emailsettings['emailsubject']                  = $this->get('emailsubject', 'Survey', $surveyId);
+            $emailsettings['emailtemplate']                 = $this->get('emailtemplate', 'Survey', $surveyId);
+            $emailsettings['emailtemplatefolders']          = $this->get('emailtemplatefolders', 'Survey', $surveyId);
+            $emailsettings['emailtemplatetype']             = $this->get('emailtemplatetype', 'Survey', $surveyId);
+            $emailsettings['emailsuccessmessage']           = $this->get('emailsuccessmessage', 'Survey', $surveyId);
+            $emailsettings['emailerrormessage']             = $this->get('emailerrormessage', 'Survey', $surveyId);
+            $emailsettings['emailvalidationerrormessage']   = $this->get('emailvalidationerrormessage', 'Survey', $surveyId);
 
              
 
@@ -893,7 +931,7 @@ use H2P\TempFile;
             Set overrides
            */
 
-            $settingskeys = ['debug', 'parsenested', 'createpdf', 'pdftemplate', 'showinresult', 'resulttemplate'];
+            $settingskeys = ['debug', 'excludequestions','createpdf', 'pdftemplate', 'showinresult', 'resulttemplate'];
             $emailsettingskeys = ['debugemail', 'fromemail', 'fromemailname', 'sendemail', 'attachpdf', 'attachmentname', 'emailsubject', 'emailtemplate', 'emailtemplatetype', 'emailsuccessmessage', 'emailerrormessage'];
             $pdfsettingskeys = [ 'showdownloadpdftext', 'downloadpdftext', 'pdfdownloadfolder', 'pdfconfig', 'pdfheader', 'headercontent', 'headercontenttag', 'headercontentstyle', 'headerheight', 'pdffooter', 'footercontent', 'footercontenttag', 'footercontentstyle', 'footerheight'];
 
@@ -942,7 +980,7 @@ use H2P\TempFile;
 
                 $aaq = new getAnswersAndQuestions();
 
-                $data = $aaq->getResponse($surveyId);
+                $data = $aaq->getResponse($surveyId, $settings['excludequestions'] );
 
                 
              
@@ -1048,11 +1086,32 @@ use H2P\TempFile;
                     }else{
 
                         $ems = '';
+                        $emvs = '';
+                        
+                        $allemvaliderrs = array_merge($mailresult['mailvaliderrors'], $mailresult['mailbccvaliderrors']);
+                        $allemerrs = array_merge($mailresult['mailerrors'], $mailresult['mailbccerrors']);
+
                         $i = 0;
 
-                        $allems = array_merge($mailresult['errors'], $mailresult['bccerrors']);
+                        foreach($allemvaliderrs as $em){
 
-                        foreach($allems as $em){
+                            if($i === 0){
+
+                                $emvs = $em;
+
+                                $i++;
+
+                            }else{
+
+                                $emvs .= ', '.$em;
+
+                            }
+
+                        }
+
+                        $i = 0;
+
+                        foreach($allemerrs as $em){
 
                             if($i === 0){
 
@@ -1068,7 +1127,17 @@ use H2P\TempFile;
 
                         }
 
-                        $resp->addContent($emailsettings['emailerrormessage'].'('.$ems.')');
+                        if(count($emvs)>0){
+
+                            $resp->addContent('<p>'.$emailsettings['emailvalidationerrormessage'].'('.$emvs.')</p>');
+
+                        }
+
+                        if(count($ems)>0){
+
+                            $resp->addContent('<p>'.$emailsettings['emailerrormessage'].'('.$ems.')</p>');
+
+                        }
 
                     }
      
@@ -1416,7 +1485,7 @@ use H2P\TempFile;
         private function checkOverrides($response)
         {
 
-            $configkeys = ['debug', 'parsenested', 'createpdf', 'pdftemplate', 'showinresult', 'resulttemplate', 'fromemail', 'fromemailname', 'sendemail', 'attachpdf', 'attachmentname', 'emailsubject', 'emailtemplate', 'emailtemplatetype', 'emailsuccessmessage', 'emailerrormessage', 'showdownloadpdftext', 'downloadpdftext', 'pdfdownloadfolder', 'pdfconfig', 'pdfheader', 'headercontent', 'headercontenttag', 'headercontentstyle', 'headerheight', 'pdffooter', 'footercontent', 'footercontenttag', 'footercontentstyle', 'footerheight'];
+            $configkeys = ['debug', 'excludequestions', 'createpdf', 'pdftemplate', 'showinresult', 'resulttemplate', 'fromemail', 'fromemailname', 'sendemail', 'attachpdf', 'attachmentname', 'emailsubject', 'emailtemplate', 'emailtemplatetype', 'emailsuccessmessage', 'emailerrormessage', 'showdownloadpdftext', 'downloadpdftext', 'pdfdownloadfolder', 'pdfconfig', 'pdfheader', 'headercontent', 'headercontenttag', 'headercontentstyle', 'headerheight', 'pdffooter', 'footercontent', 'footercontenttag', 'footercontentstyle', 'footerheight'];
  
             $overridesettings = [];
 
@@ -1441,6 +1510,12 @@ use H2P\TempFile;
                         if(trim($tt[0]) === 'pdfconfig' || trim($tt[0]) === 'pdftemplatefolders' || trim($tt[0]) === 'resulttemplatefolders' || trim($tt[0]) === 'emailtemplatefolders' ){
 
                             $tt[1]  = str_replace('&', '|', $tt[1]);
+
+                        }
+
+                        if(trim($tt[0]) === 'excludequestions'){
+
+                            $tt[1]  = str_replace('&', ',', $tt[1]);
 
                         }
 

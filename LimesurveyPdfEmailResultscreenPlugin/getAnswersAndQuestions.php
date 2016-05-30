@@ -7,7 +7,7 @@ require_once 'getAnswersAndQuestionsInterface.php';
     class getAnswersAndQuestions implements getAnswersAndQuestionsInterface {
 
 
-        public function getResponse($surveyid)
+        public function getResponse($surveyid, $excludedquestions)
         {
 
              /*
@@ -39,15 +39,17 @@ require_once 'getAnswersAndQuestionsInterface.php';
 
             $aFullResponseTable = getFullResponseTable($iSurveyID, $sSRID, $sLanguage);
 
-            $redefined = $this->replaceKeysWithCode($aFullResponseTable);
+            $redefined = $this->replaceKeysWithCode($aFullResponseTable, $excludedquestions);
 
             return $redefined;
 
         } 
 
 
-        private function replaceKeysWithCode($responsetable)
+        private function replaceKeysWithCode($responsetable, $excludedquestions)
         {
+
+            $excluded  = array_map('trim', explode(',', $excludedquestions ));
 
             $newresponse = [];
 
@@ -91,7 +93,13 @@ require_once 'getAnswersAndQuestionsInterface.php';
 
                     }
 
-                    $bykeyresponse[$qcode] = $v;
+                    if(!in_array($qcode, $excluded)){
+
+                        $bykeyresponse[$qcode] = $v;
+
+                    }
+
+                    
                     
                 }else{
 
@@ -105,7 +113,15 @@ require_once 'getAnswersAndQuestionsInterface.php';
 
             foreach($newresponse as $k => $v){
 
-                $jsonarray[$k] = json_encode($v);
+                if(!in_array($k, $excluded)){
+
+                    $jsonarray[$k] = json_encode($v);
+
+                }else{
+
+                    unset($newresponse[$k]);
+
+                }
 
             }
 

@@ -43,28 +43,61 @@ class ResultMailer {
 
         ;
 
-        $ems = [];
+        $toems = [];
+
+        $invalidems = [];
+
+         
 
         if($settings['debug'] === '1'){
 
-            $message->setTo(array($emailsettings['debugemail']));
 
+            $r = $this->getInvalidEmails([$emailsettings['debugemail']]);
+
+            $toems = array_merge($toems, $r['valid']);
+
+            $invalidems = array_merge($invalidems, $r['invalid']);
 
         }else{
 
-            $ems = array_map('trim', explode(',', $dynamicemailsettings['toemail'] ));
+            $r = $this->getInvalidEmails($dynamicemailsettings['toemail']);
 
-            $message->setTo(array_unique($ems));
+            $toems = array_merge($toems, $r['valid']);
+
+            $invalidems = array_merge($invalidems, $r['invalid']);
+
+
+            if(count($toems) > 0){
+
+                $message->setTo(array_unique($toems));
+
+            } 
 
         }
 
-        $bcems = [];
+        $tobcems = [];
+
+        $invalidbcems = [];
 
         if($emailsettings['bcc'] !== ''){
 
             $bcems = array_map('trim', explode(',', $emailsettings['bcc'] ));
 
-            $message->setBcc(array_unique($bcems));
+            $re = $this->getInvalidEmails($bcems);
+
+            $tobcems = array_merge($tobcems, $re['valid']);
+
+            $invalidbcems = array_merge($invalidbcems, $re['invalid']);
+
+            $message->setBcc(array_unique($tobcems));
+
+            if($settings['debug'] !== '1'){
+
+                error_log(json_encode(['invalid bcc email(s)' => $invalidbcems]));
+
+                $invalidbcems = [];
+
+            }
 
         }
 
@@ -99,7 +132,7 @@ class ResultMailer {
 
             foreach($failures as $val){
 
-                if (in_array($val, $ems)){
+                if (in_array($val, $dynamicemailsettings['toemail'])){
 
                     //return error message;
                     $errors[] = $val;
@@ -121,9 +154,9 @@ class ResultMailer {
 
        }
 
-        if(count($errors)>0 || count($bccerrors)>0){
+        if(count($errors)>0 || count($bccerrors)>0 || count($invalidems)>0 || count($invalidbcems)>0){
 
-            return ['errors' => $errors, 'bccerrors' => $bccerrors];
+            return ['mailvaliderrors'=> $invalidems, 'mailbccvaliderrors'=> $invalidbcems, 'mailerrors' => $errors, 'mailbccerrors' => $bccerrors];
 
         }else{
 
@@ -141,6 +174,30 @@ class ResultMailer {
         $emailtwigparser = new TwigParser();
 
         return  $emailtwigparser->parse($settings, $tmplpath, $data, $tmplfolders);
+
+    }
+
+    private function getInvalidEmails($array)
+    {
+
+        $valid = [];
+        $invalid = [];
+
+        foreach($array as $em){
+
+            if(Swift_Validate::email($em)){
+
+                $valid[] = $em;
+
+            }else{
+
+                $invalid[] = $em;
+
+            }
+
+        }
+
+        return ['valid' => $valid, 'invalid' => $invalid];
 
     }
 

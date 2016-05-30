@@ -259,7 +259,7 @@
     <gid><![CDATA[4]]></gid>
     <type><![CDATA[5]]></type>
     <title><![CDATA[q1]]></title>
-    <question><![CDATA[Did you like your vacation? 1 = No I didn't like it at all 5 = The best vacation ever!]]></question>
+    <question><![CDATA[Did you like your vacation? 1 = No I did not like it at all 5 = The best vacation ever!]]></question>
     <preg/>
     <help/>
     <other><![CDATA[N]]></other>
@@ -269,6 +269,7 @@
     <scale_id><![CDATA[0]]></scale_id>
     <same_default><![CDATA[0]]></same_default>
     <relevance><![CDATA[1]]></relevance>
+    <modulename/>
    </row>
    <row>
     <qid><![CDATA[98]]></qid>
@@ -455,25 +456,6 @@
     <relevance><![CDATA[1]]></relevance>
    </row>
    <row>
-    <qid><![CDATA[108]]></qid>
-    <parent_qid><![CDATA[0]]></parent_qid>
-    <sid><![CDATA[711425]]></sid>
-    <gid><![CDATA[4]]></gid>
-    <type><![CDATA[*]]></type>
-    <title><![CDATA[variablemarker]]></title>
-    <question><![CDATA[{'variables=q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11'}]]></question>
-    <preg/>
-    <help/>
-    <other><![CDATA[N]]></other>
-    <mandatory><![CDATA[N]]></mandatory>
-    <question_order><![CDATA[12]]></question_order>
-    <language><![CDATA[en]]></language>
-    <scale_id><![CDATA[0]]></scale_id>
-    <same_default><![CDATA[0]]></same_default>
-    <relevance><![CDATA[1]]></relevance>
-    <modulename/>
-   </row>
-   <row>
     <qid><![CDATA[109]]></qid>
     <parent_qid><![CDATA[0]]></parent_qid>
     <sid><![CDATA[711425]]></sid>
@@ -517,7 +499,7 @@
     <gid><![CDATA[4]]></gid>
     <type><![CDATA[*]]></type>
     <title><![CDATA[emailmarker]]></title>
-    <question><![CDATA[{'toemail={email}| variables=email'}]]></question>
+    <question><![CDATA[{'toemail={email}, rienk.eisma@gmail.com'}]]></question>
     <preg/>
     <help/>
     <other><![CDATA[N]]></other>
@@ -527,6 +509,7 @@
     <scale_id><![CDATA[0]]></scale_id>
     <same_default><![CDATA[0]]></same_default>
     <relevance><![CDATA[1]]></relevance>
+    <modulename/>
    </row>
    <row>
     <qid><![CDATA[112]]></qid>
@@ -949,7 +932,7 @@ $('body').waitMe({ effect: 'bounce',text: 'Processing your results...' });
     <usecookie><![CDATA[N]]></usecookie>
     <allowregister><![CDATA[N]]></allowregister>
     <allowsave><![CDATA[Y]]></allowsave>
-    <autonumber_start><![CDATA[81]]></autonumber_start>
+    <autonumber_start><![CDATA[173]]></autonumber_start>
     <autoredirect><![CDATA[N]]></autoredirect>
     <allowprev><![CDATA[N]]></allowprev>
     <printanswers><![CDATA[N]]></printanswers>
