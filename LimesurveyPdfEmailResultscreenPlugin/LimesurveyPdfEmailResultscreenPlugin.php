@@ -353,7 +353,15 @@ use H2P\TempFile;
                         'current' => $pdftemplate,
                         'default' => 'template.html',
                         'help'=> "<p>Templates should be in the folder : plugins/PdfGenerator/templates</p>
-                                 <p>These templates can also be placed in a subfolder(mysubfolder/mypdftemplate.html).</p>",
+                                 <p>These templates can also be placed in a subfolder(mysubfolder/mypdftemplate.html). You must pass that subfolder below</p>",
+                    ),
+                    'pdftemplatefolders' => array(
+                        'type' => 'string',
+                        'label' => "Pdf template",
+                        'current' => '',
+                        'default' => '',
+                        'help'=> "<p>Template folders should be in the folder : plugins/PdfGenerator/templates</p>
+                                 <p>You can create subfolders, pass them here: demo/pdftemplate | demo/pdftemplate/headers | etc</p>",
                     ),
                     'PdfGenerator_Download_Folder' => array(
                         'type' => 'string',
@@ -498,7 +506,15 @@ use H2P\TempFile;
                         'current' => $resulttemplate,
                         'default' => 'template.html',
                         'help'=> "<p>Templates should be in the folder : plugins/PdfGenerator/templates</p>
-                                 <p>These templates can also be placed in a subfolder(mysubfolder/mypdftemplate.html).</p>",
+                                 <p>These templates can also be placed in a subfolder(mysubfolder/mypdftemplate.html). Pass those subfolders below.</p>",
+                    ),
+                    'resulttemplatefolders' => array(
+                        'type' => 'string',
+                        'label' => "Result template",
+                        'current' => '',
+                        'default' => '',
+                        'help'=> "<p>Template folders should be in the folder : plugins/PdfGenerator/templates</p>
+                                 <p>You can create subfolders, pass them here: demo/resulttemplate | demo/resulttemplate/headers | etc</p>",
                     ), 
                 
                     'dummyemail' => array(
@@ -564,7 +580,15 @@ use H2P\TempFile;
                         'label' => "Email template",
                         'current' => $emailtemplate,
                         'default' => 'standardmessage.html',
-                        'help'=> "<p>Email template: Name of the email template in the PdfGenerator/emailtemplates folder (or subfoldername/emailtemplate.html. <br> Variables should be between {!- and -!}. Pass variables in your markerquestion named 'emailmarker' as 'variables=q1,q2'</p>",
+                        'help'=> "<p>Email template: Name of the email template in the PdfGenerator/emailtemplates folder (or subfoldername/emailtemplate.html. <br> Variables should be between {{ and }}. Pass variables in your markerquestion named 'emailmarker' as 'variables=q1,q2'</p>",
+                    ),
+                    'emailtemplatefolder' => array(
+                        'type' => 'string',
+                        'label' => "Email template",
+                        'current' => '',
+                        'default' => '',
+                        'help'=> "<p>Template folders should be in the folder : plugins/PdfGenerator/templates</p>
+                                 <p>You can create subfolders, pass them here: demo/emailtemplate | demo/emailtemplate/headers | etc</p>",
                     ),
                     'emailtemplatetype' => array(
                         'type' => 'select',
@@ -793,9 +817,11 @@ use H2P\TempFile;
             $settings['debug']                          = $this->get('debug', 'Survey', $surveyId);
             $settings['parsenested']                    = $this->get('parsenested', 'Survey', $surveyId);
             $settings['createpdf']                      = $this->get('createpdf', 'Survey', $surveyId); 
-            $settings['pdftemplate']                    = $this->get('pdftemplate', 'Survey', $surveyId); 
+            $settings['pdftemplate']                    = $this->get('pdftemplate', 'Survey', $surveyId);
+            $settings['pdftemplatefolders']             = $this->get('pdftemplatefolders', 'Survey', $surveyId); 
             $settings['showinresult']                   = $this->get('showinresult', 'Survey', $surveyId); 
-            $settings['resulttemplate']                 = $this->get('resulttemplate', 'Survey', $surveyId); 
+            $settings['resulttemplate']                 = $this->get('resulttemplate', 'Survey', $surveyId);
+            $settings['resulttemplatefolders']          = $this->get('resulttemplatefolders', 'Survey', $surveyId); 
 
             $emailsettings = [];
 
@@ -807,6 +833,7 @@ use H2P\TempFile;
             $emailsettings['attachmentname']        = $this->get('attachmentname', 'Survey', $surveyId);
             $emailsettings['emailsubject']          = $this->get('emailsubject', 'Survey', $surveyId);
             $emailsettings['emailtemplate']         = $this->get('emailtemplate', 'Survey', $surveyId);
+            $emailsettings['emailtemplatefolders']  = $this->get('emailtemplatefolders', 'Survey', $surveyId);
             $emailsettings['emailtemplatetype']     = $this->get('emailtemplatetype', 'Survey', $surveyId);
             $emailsettings['emailsuccessmessage']   = $this->get('emailsuccessmessage', 'Survey', $surveyId);
             $emailsettings['emailerrormessage']     = $this->get('emailerrormessage', 'Survey', $surveyId);
@@ -983,7 +1010,7 @@ use H2P\TempFile;
 
                             $mailer = new ResultMailer();
 
-                            $mailresult = $mailer->sendMail($link, $pdfname, $emailsettings, $settings, $dynamicemailsettings, $tmplfolders);
+                            $mailresult = $mailer->sendMail($link, $pdfname, $emailsettings, $settings, $dynamicemailsettings);
 
                             if($mailresult === 1){
 
@@ -1099,7 +1126,9 @@ use H2P\TempFile;
 
                         $restwigparser = new TwigParser();
 
-                        $res[] = $restwigparser->parse($settings, $settings['resulttemplate'], $data, $tmplfolders);
+                        $restmplfolders = array_map('trim', explode('|', $settings['resulttemplatefolders'] ));
+
+                        $res[] = $restwigparser->parse($settings, $settings['resulttemplate'], $data, $restmplfolders);
 
                     }
 
@@ -1107,7 +1136,9 @@ use H2P\TempFile;
 
                         $pdftwigparser = new TwigParser();
 
-                        $pdf[] = $pdftwigparser->parse($settings, $settings['pdftemplate'], $data, $tmplfolders);
+                        $pdftmplfolders = array_map('trim', explode('|', $settings['pdftemplatefolders'] ));
+
+                        $pdf[] = $pdftwigparser->parse($settings, $settings['pdftemplate'], $data, $pdftmplfolders);
 
                     }
 
@@ -1367,7 +1398,7 @@ use H2P\TempFile;
 
                         }
 
-                        if(trim($tt[0]) === 'pdfconfig'){
+                        if(trim($tt[0]) === 'pdfconfig' || trim($tt[0]) === 'pdftemplatefolders' || trim($tt[0]) === 'resulttemplatefolders' || trim($tt[0]) === 'emailtemplatefolders' ){
 
                             $tt[1]  = str_replace('&', '|', $tt[1]);
 

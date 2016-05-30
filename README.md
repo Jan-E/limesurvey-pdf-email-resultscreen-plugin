@@ -13,7 +13,7 @@ This is a limesurvey plugin to create a downloadable pdf, send this pdf as an at
 Dependencies: Composer, Phantomjs, h2p, swiftmailer, twig
 
 You have to pass variables by creating a markerquestion are of type 'equation type' and name it 'variablemarker'.
-You also have to provide templates (html/javascript/css) and upload them to a folder.  The default twig placeholders ({{ }}) have been replaced by {!- and -!}. This is because I want to be able to parse angular templates without conflicts (angular uses {{ and }} as placeholders also). In these templates you have to wrap your variables in {!-yourvariablename-!} (handlebar-exclamation mark-hyphen).
+You also have to provide templates (html/javascript/css) and upload them to a folder. These will be parsed using twig. In these templates you have to wrap your variables in {{yourvariablename}} (double handlebars see the twig documentation for more info).
 
 ### Important
 
@@ -191,60 +191,65 @@ To override the survey configuration dynamically (because you want to set option
 
 #### List of overridable settings
 
-| Attributes          | Values                      |  Example                                                                                |
-| -------------       |:-------------:              |:-------------:                                                                          |  
-| debug               | true/false                  |  debug=true                                                                             |
-| parsenested         | true/false                  |  parsenested=false                                                                      |
-| createpdf           | true/false                  |  createpdf=false                                                                        |
-| pdftemplate         | path/string                 |  pdftemplate=myproject/mypdf.html                                                       |
-| showinresult        | true/false                  |  showinresult=true                                                                      |
-| resulttemplate      | path/string                 |  pdftemplate=myproject/myresult.html                                                    |
-|                     |                             |                                                                                         |
-| fromemail           | email                       |  fromemail=admin@example.com                                                            |
-| fromemailname       | name                        |  fromemailname=limesurvey admin                                                         |
-| sendemail           | true/false                  |  sendemail=true                                                                         |
-| attachpdf           | true/false                  |  attachpdf=true                                                                         |
-| attachmentname      | pdf name/string             |  attachmentname=yourresult.pdf                                                          |
-| emailsubject        | string                      |  emailsubject=Your result                                                               |
-| emailtemplate       | path/string                 |  emailtemplate=myproject/emailtemplate.html                                             |
-| emailtemplatetype   | 'text/html'/'text/plain'    |  emailtemplatetype=text/html                                                            |
-| emailsuccessmessage | string                      |  emailsuccessmessage=Your email has been sent                                           |
-| emailerrormessage   | string                      |  emailerrormessage=An error occured sending your email                                  |
-|                     |                             |                                                                                         |
-| showdownloadpdftext | true/false                  |  showdownloadpdftext=true                                                               |
-| downloadpdftext     | string                      |  downloadpdftext=[p class='someclass']You can download your pdf [link]here[/link][/p]** |
-| pdfdownloadfolder   | path/string                 |  pdfdownloadfolder=downloadfolder/myproject                                             |
-| pdfconfig           | string                      |  pdfconfig=border=1cm & orientation=landscape                                           |
-| pdfheader           | true/false                  |  pdfheader=true                                                                         |
-| headercontent       | string                      |  headercontent=my new text                                                              |
-| headercontenttag    | string                      |  headercontenttag=h1                                                                    |
-| headercontentstyle  | string                      |  headercontentstyle=color:blue;text-align:center;                                       |
-| headerheight        | string                      |  headerheight=7mm                                                                       |
-|                     |                             |                                                                                         |
-| pdffooter           | true/false                  |  pdffooter=false                                                                        |
-| footercontent       | string                      |  footercontent=page { { pageNum } } of { { totalPages } }  pages  ***                   |
-| footercontentstyle  | string                      |  footercontentstyle=color:blue;text-align:center;                                       |
-| footerheight        | string                      |  footerheight=1cm                                                                       |
+| Attributes            | Values                      |  Example                                                                                |
+| -------------         |:-------------:              |:-------------:                                                                          |  
+| debug                 | true/false                  |  debug=true                                                                             |
+| parsenested           | true/false                  |  parsenested=false                                                                      |
+| createpdf             | true/false                  |  createpdf=false                                                                        |
+| pdftemplate           | string                      |  pdftemplate=mypdf.html.twig                                                            |
+| pdftemplatefolders    | path(s)                     |  pdftemplatefolders=demo/pdf&demo/pdf/headers**                                         |
+| showinresult          | true/false                  |  showinresult=true                                                                      |
+| resulttemplate        | string                      |  resulttemplate=myresult.html.twig                                                      |
+| resulttemplatefolders | path(s)&                    |  templatefolders=demo/result&demo/result/headers**                                      |
+|                       |                             |                                                                                         |
+| fromemail             | email                       |  fromemail=admin@example.com                                                            |
+| fromemailname         | name                        |  fromemailname=limesurvey admin                                                         |
+| sendemail             | true/false                  |  sendemail=true                                                                         |
+| attachpdf             | true/false                  |  attachpdf=true                                                                         |
+| attachmentname        | pdf name/string             |  attachmentname=yourresult.pdf                                                          |
+| emailsubject          | string                      |  emailsubject=Your result                                                               |
+| emailtemplate         | string                      |  emailtemplate=emailtemplate.html.twig                                                  |
+| emailtemplatefolders  | path(s)&                    |  emailtemplatefolders=demo/email&demo/email/headers**                                   |
+| emailtemplatetype     | 'text/html'/'text/plain'    |  emailtemplatetype=text/html                                                            |
+| emailsuccessmessage   | string                      |  emailsuccessmessage=Your email has been sent                                           |
+| emailerrormessage     | string                      |  emailerrormessage=An error occured sending your email                                  |
+|                       |                             |                                                                                         |
+| showdownloadpdftext   | true/false                  |  showdownloadpdftext=true                                                               |
+| downloadpdftext       | string                      |  downloadpdftext=[p class='someclass']You can download your pdf [link]here[/link][/p]***|
+| pdfdownloadfolder     | path/string                 |  pdfdownloadfolder=downloadfolder/myproject                                             |
+| pdfconfig             | string                      |  pdfconfig=border=1cm & orientation=landscape                                           |
+| pdfheader             | true/false                  |  pdfheader=true                                                                         |
+| headercontent         | string                      |  headercontent=my new text                                                              |
+| headercontenttag      | string                      |  headercontenttag=h1                                                                    |
+| headercontentstyle    | string                      |  headercontentstyle=color:blue;text-align:center;                                       |
+| headerheight          | string                      |  headerheight=7mm                                                                       |
+|                       |                             |                                                                                         |
+| pdffooter             | true/false                  |  pdffooter=false                                                                        |
+| footercontent         | string                      |  footercontent=page { { pageNum } } of { { totalPages } }  pages  ****                  |
+| footercontentstyle    | string                      |  footercontentstyle=color:blue;text-align:center;                                       |
+| footerheight          | string                      |  footerheight=1cm                                                                       |
 
 
-** The part between [link] and [/link] wil be parsed as a clickable link to the pdf. Html tags must be between brackets ([ instead of <]).
+** Every folder must be present. Twig will search those folders for templates. Also folders for included templates must be present. Create unique names for your templates.
 
-*** Note the spaces between { and { and between } and }.
+*** The part between [link] and [/link] wil be parsed as a clickable link to the pdf. Html tags must be between brackets ([ instead of <]).
+
+**** Note the spaces between { and { and between } and }.
 
 
 ### Templates
 
 Templates should be in the folder : plugins/LimesurveyPdfEmailResultscreenPlugin/templates
 
-These templates can also be placed in a subfolder, just pass it to your survey config (mysubfolder/mypdftemplate.html).
+These templates can also be placed in a subfolder. You must provide the subfolders your want twig to search. Also the subfolders for included folders must be provided. In your configuration.
 
-As stated in the previous section, passed variables replace that same variable name between '{!-' and '-!}'.
+As stated in the previous section, passed variables replace that same variable name between '{{' and '}}'.
 
 For instance:
 
 ```
-var question1 = {!-question1-!};
-var question2 = {!-question2-!};
+var question1 = {{question1}};
+var question2 = {{question2}};
 
 ```
 

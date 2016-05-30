@@ -11,26 +11,41 @@ class TwigParser {
 
         $baseurl = "http://$_SERVER[HTTP_HOST]".$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/';
 
-        $pluginfolder = $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin';
+        $tmplbasefolder = $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/templates';
 
-        $loader = new Twig_Loader_Filesystem([$pluginfolder.'/templates', $pluginfolder.'/emailtemplates', $pluginfolder.'/templates/demo']);
+        $folders = [];
+
+        $folders[] = $tmplbasefolder;
+
+        foreach($tmplfolders as $f){
+
+            if($f[0] !== '/'){
+
+                $f = '/'.$f;
+            }
+
+            $folders[] = $tmplbasefolder.$f;
+
+        }
+
+        $loader = new Twig_Loader_Filesystem($folders);
 
         $twig = new Twig_Environment($loader, array(
             'cache' => $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/compilationcache',
         ));
 
-        $lexer = new Twig_Lexer($twig, array(
+       /* $lexer = new Twig_Lexer($twig, array(
             'tag_comment'   => array('{#', '#}'),
             'tag_block'     => array('{%', '%}'),
             'tag_variable'  => array('{!-', '-!}'),
             'interpolation' => array('#{', '}'),
         ));
 
-        $twig->setLexer($lexer);
+        $twig->setLexer($lexer);*/
 
         $template = $twig->loadTemplate($tmplname);
 
-        $html = $template->render('datanested' => $data['nested'], 'databykey' => $data['bykey'], 'nestedjson' => $data['nestedjson']));
+        $html = $template->render(['datanested' => $data['nested'], 'databykey' => $data['bykey'], 'nestedjson' => $data['nestedjson'], 'baseurl' => $baseurl ]);
 
         $html = $this->foolExpressionManager($html);
 

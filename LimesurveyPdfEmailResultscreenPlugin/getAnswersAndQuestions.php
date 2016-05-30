@@ -101,7 +101,16 @@ require_once 'getAnswersAndQuestionsInterface.php';
 
             }
 
-            return ['nested' => $newresponse, 'bykey' => $bykeyresponse];
+            $jsonarray = [];
+
+            foreach($newresponse as $k => $v){
+
+                $jsonarray[$k] = json_encode($v);
+
+            }
+
+            return ['nested' => $newresponse, 'bykey' => $bykeyresponse, 'nestedjson' => $jsonarray];
+
 
         }
 
