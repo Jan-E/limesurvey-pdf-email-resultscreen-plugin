@@ -1,9 +1,5 @@
 # Limesurvey-Pdf-Email-Resultscreen-Plugin (bèta)
 
-todo fix template folder to search with twig
-
-twigbranch incorporate twig as templating engine
-
 A flexible limesurvey pdf, email and resultscreen creator
 
 # Overview
@@ -12,8 +8,7 @@ This is a limesurvey plugin to create a downloadable pdf, send this pdf as an at
 
 Dependencies: Composer, Phantomjs, h2p, swiftmailer, twig
 
-You have to pass variables by creating a markerquestion are of type 'equation type' and name it 'variablemarker'.
-You also have to provide templates (html/javascript/css) and upload them to a folder. These will be parsed using twig. In these templates you have to wrap your variables in {{yourvariablename}} (double handlebars see the twig documentation for more info).
+This plugin allows you to provide templates (html/javascript/css), parse them as twig templates, apply javascript inside it, and create a pdf. In these templates you have to wrap your variables in {{yourvariablename}} (double handlebars see the twig documentation for more info). The pdf will be generated using PhantomJS which allows you to take full advantage of javascript and css! Think d3.js!!
 
 ### Important
 
@@ -23,18 +18,18 @@ On the other hand, PhantomJS makes use of [Qt WebKit](https://wiki.qt.io/Qt_WebK
 
 # Getting started
 
-First make sure you have limesurvey 2.05 or higher installed ~~or 2.06 or higher for cronjob support~~.
+First make sure you have limesurvey 2.05 or higher installed ~~or 2.06 or higher for cronjob support~~. I found out the hard way that limesurvey versionnumber 2.50+, buildnumber 160512 has a bug in it so avoid that one (and probable the 2.50+ versions before that one). In buildnumber 160526 this was fixed. To be safe... just install the newest one.
 
-### Install PhantomJS (it's not really installing I know)
+### Install/drop in PhantomJS
 
 Install PhantomJS on your server or developmentbox (option 1) or get the binary and place it in your app (option 2, the shared hosting way).
 
-#### Option 1: Install on your server or local machine
+#### Option 1: Install on your server or local machine(not recommended)
 
 Google how to and make sure you know the path to phantomjs(.sh). For ubuntu see the previously mentioned [thread](https://gist.github.com/julionc/7476620). This path is what you have to input later on to make it work.
 
 
-#### Option 2: Get binary and drop in app
+#### Option 2: Get binary and drop in app(recommended)
 
 http://phantomjs.org/download.html provides [binaries](http://phantomjs.org/download.html). Find a way to determine which one you need. Now create a folder named 'phantomjs' in your rootfolder (sibling to the application-folder), and put in the folder named bin which you unpacked from the downloaded binary (you can put in all the other stuff but the bin-folder is the required one).
 
@@ -274,6 +269,7 @@ NOTE: It may not work because of webserver permissions. Go to your limesurvey co
 
 Now put this in your LimesurveyPdfEmailResultscreenPluginDemo config (this can't be preloaded):
 
+- check 'Debug'
 - check 'Create pdf'
 - check 'Show download pdf text'
 - put in the 'Download pdf text'-textbox: [p]You can download your pdf [[here]][/p]
@@ -299,10 +295,8 @@ Now put this in your LimesurveyPdfEmailResultscreenPluginDemo config (this can't
 activate survey and execute
 
 
+After activating, fill out question 7 about watergymnastics and after submit you should see a resultscreen with dumped data and a barchart and a link to download a pdf. The barchart will not be styled the way it should. This is because there is a question called 'processingpopup', with javascript and css in it. This question creates a 'processing' popup after submitting. To fix this, you can go to the surve settings page and add 'processingpopup' to the 'Excluded questions' field. Save, and execute the survey again. Now the styling of the barchart is ok.
 
-
-
-After activating, fill out question 7 about watergymnastics and after submit you should see a resultscreen with a barchart and a link to download a pdf. 
 
 ### Example explained
 
@@ -760,6 +754,8 @@ demo/pdf.html.twig (the same but you can use body, html and head because it's a 
 
 ```
 
+
+
 ### Send an Email
 
 To send an email you have to create an email marker question:
@@ -767,6 +763,8 @@ To send an email you have to create an email marker question:
 Question 'emailmarker' (equation type)
 
 ``` {'toemail={email}, another@example.com'}```
+
+replace another@example.com with your own email. The plugin only sends to unique emails, so you won't send an email twice to the same email-adress (however, for now it wont send to exactly the same email adress, so it will send to both myexample@gmail.com and my.example@gmail.com).
 
 In the demo survey there is a question named 'email'. I pass this variable to the 'toemail'-property using expression manager: (toemail={email}).
 
