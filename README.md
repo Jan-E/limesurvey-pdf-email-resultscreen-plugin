@@ -114,6 +114,16 @@ If you allready have a cron running you don't have to create another one. The pl
 
 # Configuration
 
+
+### Permissions
+
+yourapp/plugins/LimeSurveyPdfEmailResultscreenPlugin/writable and everything in it must be writable.
+yourapp/download must be writable.
+
+To load the example (see Example below), yourapp/styles-public and yourapp/scripts must be writable. You can (and should) set it back after the example has been loaded.
+
+
+
 ### Global config
 
 App subfolder: If the url to your app is a subfolder (www.example.com/subfolder), you can set your subfolder here.

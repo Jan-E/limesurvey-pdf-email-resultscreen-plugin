@@ -10,7 +10,7 @@ class TwigParser {
 
         $baseurl = "http://$_SERVER[HTTP_HOST]".$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/';
 
-        $tmplbasefolder = $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/templates';
+        $tmplbasefolder = $baseurl.'plugins/LimesurveyPdfEmailResultscreenPlugin/templates';
 
         $folders = [];
 
@@ -29,7 +29,7 @@ class TwigParser {
 
         $loader = new Twig_Loader_Filesystem($folders);
 
-        $envoptions = ['cache' => $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/compilationcache'];
+        $envoptions = ['cache' => $baseurl.'plugins/LimesurveyPdfEmailResultscreenPlugin/writable/compilationcache'];
 
         if($settings['debug'] === '1'){
 

@@ -186,6 +186,5 @@ require_once 'getAnswersAndQuestionsInterface.php';
             return ['id' => (int) $id, 'varname' => $varname];
 
         }
-
-       
+    
     }
