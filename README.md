@@ -532,9 +532,9 @@ demo/resultscreen.html.twig (does not need bootstrap and jquery because this is 
           display: none;
         }
     </style>
-    <link rel='stylesheet' href='{!-baseurl-!}styles-public/custom/demo.css'>
+    <link rel='stylesheet' href='{{baseurl}}styles-public/custom/demo.css'>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-    <script src="{!-baseurl-!}scripts/custom/chartfactory.js"></script>
+    <script src="{{baseurl}}scripts/custom/chartfactory.js"></script>
     <h1>Results</h1>  
     <div class='row'>
         <div class='col-md-4'>
