@@ -1,9 +1,10 @@
 <?php
 require_once __DIR__. '/../../vendor/autoload.php';
 require_once 'TwigParser.php';
+require_once 'ResultMailerInterface.php';
 
 
-class ResultMailer {
+class ResultMailer implements ResultMailerInterface{
 
 
 

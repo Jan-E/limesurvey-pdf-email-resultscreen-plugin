@@ -273,7 +273,7 @@ Now put this in your LimesurveyPdfEmailResultscreenPluginDemo config (this can't
 - check 'Create pdf'
 - check 'Show download pdf text'
 - put in the 'Download pdf text'-textbox: [p]You can download your pdf [[here]][/p]
-- set 'Pdf template' to 'demo/pdf.html.twig' 
+- set 'Pdf template' to 'pdf.html.twig' 
 - set 'Pdf template folders' to 'demo' 
 - keep 'Download folder' as '/download' (don't change)
 - put in 'border=1cm | orientation=portrait' in 'Pdf configuration'

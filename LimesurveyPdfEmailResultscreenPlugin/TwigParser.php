@@ -8,7 +8,6 @@ class TwigParser {
     public function parse($settings, $tmplname, $data, $tmplfolders)
     {
 
-
         $baseurl = "http://$_SERVER[HTTP_HOST]".$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/';
 
         $tmplbasefolder = $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/templates';
@@ -51,7 +50,7 @@ class TwigParser {
     }
 
 
-    private function foolExpressionManager($string)
+    public function foolExpressionManager($string)
     {
 
         return str_replace(['{', '}'], ['{ ', ' }'], $string);
