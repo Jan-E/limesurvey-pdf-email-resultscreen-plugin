@@ -729,177 +729,117 @@ use H2P\TempFile;
                     $err = $aImportResults['error'];
                     $pmanager->setFlash("<p>Error: $err</p>");
 
-                }else{
-                    
-                    $errors = 0;
+                }
 
-                    if (!file_exists($base.'/styles-public/custom')) {
+                $createcss = $this->createDirAndCopyFile('styles-public/custom', 'demo.css', 'plugins/LimesurveyPdfEmailResultscreenPlugin/demo/css');
+                
+                $createjs = $this->createDirAndCopyFile('scripts/custom', 'chartfactory.js', 'plugins/LimesurveyPdfEmailResultscreenPlugin/demo/chartfactory/chartfactory.js');
+                
+                $msgs = array_merge($createcss, $createjs);
 
-                        if(is_writable($base.'/styles-public')){
 
-                            $crstylefolder = mkdir($base.'/styles-public/custom', 0777, true);
+                foreach($msgs as $msg){
 
-                            if($crstylefolder === false){
+                    $pmanager->setFlash($msg);
 
-                                $errors++;
-
-                                $pmanager->setFlash("<p>Error creating directory: '/styles-public/custom'. Try to create it manually</p>");
-
-                            }else{
-
-                                if (!file_exists($base.'/styles-public/custom/demo.css')) {
-
-                                    if(is_writable($base.'/styles-public/custom')){
-
-                                        $copycss = copy($base.'/plugins/LimesurveyPdfEmailResultscreenPlugin/demo/css/demo.css', $base.'/styles-public/custom/demo.css');
-
-                                        if($copycss === false){
-
-                                            $errors++;
-
-                                            $pmanager->setFlash("<p>Error copying demo.css file to '/styles-public/custom'. Try to copy it manually</p>");
-
-                                        }
-
-                                    }else{
-
-                                        $errors++;
-
-                                        $pmanager->setFlash("<p>Error copying demo.css file: '/styles-public/custom' is not writable by the server</p>");
-
-                                    }
-
-                                }
-
-                            }
-
-                        }else{
-
-                            $errors++;
-
-                            $pmanager->setFlash("<p>Error creating directory: '/styles-public/custom'. '/styles-public' is not writable by the server</p>");
-
-                        }
-
-                    }else{
-
-                        if (!file_exists($base.'/styles-public/custom/demo.css')) {
-
-                            if(is_writable($base.'/styles-public/custom')){
-
-                                $copycss = copy($base.'/plugins/LimesurveyPdfEmailResultscreenPlugin/demo/css/demo.css', $base.'/styles-public/custom/demo.css');
-
-                                if($copycss === false){
-
-                                    $errors++;
-
-                                    $pmanager->setFlash("<p>Error copying demo.css file to '/styles-public/custom'. Try to copy it manually</p>");
-
-                                }
-
-                            }else{
-
-                                $errors++;
-
-                                $pmanager->setFlash("<p>Error copying demo.css file: '/styles-public/custom' is not writable by the server</p>");
-
-                            }
-
-                        }
-
-                    }
-
-
-                    
-
-                    if (!file_exists($base.'/scripts/custom')) {
-
-                        if(is_writable($base.'/scripts')){
-
-                            $crcscr = mkdir($base.'/scripts/custom', 0777, true);
-
-                            if($crcscr === false){
-
-                                $errors++;
-
-                                $pmanager->setFlash("<p>Error creating directory: '/scripts/custom'. Try to create it manually</p>");
-
-                            }else{
-
-                                if (!file_exists($base.'/scripts/custom/chartfactory.js')) {
-
-                                    if(is_writable($base.'/scripts/custom')){
-
-                                        $copychjs = copy($base.'/plugins/LimesurveyPdfEmailResultscreenPlugin/demo/chartfactory/chartfactory.js', $base.'/scripts/custom/chartfactory.js');
-
-                                        if($copychjs === false){
-
-                                            $errors++;
-
-                                            $pmanager->setFlash("<p>Error copying chartfactory.js file: Try to copy it manually</p>");
-
-                                        }
-
-                                    }else{
-
-                                        $errors++;
-
-                                        $pmanager->setFlash("<p>Error copying chartfactory.js file: '/scripts/custom' is not writable by the server</p>");
-
-                                    }
-
-                                }
-                    
-                            }
-
-                        }else{
-
-                            $errors++;
-
-                            $pmanager->setFlash("<p>Error copying chartfactory.js file: '/scripts/' is not writable by the server</p>");
-
-                        }
-
-                    }else{
-
-                        if (!file_exists($base.'/scripts/custom/chartfactory.js')) {
-
-                            if(is_writable($base.'/scripts/custom')){
-
-                                $copychjs = copy($base.'/plugins/LimesurveyPdfEmailResultscreenPlugin/demo/chartfactory/chartfactory.js', $base.'/scripts/custom/chartfactory.js');
-
-                                if($copychjs === false){
-
-                                    $errors++;
-
-                                    $pmanager->setFlash("<p>Error copying chartfactory.js file: Try to copy it manually</p>");
-
-                                }
-
-                            }else{
-
-                                $errors++;
-
-                                $pmanager->setFlash("<p>Error copying chartfactory.js file: '/scripts/custom' is not writable by the server</p>");
-
-                            }
-
-                        }
-
-                    }
-
-
-                    
-
-                    if ($errors === 0){
-
-                         $pmanager->setFlash("<p>Created demo survey named 'LimesurveyPdfEmailResultscreenPluginDemo' and created its required javascript and css files.</p>");
-
-                    }
-                    
                 }
 
             }
+
+        }
+
+        private function createDirAndCopyFile($dir, $filename, $fromdir)
+        {
+
+            $settings = $this->parsedsettings;
+
+            $msg = [];
+
+            $base = $base = $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'];
+
+            if (!file_exists($base.'/'.$dir)) {
+
+                if(is_writable($base.'/'.$dir)){
+
+                    $createfolder = mkdir($base.'/'.$dir, 0777, true);
+
+                    if($createfolder === false){
+
+                        $msg[] = "<p>Error creating directory: '$dir'. Try to create it manually</p>";
+
+                    }else{
+
+                        $msg[] = "<p>Created directory: '$dir'</p>";
+
+                        if (!file_exists($base.'/'.$dir.'/'.$filename)) {
+
+                            if(is_writable($base.'/'.$dir)){
+
+                                $copy = copy($base.'/'.$fromdir.'/'.$filename, $base.'/'.$dir.'/'.$filename);
+
+                                if($copy === false){
+
+                                    $msg[] = "<p>Error copying file $filename from '$formdir/$filename' to '$dir'. Try to copy it manually</p>";
+
+                                }else{
+
+                                    $msg[] = "<p>Copied file $filename from '$formdir/$filename' to '$dir'</p>"
+
+                                }
+
+                            }else{
+
+                                $msg[] = "<p>Error copying file $filename from '$formdir/$filename' to '$dir'. '$dir' is not writable</p>";
+
+                            }
+
+                        }else{
+
+                            $msg[] = "<p>No need to copy '$filename' to '$dir'.. It allready exists.</p>";
+
+                        }
+
+                    }
+
+                }else{
+
+                    $msg[] = "<p>Error creating directory '$dir'. One of its parent directories is not writable</p>");
+
+                }
+
+            }else{
+
+                if (!file_exists($base.'/'.$dir.'/'.$filename)) {
+
+                    if(is_writable($base.'/'.$dir)){
+
+                        $copy = copy($base.'/'.$fromdir.'/'.$filename, $base.'/'.$dir.'/'.$filename);
+
+                        if($copy === false){
+
+                            $msg[] = "<p>Error copying file $filename from '$formdir/$filename' to '$dir'. Try to copy it manually</p>";
+
+                        }else{
+
+                            $msg[] = "<p>Copied file $filename from '$formdir/$filename' to '$dir'</p>"
+
+                        }
+
+                    }else{
+
+                        $msg[] = "<p>Error copying file $filename from '$formdir/$filename' to '$dir'. '$dir' is not writable</p>";
+
+                    }
+
+                }else{
+
+                    $msg[] = "<p>No need to copy '$filename' to '$dir'.. It allready exists.</p>";
+
+                }
+
+            }
+
+            return $msg;
 
         }
 
