@@ -174,17 +174,11 @@ class ResultMailer implements Interfaces\ResultMailerInterface{
 
             $invalidems = $r['invalid'];
 
-            CVarDumper::dump($toems);
-
         }else{
-
-            CVarDumper::dump(['180'=>$this->toEmail]);
 
             $r = $this->getInvalidEmails($this->toEmail);
 
             $toems = $r['valid'];
-
-            CVarDumper::dump($toems);
 
             $invalidems = $r['invalid'];
 

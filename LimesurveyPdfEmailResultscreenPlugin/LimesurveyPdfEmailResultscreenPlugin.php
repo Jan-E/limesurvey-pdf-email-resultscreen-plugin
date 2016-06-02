@@ -1147,7 +1147,13 @@ use PdfEmailResultscreen\Mailer as Mailer;
 
                         if($settings['debug'] === '1'){
 
+                            echo '<h1>PhantomJS error</h1>';
+                            echo "<pre>"; 
+
                             CVarDumper::dump(['error' => $e, 'message' => $e->getMessage()]);
+
+                            echo "</pre>"; 
+                            echo '<br><br>';
 
                         }
 
