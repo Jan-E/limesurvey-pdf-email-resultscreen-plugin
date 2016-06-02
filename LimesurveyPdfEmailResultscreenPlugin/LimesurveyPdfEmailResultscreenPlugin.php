@@ -1,13 +1,17 @@
 <?php
+
 require_once __DIR__. '/../../vendor/autoload.php';
 require_once 'LimesurveyPdfEmailResultscreenPluginInterface.php';
 require_once 'TwigParser.php';
+require_once __DIR__. '/ResultMailer.php';
 
 use H2P\Converter\PhantomJS;
 use H2P\TempFile;
+use PdfEmailResultscreen\Interfaces as Interfaces;
+use PdfEmailResultscreen\Mailer as Mailer;
 
 
-    class LimesurveyPdfEmailResultscreenPlugin extends \ls\pluginmanager\PluginBase implements  LimesurveyPdfEmailResultscreenPluginInterface{
+    class LimesurveyPdfEmailResultscreenPlugin extends \ls\pluginmanager\PluginBase implements  Interfaces\LimesurveyPdfEmailResultscreenPluginInterface{
 
         protected $storage = 'DbStorage';
         static protected $description = 'Limesurvey-Pdf-Email-Resultscreen-Plugin';
@@ -729,117 +733,178 @@ use H2P\TempFile;
                     $err = $aImportResults['error'];
                     $pmanager->setFlash("<p>Error: $err</p>");
 
-                }
+                }else{
+                    
+                    $errors = 0;
 
-                $createcss = $this->createDirAndCopyFile('styles-public/custom', 'demo.css', 'plugins/LimesurveyPdfEmailResultscreenPlugin/demo/css');
-                
-                $createjs = $this->createDirAndCopyFile('scripts/custom', 'chartfactory.js', 'plugins/LimesurveyPdfEmailResultscreenPlugin/demo/chartfactory/chartfactory.js');
-                
-                $msgs = array_merge($createcss, $createjs);
+                    if (!file_exists($base.'/styles-public/custom')) {
 
+                        if(is_writable($base.'/styles-public')){
 
-                foreach($msgs as $msg){
+                            $crstylefolder = mkdir($base.'/styles-public/custom', 0777, true);
 
-                    $pmanager->setFlash($msg);
+                            if($crstylefolder === false){
 
-                }
+                                $errors++;
 
-            }
-
-        }
-
-        private function createDirAndCopyFile($dir, $filename, $fromdir)
-        {
-
-            $settings = $this->parsedsettings;
-
-            $msg = [];
-
-            $base = $base = $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'];
-
-            if (!file_exists($base.'/'.$dir)) {
-
-                if(is_writable($base.'/'.$dir)){
-
-                    $createfolder = mkdir($base.'/'.$dir, 0777, true);
-
-                    if($createfolder === false){
-
-                        $msg[] = "<p>Error creating directory: '$dir'. Try to create it manually</p>";
-
-                    }else{
-
-                        $msg[] = "<p>Created directory: '$dir'</p>";
-
-                        if (!file_exists($base.'/'.$dir.'/'.$filename)) {
-
-                            if(is_writable($base.'/'.$dir)){
-
-                                $copy = copy($base.'/'.$fromdir.'/'.$filename, $base.'/'.$dir.'/'.$filename);
-
-                                if($copy === false){
-
-                                    $msg[] = "<p>Error copying file $filename from '$formdir/$filename' to '$dir'. Try to copy it manually</p>";
-
-                                }else{
-
-                                    $msg[] = "<p>Copied file $filename from '$formdir/$filename' to '$dir'</p>"
-
-                                }
+                                $pmanager->setFlash("<p>Error creating directory: '/styles-public/custom'. Try to create it manually</p>");
 
                             }else{
 
-                                $msg[] = "<p>Error copying file $filename from '$formdir/$filename' to '$dir'. '$dir' is not writable</p>";
+                                if (!file_exists($base.'/styles-public/custom/demo.css')) {
+
+                                    if(is_writable($base.'/styles-public/custom')){
+
+                                        $copycss = copy($base.'/plugins/LimesurveyPdfEmailResultscreenPlugin/demo/css/demo.css', $base.'/styles-public/custom/demo.css');
+
+                                        if($copycss === false){
+
+                                            $errors++;
+
+                                            $pmanager->setFlash("<p>Error copying demo.css file to '/styles-public/custom'. Try to copy it manually</p>");
+
+                                        }
+
+                                    }else{
+
+                                        $errors++;
+
+                                        $pmanager->setFlash("<p>Error copying demo.css file: '/styles-public/custom' is not writable by the server</p>");
+
+                                    }
+
+
+                                }
 
                             }
 
                         }else{
 
-                            $msg[] = "<p>No need to copy '$filename' to '$dir'.. It allready exists.</p>";
+                            $errors++;
 
-                        }
-
-                    }
-
-                }else{
-
-                    $msg[] = "<p>Error creating directory '$dir'. One of its parent directories is not writable</p>");
-
-                }
-
-            }else{
-
-                if (!file_exists($base.'/'.$dir.'/'.$filename)) {
-
-                    if(is_writable($base.'/'.$dir)){
-
-                        $copy = copy($base.'/'.$fromdir.'/'.$filename, $base.'/'.$dir.'/'.$filename);
-
-                        if($copy === false){
-
-                            $msg[] = "<p>Error copying file $filename from '$formdir/$filename' to '$dir'. Try to copy it manually</p>";
-
-                        }else{
-
-                            $msg[] = "<p>Copied file $filename from '$formdir/$filename' to '$dir'</p>"
+                            $pmanager->setFlash("<p>Error creating directory: '/styles-public/custom'. '/styles-public' is not writable by the server</p>");
 
                         }
 
                     }else{
 
-                        $msg[] = "<p>Error copying file $filename from '$formdir/$filename' to '$dir'. '$dir' is not writable</p>";
+                        if (!file_exists($base.'/styles-public/custom/demo.css')) {
+
+                            if(is_writable($base.'/styles-public/custom')){
+
+                                $copycss = copy($base.'/plugins/LimesurveyPdfEmailResultscreenPlugin/demo/css/demo.css', $base.'/styles-public/custom/demo.css');
+
+                                if($copycss === false){
+
+                                    $errors++;
+
+                                    $pmanager->setFlash("<p>Error copying demo.css file to '/styles-public/custom'. Try to copy it manually</p>");
+
+                                }
+
+                            }else{
+
+                                $errors++;
+
+                                $pmanager->setFlash("<p>Error copying demo.css file: '/styles-public/custom' is not writable by the server</p>");
+
+                            }
+
+                        }
 
                     }
 
-                }else{
 
-                    $msg[] = "<p>No need to copy '$filename' to '$dir'.. It allready exists.</p>";
+                    
 
+                    if (!file_exists($base.'/scripts/custom')) {
+
+                        if(is_writable($base.'/scripts')){
+
+                            $crcscr = mkdir($base.'/scripts/custom', 0777, true);
+
+                            if($crcscr === false){
+
+                                $errors++;
+
+                                $pmanager->setFlash("<p>Error creating directory: '/scripts/custom'. Try to create it manually</p>");
+
+                            }else{
+
+                                if (!file_exists($base.'/scripts/custom/chartfactory.js')) {
+
+                                    if(is_writable($base.'/scripts/custom')){
+
+                                        $copychjs = copy($base.'/plugins/LimesurveyPdfEmailResultscreenPlugin/demo/chartfactory/chartfactory.js', $base.'/scripts/custom/chartfactory.js');
+
+                                        if($copychjs === false){
+
+                                            $errors++;
+
+                                            $pmanager->setFlash("<p>Error copying chartfactory.js file: Try to copy it manually</p>");
+
+                                        }
+
+                                    }else{
+
+                                        $errors++;
+
+                                        $pmanager->setFlash("<p>Error copying chartfactory.js file: '/scripts/custom' is not writable by the server</p>");
+
+                                    }
+
+                                }
+                    
+                            }
+
+                        }else{
+
+                            $errors++;
+
+                            $pmanager->setFlash("<p>Error copying demo.css file: '/scripts/' is not writable by the server</p>");
+
+                        }
+
+                    }else{
+
+                        if (!file_exists($base.'/scripts/custom/chartfactory.js')) {
+
+                            if(is_writable($base.'/scripts/custom')){
+
+                                $copychjs = copy($base.'/plugins/LimesurveyPdfEmailResultscreenPlugin/demo/chartfactory/chartfactory.js', $base.'/scripts/custom/chartfactory.js');
+
+                                if($copychjs === false){
+
+                                    $errors++;
+
+                                    $pmanager->setFlash("<p>Error copying chartfactory.js file: Try to copy it manually</p>");
+
+                                }
+
+                            }else{
+
+                                $errors++;
+
+                                $pmanager->setFlash("<p>Error copying chartfactory.js file: '/scripts/custom' is not writable by the server</p>");
+
+                            }
+
+                        }
+
+                    }
+
+
+                    
+
+                    if ($errors === 0){
+
+                         $pmanager->setFlash("<p>Created demo survey named 'LimesurveyPdfEmailResultscreenPluginDemo' and created its required javascript and css files.</p>");
+
+                    }
+                    
                 }
 
             }
-
-            return $msg;
 
         }
 
@@ -1018,9 +1083,9 @@ use H2P\TempFile;
                 *
                 */
 
-                if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/writable/compilationcache')) {
+                if (!file_exists($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/compilationcache')) {
 
-                    mkdir($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/writable/compilationcache', 0777, true);
+                    mkdir($_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/compilationcache', 0777, true);
 
                 }
 
@@ -1095,11 +1160,38 @@ use H2P\TempFile;
 
                 if($emailsettings['sendemail'] === '1'){
 
-                    require __DIR__. '/ResultMailer.php';
+                    $emailtwigparser = new TwigParser();
 
-                    $mailer = new ResultMailer();
+                    $emailtmplfolders = (trim($emailsettings['emailtemplatefolders']) === '') ? [] : array_map('trim', explode('|', $emailsettings['emailtemplatefolders'] ));
 
-                    $mailresult = $mailer->sendMail($link, $pdfname, $emailsettings, $settings, $dynamicemailsettings, $data);
+                    $emailbody = $emailtwigparser->parse($settings, $emailsettings['emailtemplate'], $data, $emailtmplfolders);
+
+                    $emailbcc = (trim($emailsettings['bcc']) === '') ? []: array_map('trim', explode(',', $emailsettings['bcc'] ));
+
+                    $mailer = new Mailer\ResultMailer();
+
+                    $mailer->setSubject($emailsettings['emailsubject']);
+                    $mailer->setFromEmail($emailsettings['fromemail']);
+                    $mailer->setFromEmailName($emailsettings['fromemailname']);
+                    $mailer->setBodyFormat($emailsettings['emailtemplatetype']);
+                    $mailer->setBody($emailbody);
+                    $mailer->setToEmail([$dynamicemailsettings['toemail']]);
+                    $mailer->setBcc($emailbcc);
+
+                    $edebug = ($settings['debug'] === '1') ? true : false;
+
+                    $mailer->setDebug($edebug);
+                    $mailer->setDebugEmail($emailsettings['debugemail']);
+
+                    if($emailsettings['attachpdf'] === '1'){
+
+                        $atname = (trim($emailsettings['attachmentname']) === '') ? false : $emailsettings['attachmentname'];
+
+                        $mailer->setAttachment($link, $pdfname, $atname);
+
+                    }
+
+                    $mailresult = $mailer->sendMail();
 
                     if($mailresult === 'success'){
 
@@ -1258,7 +1350,7 @@ use H2P\TempFile;
 
                 $t = new TwigParser();
 
-                $buffer = $t->foolExpressionManager($buffer);
+                $buffer = $t::foolExpressionManager($buffer);
 
                 $resp->addContent($buffer);
 
@@ -1284,9 +1376,9 @@ use H2P\TempFile;
 
                     $restwigparser = new TwigParser();
 
-                    $restmplfolders = array_map('trim', explode('|', $settings['resulttemplatefolders'] ));
+                    $restmplfolders = (trim($settings['resulttemplatefolders']) === '') ? [] : array_map('trim', explode('|', $settings['resulttemplatefolders'] ));
 
-                    $res[] = $restwigparser->parse($settings, $settings['resulttemplate'], $data, $restmplfolders);
+                    $res[] = $restwigparser::parse($settings, $settings['resulttemplate'], $data, $restmplfolders);
 
                 }
 
@@ -1294,9 +1386,9 @@ use H2P\TempFile;
 
                     $pdftwigparser = new TwigParser();
 
-                    $pdftmplfolders = array_map('trim', explode('|', $settings['pdftemplatefolders'] ));
+                    $pdftmplfolders = (trim($settings['pdftemplatefolders']) === '') ? [] : array_map('trim', explode('|', $settings['pdftemplatefolders'] ));
 
-                    $pdf[] = $pdftwigparser->parse($settings, $settings['pdftemplate'], $data, $pdftmplfolders);
+                    $pdf[] = $pdftwigparser::parse($settings, $settings['pdftemplate'], $data, $pdftmplfolders);
 
                 }
 
@@ -1316,7 +1408,7 @@ use H2P\TempFile;
             $listsettings   = preg_replace('/\s+/', '', $listsettings);
             $listsettings   = preg_replace('~\x{00a0}~','',$listsettings);
 
-            $varstemp = array_map('trim', explode('|', $listsettings));
+            $varstemp = (trim($listsettings) === '') ? [] : array_map('trim', explode('|', $listsettings));
 
             foreach($varstemp as $v){
 
@@ -1402,24 +1494,24 @@ use H2P\TempFile;
 
             $baseurl = [];
 
-            foreach ($response as $k => $v){
+            foreach ($response as $ke => $va){
 
-                if(strrpos(trim($k), 'emailmarker') !== false){
+                if(strrpos(trim($ke), 'emailmarker') !== false){
 
                     //$v= preg_replace('/\s+/', '', $v);
                     //$v = preg_replace('~\x{00a0}~','',$v);
 
-                    $v = stripslashes($v);
+                    $va = stripslashes($va);
 
-                    $temp = array_map('trim', explode('|', $v));
+                    $temp = (trim($va) === '') ? [] : array_map('trim', explode('|', $va));
 
                     foreach($temp as $k => $v){
 
-                        $p = array_map('trim', explode('=', $v));
+                        $p = (trim($v) === '') ? [] : array_map('trim', explode('=', $v));
 
                         if(trim($p[0]) === 'toemail'){
 
-                            $toemails = array_map('trim', explode(',', $p[1]));
+                            $toemails = (trim($p[1]) === '') ? [] : array_map('trim', explode(',', $p[1]));
 
                             $emailsettings[trim($p[0])] = [];
 

@@ -5,12 +5,12 @@ require_once __DIR__. '/../../vendor/autoload.php';
 class TwigParser {
 
 
-    public function parse($settings, $tmplname, $data, $tmplfolders)
+    public static function parse($settings, $tmplname, $data, $tmplfolders)
     {
 
         $baseurl = "http://$_SERVER[HTTP_HOST]".$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/';
 
-        $tmplbasefolder = $baseurl.'plugins/LimesurveyPdfEmailResultscreenPlugin/templates';
+        $tmplbasefolder = $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/templates';
 
         $folders = [];
 
@@ -29,7 +29,7 @@ class TwigParser {
 
         $loader = new Twig_Loader_Filesystem($folders);
 
-        $envoptions = ['cache' => $baseurl.'plugins/LimesurveyPdfEmailResultscreenPlugin/writable/compilationcache'];
+        $envoptions = ['cache' => $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/compilationcache'];
 
         if($settings['debug'] === '1'){
 
@@ -43,14 +43,14 @@ class TwigParser {
 
         $html = $template->render(['datanested' => $data['nested'], 'databykey' => $data['bykey'], 'nestedjson' => $data['nestedjson'], 'baseurl' => $baseurl ]);
 
-        $html = $this->foolExpressionManager($html);
+        $html =self::foolExpressionManager($html);
 
         return $html;
 
     }
 
 
-    public function foolExpressionManager($string)
+    public static function foolExpressionManager($string)
     {
 
         return str_replace(['{', '}'], ['{ ', ' }'], $string);
