@@ -263,7 +263,7 @@ After you made sure the external stylesheets an javascript libraries are loaded 
 
 - PDF's are not always rendered the way you want so test and try to fix it, don't assume it will be perfect right away. Google for phantomJs and your problem. It is rendered quite big because an A4 format has a quite small width so it will be rendered like a smartphone or tablet which may be too big. I just set fonts to smaller values etc, but maybe tweaking the viewport or something may do the trick. Also the phantomjs zoomFactor property does not seem to work. I don't know why.
 - On linux hosting (probably most of you host on linux), phantomjs states: 'The system must have GLIBCXX_3.4.9 and GLIBC_2.7'. This is probably enabled by hosting provider but I don't really know. If it's not enabled your fonts won't work as expected. I don't know whether loading these fonts in your css will solve this problem, maybe it does.
-- While debugging, if you have hidden javascript/css in your survey, this javascript/css will be dumped on the resultscreen. This can influence other elements on the resultscreen. You can add questioncodes to the 'Excluded questions' field in the configuration. These questioncodes will not be dumped and can't be passed to a template.
+
 
 
 
@@ -278,6 +278,7 @@ Now the demo survey (LimesurveyPdfEmailResultscreenPluginDemo) should be in your
 NOTE: It may not work because of webserver permissions. Go to your limesurvey config file and set debug to 1. It will show you permissions errors (after disable and re-enable this plugin with the 'load demo' checkbox checked.
 
 Now put this in your LimesurveyPdfEmailResultscreenPluginDemo config (this can't be preloaded):
+(surveypage-> click Survey properties -> click General settings & texts -> browse down to Plugins and click it).
 
 - check 'Debug'
 - check 'Create pdf'
