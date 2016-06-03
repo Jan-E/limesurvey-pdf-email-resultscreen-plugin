@@ -1,14 +1,17 @@
 <?php
 
 require_once __DIR__. '/../../vendor/autoload.php';
-require_once 'LimesurveyPdfEmailResultscreenPluginInterface.php';
-require_once 'TwigParser.php';
+require_once __DIR__. '/LimesurveyPdfEmailResultscreenPluginInterface.php';
+require_once __DIR__. '/Parser.php';
 require_once __DIR__. '/ResultMailer.php';
+require_once __DIR__. '/Data.php';
 
 use H2P\Converter\PhantomJS;
 use H2P\TempFile;
 use PdfEmailResultscreen\Interfaces as Interfaces;
 use PdfEmailResultscreen\Mailer as Mailer;
+use PdfEmailResultscreen\Parser as Parser;
+use PdfEmailResultscreen\Data as Data;
 
 
     class LimesurveyPdfEmailResultscreenPlugin extends \ls\pluginmanager\PluginBase implements  Interfaces\LimesurveyPdfEmailResultscreenPluginInterface{
@@ -66,7 +69,6 @@ use PdfEmailResultscreen\Mailer as Mailer;
             
         }
 
-
         /*public function init() {
 
             $this->subscribe('afterSurveyComplete');
@@ -107,7 +109,7 @@ use PdfEmailResultscreen\Mailer as Mailer;
 
             if (!isset( $downloadpdftext ) || $downloadpdftext === '' ){
 
-                $downloadpdftext = 'You can download your pdf {!-here-!}';
+                $downloadpdftext = '[p]You can download your pdf [link]here[/link][/p]';
 
             }
 
@@ -1066,11 +1068,11 @@ use PdfEmailResultscreen\Mailer as Mailer;
 
                 $dynamicemailsettings = $this->getDynamicEmailSettings($response);
           
-                require __DIR__. '/getAnswersAndQuestions.php';
+                
 
-                $aaq = new getAnswersAndQuestions();
+                $aaq = new Data\getData();
 
-                $data = $aaq->getResponse($surveyId, $settings['excludequestions'] );
+                $data = $aaq::getResponse($surveyId, $settings['excludequestions'] );
 
                 
              
@@ -1147,7 +1149,7 @@ use PdfEmailResultscreen\Mailer as Mailer;
 
                         if($settings['debug'] === '1'){
 
-                            echo '<h1>PhantomJS error</h1>';
+                            echo '<h1>PhantomJs error</h1>';
                             echo "<pre>"; 
 
                             CVarDumper::dump(['error' => $e, 'message' => $e->getMessage()]);
@@ -1166,11 +1168,11 @@ use PdfEmailResultscreen\Mailer as Mailer;
 
                 if($emailsettings['sendemail'] === '1'){
 
-                    $emailtwigparser = new TwigParser();
+                    $emailtwigparser = new Parser\Parser();
 
                     $emailtmplfolders = (trim($emailsettings['emailtemplatefolders']) === '') ? [] : array_map('trim', explode('|', $emailsettings['emailtemplatefolders'] ));
 
-                    $emailbody = $emailtwigparser->parse($settings, $emailsettings['emailtemplate'], $data, $emailtmplfolders);
+                    $emailbody = $emailtwigparser::parse($settings, $emailsettings['emailtemplate'], $data, $emailtmplfolders);
 
                     $emailbcc = (trim($emailsettings['bcc']) === '') ? []: array_map('trim', explode(',', $emailsettings['bcc'] ));
 
@@ -1354,7 +1356,7 @@ use PdfEmailResultscreen\Mailer as Mailer;
 
                 ob_end_clean();
 
-                $t = new TwigParser();
+                $t = new Parser\Parser();
 
                 $buffer = $t::foolExpressionManager($buffer);
 
@@ -1380,7 +1382,7 @@ use PdfEmailResultscreen\Mailer as Mailer;
 
                 if (isset($settings['showinresult']) && $settings['showinresult'] === '1'){
 
-                    $restwigparser = new TwigParser();
+                    $restwigparser = new Parser\Parser();
 
                     $restmplfolders = (trim($settings['resulttemplatefolders']) === '') ? [] : array_map('trim', explode('|', $settings['resulttemplatefolders'] ));
 
@@ -1390,7 +1392,7 @@ use PdfEmailResultscreen\Mailer as Mailer;
 
                 if (isset($settings['createpdf']) && $settings['createpdf'] === '1'){
 
-                    $pdftwigparser = new TwigParser();
+                    $pdftwigparser = new Parser\Parser();
 
                     $pdftmplfolders = (trim($settings['pdftemplatefolders']) === '') ? [] : array_map('trim', explode('|', $settings['pdftemplatefolders'] ));
 

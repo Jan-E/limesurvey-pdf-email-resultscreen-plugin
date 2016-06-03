@@ -1,4 +1,6 @@
-<?php 
+<?php
+namespace PdfEmailResultscreen\Interfaces;
+
 interface  LimesurveyPdfEmailResultscreenPluginInterface
 {  
 

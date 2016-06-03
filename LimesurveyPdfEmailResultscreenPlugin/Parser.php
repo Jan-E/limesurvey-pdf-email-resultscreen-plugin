@@ -1,8 +1,16 @@
 <?php
+namespace PdfEmailResultscreen\Parser;
+
 require_once __DIR__. '/../../vendor/autoload.php';
+require_once __DIR__. '/ParserInterface.php';
 
 
-class TwigParser {
+use PdfEmailResultscreen\Interfaces as Interfaces;
+use Twig_Loader_Filesystem;
+use Twig_Environment;
+
+
+class Parser implements Interfaces\ParserInterface {
 
 
     public static function parse($settings, $tmplname, $data, $tmplfolders)
@@ -43,7 +51,7 @@ class TwigParser {
 
         $html = $template->render(['datanested' => $data['nested'], 'databykey' => $data['bykey'], 'nestedjson' => $data['nestedjson'], 'baseurl' => $baseurl ]);
 
-        $html =self::foolExpressionManager($html);
+        $html = self::foolExpressionManager($html);
 
         return $html;
 

@@ -1,13 +1,17 @@
 <?php
-require_once 'getAnswersAndQuestionsInterface.php';
+namespace PdfEmailResultscreen\Data;
 
+require_once 'DataInterface.php';
 
+use Yii;
+use Survey;
+use PdfEmailResultscreen\Interfaces as Interfaces;
 
  
-    class getAnswersAndQuestions implements getAnswersAndQuestionsInterface {
+    class getData implements Interfaces\DataInterface {
 
 
-        public function getResponse($surveyid, $excludedquestions)
+        public static function getResponse($surveyid, $excludedquestions)
         {
 
              /*
@@ -39,14 +43,14 @@ require_once 'getAnswersAndQuestionsInterface.php';
 
             $aFullResponseTable = getFullResponseTable($iSurveyID, $sSRID, $sLanguage);
 
-            $redefined = $this->replaceKeysWithCode($aFullResponseTable, $excludedquestions);
+            $redefined = self::replaceKeysWithCode($aFullResponseTable, $excludedquestions);
 
             return $redefined;
 
         } 
 
 
-        private function replaceKeysWithCode($responsetable, $excludedquestions)
+        private static function replaceKeysWithCode($responsetable, $excludedquestions)
         {
 
             $excluded  = array_map('trim', explode(',', $excludedquestions ));
@@ -65,9 +69,9 @@ require_once 'getAnswersAndQuestionsInterface.php';
                     if(strpos($k, 'qid') !== false){
 
                         //is question with subquestion(s)
-                        $info = $this->parseIdandVarname($k);
+                        $info = self::parseIdandVarname($k);
 
-                        $qcode = $this->getQuestionCodeById($info['id']);
+                        $qcode = self::getQuestionCodeById($info['id']);
 
                         $last = $info;
 
@@ -75,9 +79,9 @@ require_once 'getAnswersAndQuestionsInterface.php';
 
                         //is just a question or subquestion
                         
-                        $info = $this->parseIdandVarname($k);
+                        $info = self::parseIdandVarname($k);
 
-                        $qcode = $this->getQuestionCodeById($info['id']);
+                        $qcode = self::getQuestionCodeById($info['id']);
 
                         if($info['id'] === $last['id']){
 
@@ -130,7 +134,7 @@ require_once 'getAnswersAndQuestionsInterface.php';
         }
 
 
-        private function getQuestionCodeById($id)
+        private static function getQuestionCodeById($id)
         {
 
             $config = Yii::app()->getComponents(false);
@@ -148,7 +152,7 @@ require_once 'getAnswersAndQuestionsInterface.php';
         }
 
 
-        private function parseIdandVarname ($string) 
+        private static function parseIdandVarname ($string) 
         {
 
             $temp = explode('X', $string);
@@ -186,5 +190,6 @@ require_once 'getAnswersAndQuestionsInterface.php';
             return ['id' => (int) $id, 'varname' => $varname];
 
         }
-    
+
+       
     }

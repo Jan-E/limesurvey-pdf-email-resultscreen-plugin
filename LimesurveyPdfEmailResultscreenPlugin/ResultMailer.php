@@ -176,6 +176,7 @@ class ResultMailer implements Interfaces\ResultMailerInterface{
 
         }else{
 
+
             $r = $this->getInvalidEmails($this->toEmail);
 
             $toems = $r['valid'];
