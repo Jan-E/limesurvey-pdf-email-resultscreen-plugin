@@ -18,7 +18,7 @@ On the other hand, PhantomJS makes use of [Qt WebKit](https://wiki.qt.io/Qt_WebK
 
 # Getting started
 
-First make sure you have limesurvey 2.05 or higher installed ~~or 2.06 or higher for cronjob support~~. I found out the hard way that limesurvey versionnumber 2.50+, buildnumber 160512 has a bug in it so avoid that one (and probable the 2.50+ versions before that one). In buildnumber 160526 this was fixed. To be safe... just install the newest one.
+First make sure you have limesurvey 2.05 or higher installed ~~or 2.06 or higher for cronjob support~~. I found out the hard way that limesurvey versionnumber 2.50+, buildnumber 160512 has a bug in it so avoid that one (and probable the 2.50+ versions before that one). In buildnumber 160526 this was fixed. To be safe... just install the newest one. Update: buildnumber 160603 also has a bug when trying to access the plugin screen.
 
 ### Install/drop in PhantomJS
 
