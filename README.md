@@ -117,10 +117,12 @@ If you allready have a cron running you don't have to create another one. The pl
 
 ### Permissions
 
-yourapp/plugins/LimeSurveyPdfEmailResultscreenPlugin/writable and everything in it must be writable.
+yourapp/plugins/LimesurveyPdfEmailResultscreenPlugin/writable and everything in it must be writable (or owned by your server).
 yourapp/download must be writable.
 
 To load the example (see Example below), yourapp/styles-public and yourapp/scripts must be writable. You can (and should) set it back after the example has been loaded.
+
+Note: If the plugin is not showing up in your plugins list, the cause may be that your plugin folder and contents are not readable by the server.
 
 
 

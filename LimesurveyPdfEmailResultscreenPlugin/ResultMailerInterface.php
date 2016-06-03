@@ -4,10 +4,6 @@ namespace PdfEmailResultscreen\Interfaces;
 interface ResultMailerInterface
 {  
 
-    private function setCredentials();
-
-    private function setTransport();
-
     public function setSubject($subject);
 
     public function setFromEmail($fromEmail);

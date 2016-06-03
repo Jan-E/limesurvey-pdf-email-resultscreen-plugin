@@ -37,7 +37,7 @@ class Parser implements Interfaces\ParserInterface {
 
         $loader = new Twig_Loader_Filesystem($folders);
 
-        $envoptions = ['cache' => $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/compilationcache'];
+        $envoptions = ['cache' => $_SERVER['DOCUMENT_ROOT'].$settings['LimesurveyPdfEmailResultscreenPlugin_app_subfolder'].'/plugins/LimesurveyPdfEmailResultscreenPlugin/writable/compilationcache'];
 
         if($settings['debug'] === '1'){
 
