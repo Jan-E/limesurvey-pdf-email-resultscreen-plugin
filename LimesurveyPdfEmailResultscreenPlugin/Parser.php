@@ -49,7 +49,7 @@ class Parser implements Interfaces\ParserInterface {
 
         $template = $twig->loadTemplate($tmplname);
 
-        $html = $template->render(['datanested' => $data['nested'], 'databykey' => $data['bykey'], 'nestedjson' => $data['nestedjson'], 'baseurl' => $baseurl ]);
+        $html = $template->render(['nested' => $data['nested'], 'bykey' => $data['bykey'], 'nestedjson' => $data['nestedjson'], 'baseurl' => $baseurl ]);
 
         $html = self::foolExpressionManager($html);
 

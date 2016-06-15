@@ -393,7 +393,7 @@ use PdfEmailResultscreen\Data as Data;
                         'current' => $this->get('downloadpdftext', 'Survey', $event->get('survey')),
                         'default' => false,
                         'help'=> "<p>Create pdf: This is the download text you provide</p>
-                                <p>Put the part of the text you want to be the clickable link between [[ and ]]. The whole text can be between html tags.</p>",
+                                <p>Put the part of the text you want to be the clickable link between [link] and [/link]. The whole text can be between html tags.</p>",
                     ),
 
                     'pdftemplate' => array(
