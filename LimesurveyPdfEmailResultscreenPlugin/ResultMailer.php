@@ -22,7 +22,7 @@ use CVarDumper;
 class ResultMailer implements Interfaces\ResultMailerInterface{
 
 
-    private $username, $password, $hostname, $port, $tsptype, $subject, $fromEmail, $fromEmailName, $bodyFormat, $body, $toEmail, $bcc, $attachment, $debug, $debugEmail, $transport;
+    private $username, $password, $hostname, $port, $tsptype, $subject, $fromEmail, $fromEmailName, $bodyFormat, $body, $toEmail, $bcc, $attachment, $debug, $debugEmail;
 
     public function __construct()
     {
