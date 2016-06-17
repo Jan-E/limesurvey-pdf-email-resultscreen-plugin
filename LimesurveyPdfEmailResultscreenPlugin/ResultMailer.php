@@ -22,7 +22,7 @@ use CVarDumper;
 class ResultMailer implements Interfaces\ResultMailerInterface{
 
 
-    private $username, $password, $hostname, $port, $tsptype, $subject, $fromEmail, $fromEmailName, $bodyFormat, $body, $toEmail, $bcc, $attachment, $debug, $debugEmail;
+    private $username, $password, $hostname, $port, $tsptype, $subject, $fromEmail, $fromEmailName, $bodyFormat, $body, $toEmail, $bcc, $attachment, $debug, $debugEmail, $transport;
 
     public function __construct()
     {
@@ -37,6 +37,7 @@ class ResultMailer implements Interfaces\ResultMailerInterface{
 
         $this->username = Yii::app()->getConfig('emailsmtpuser');
         $this->password = Yii::app()->getConfig('emailsmtppassword');
+        
 
     }
 
@@ -144,7 +145,7 @@ class ResultMailer implements Interfaces\ResultMailerInterface{
     {
 
 
-        $transporter = Swift_SmtpTransport::newInstance($this->hostname, $this->port, 'ssl')//$this->tsptype)
+        $transporter = Swift_SmtpTransport::newInstance($this->hostname, $this->port, $this->tsptype)//$this->tsptype)
         ->setUsername($this->username)
         ->setPassword($this->password);
 

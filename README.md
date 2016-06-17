@@ -230,10 +230,10 @@ These templates can also be placed in a subfolder. You must provide the subfolde
 
 #### Variables in templates
 
-This plugin serves your survey variables in tree ways: 'datanested', ~~'databykey'~~, and 'nestedjson'.
+This plugin serves your survey variables in tree ways: 'datanested', ~~'bykey'~~, and 'nestedjson'.
 
-- datanested: This is a nested array and can be used in twig loops etc.
-- ~~databykey: With this you can get single variable (much like expression manager does).~~
+- nested: This is a nested array and can be used in twig loops etc.
+- ~~bykey: With this you can get single variable (much like expression manager does).~~
 - nestedjson: This is very convenient to put a parent question code with all it's children in one javascript variable.
 - baseurl: This is very convenient to load javascript or css files from your site: {{baseurl}}js/myjs.js
 
@@ -245,7 +245,7 @@ For instance:
 var question1 = {{nestedjson.question1| raw}}; //object
 console.log(question1);
 
-<h1>Hi {{datanested.q5.q5_SQ002[2]}}</h1>
+<h1>Hi {{nested['q5']['q5_SQ002'][2]}}</h1>
 
 ```
 
